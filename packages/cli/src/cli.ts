@@ -1,4 +1,3 @@
-#!/usr/bin/env node
 import { writeFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import pc from "picocolors";
@@ -91,9 +90,18 @@ function parseArgs(argv: readonly string[]): Args {
   for (let i = 0; i < argv.length; i++) {
     const a = argv[i] as string;
     // A required-value flag may be given as `--flag=value` or `--flag value` (the form the GitHub
-    // Action and most users type). Consume the next arg for the space form.
+    // Action and most users type). For the space form, error (never fail open) if the value is
+    // missing or is itself a flag — a silently-disabled gate is worse than a clear error.
     const takesValue = (flag: string): string | undefined => {
-      if (a === flag) return argv[++i];
+      if (a === flag) {
+        const next = argv[i + 1];
+        if (next === undefined || next.startsWith("-")) {
+          process.stderr.write(pc.red(`Option ${flag} requires a value (e.g. ${flag}=B)\n`));
+          process.exit(2);
+        }
+        i++;
+        return next;
+      }
       if (a.startsWith(`${flag}=`)) return a.slice(flag.length + 1);
       return undefined;
     };
@@ -126,6 +134,9 @@ function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
+/** CLI version — single source (keep in sync with packages/cli/package.json). */
+const VERSION = "0.1.0";
+
 /** The site whose scorecards/badges the CLI points at (override for self-hosting). */
 const SITE_URL = process.env["BEACON_SITE_URL"] ?? "https://beacon.dev";
 
@@ -133,7 +144,8 @@ function writeArtifact(kind: "html" | "svg", opt: OptionalPath, name: string, co
   const target = typeof opt === "string" ? opt : `${slug(name)}.beacon.${kind}`;
   const abs = resolve(target);
   writeFileSync(abs, content, "utf8");
-  process.stdout.write(pc.dim(`  wrote ${kind.toUpperCase()} → ${abs}\n`));
+  // Diagnostics go to stderr so `--markdown`/`--json` stdout stays a clean report.
+  process.stderr.write(pc.dim(`  wrote ${kind.toUpperCase()} → ${abs}\n`));
   return target;
 }
 
@@ -166,9 +178,10 @@ function emitSingle(result: AuditResult, args: Args): void {
   if (args.badge !== undefined) {
     const target = writeArtifact("svg", args.badge, name, renderBadge(scorecard));
     // Emit the one copy-paste line an author needs — this is how the badge loop actually spreads.
+    // To stderr so it never pollutes a redirected `--markdown`/`--json` report.
     const rel = target.startsWith(".") || target.startsWith("/") ? target : `./${target}`;
-    process.stdout.write(pc.dim(`  embed it:  `) + `![Beacon](${rel})\n`);
-    process.stdout.write(
+    process.stderr.write(pc.dim(`  embed it:  `) + `![Beacon](${rel})\n`);
+    process.stderr.write(
       pc.dim(`  or an always-fresh, linked badge from ${SITE_URL} once your repo is public:\n`) +
         pc.dim(`    [![Beacon](${SITE_URL}/api/badge/OWNER/REPO.svg)](${SITE_URL}/s/OWNER/REPO)\n`),
     );
@@ -240,7 +253,7 @@ async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
 
   if (args.version) {
-    process.stdout.write("beacon 0.1.0\n");
+    process.stdout.write(`beacon ${VERSION}\n`);
     return;
   }
   if (args.help || args.path === undefined) {

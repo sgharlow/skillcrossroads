@@ -31,3 +31,26 @@ a {
 .mono {
   font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
 }
+
+/* Visible keyboard focus for every interactive element (WCAG 2.4.7). Individual pages set
+   outline:none on inputs; this restores a clear focus ring for keyboard users only. */
+a:focus-visible,
+button:focus-visible,
+input:focus-visible,
+select:focus-visible,
+textarea:focus-visible,
+[tabindex]:focus-visible {
+  outline: 2px solid var(--beam);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

@@ -14,10 +14,14 @@
   ],
   "scripts": {
     "build": "tsc --build tsconfig.json --force",
+    "bundle": "npm run build && node build.mjs",
+    "prepublishOnly": "npm run bundle",
     "clean": "rimraf dist"
   },
-  "dependencies": {
+  "comment": "@beacon/core is a private workspace package (never published). It is BUNDLED into dist/cli.js at publish time (prepublishOnly → esbuild), so the published package is self-contained and has zero runtime deps — that is what makes `npx @sgharlow/beacon` and the GitHub Action work.",
+  "devDependencies": {
     "@beacon/core": "*",
+    "esbuild": "^0.24.0",
     "picocolors": "^1.1.0"
   },
   "keywords": [

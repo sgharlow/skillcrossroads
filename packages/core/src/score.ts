@@ -12,9 +12,10 @@ export const GRADE_ORDER = [
   "A+", "A", "A−", "B+", "B", "B−", "C+", "C", "C−", "D+", "D", "D−", "F",
 ] as const;
 
-/** Rank of a grade (0 = best). Unknown grades rank worst. */
+/** Rank of a grade (0 = best). Accepts an ASCII `-` for the `−` minus. Unknown grades rank worst. */
 export function gradeRank(grade: string): number {
-  const i = GRADE_ORDER.indexOf(grade as (typeof GRADE_ORDER)[number]);
+  const norm = grade.trim().replace(/-/g, "−").toUpperCase();
+  const i = GRADE_ORDER.indexOf(norm as (typeof GRADE_ORDER)[number]);
   return i === -1 ? GRADE_ORDER.length : i;
 }
 

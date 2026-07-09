@@ -3,9 +3,9 @@ import { API_VERSION, ModelError } from "./anthropic.js";
 /**
  * Deterministic token estimate divisor. Calibrated against count_tokens on real skills
  * (`npm run eval:tokens`): skill markdown tokenizes denser than prose (~2.3–3.4 chars/token,
- * code-heavy skills lowest), so this is a rough centre — expect ±15–20% per skill. It is always
- * LABELLED as an estimate. For an exact figure (within ±5% of `/context`), a key enables the
- * AnthropicTokenCounter, the tokenizer `/context` itself uses.
+ * code-heavy skills lowest), so this is a rough centre — expect ~10–25% error per skill. It is
+ * always LABELLED as an estimate. For the exact figure, a key enables the AnthropicTokenCounter,
+ * the same tokenizer `/context` itself uses.
  */
 export const CHARS_PER_TOKEN = 3.0;
 

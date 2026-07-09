@@ -1,3 +1,4 @@
+import { after } from "next/server";
 import { renderHtml } from "@beacon/core";
 import { parseSlug, scanTarget } from "@/lib/scan";
 import { resolveScanOptions } from "@/lib/pro-scan";
@@ -37,8 +38,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
     });
   }
 
-  // Record each scored skill for score-history / trends (fire-and-forget).
-  recordScans(target.owner, target.repo, scan.skills);
+  // Record each scored skill for score-history / trends. `after()` runs it post-response but keeps
+  // the serverless function alive until the writes persist (a bare fire-and-forget is dropped on
+  // termination). Best-effort — never fails the scan.
+  after(() => recordScans(target.owner, target.repo, scan.skills));
 
   const origin = new URL(req.url).origin;
   const body =

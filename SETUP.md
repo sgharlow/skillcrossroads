@@ -26,11 +26,9 @@ chat**.
   2. `app/pro/success/page.tsx` is `dynamic = "force-dynamic"`. *Root cause:* a purely-static leaf
      under the page-less `/pro` segment tripped Vercel's `@vercel/next` route→output mapping
      ("Unable to find lambda for route: /pro/success").
-- **NOTE — not yet publicly reachable.** The project's Vercel Deployment Protection
-  (`ssoProtection: all_except_custom_domains`) gates every `*.vercel.app` URL behind Vercel SSO
-  (a `302 → vercel.com/sso-api`). Beacon is a public product, so **either** attach the `beacon.dev`
-  custom domain (protection excludes custom domains — it goes public automatically) **or** turn
-  Deployment Protection off for the project. Your call (see step 3).
+- **Publicly reachable ✅** — Vercel Deployment Protection was **disabled**, so the site is live and
+  public at `https://beacon-gamma-six.vercel.app` (verified `200` on `/`, `/gallery`, `/s/...`).
+  Attach `beacon.dev` when ready for the canonical URL (step 3).
 - *(An empty `web` project was created by a first mis-linked attempt — delete it in the dashboard, one click.)*
 
 ## The remaining steps (in order)
@@ -49,18 +47,18 @@ DATABASE_URL="postgres://…" npm --workspace @beacon/web run db:migrate   # cre
 Set `DATABASE_URL` in Vercel (step 3). *Note: managed providers need SSL — `lib/db.ts` enables it
 automatically for non-localhost hosts.*
 
-### 3. Vercel — project deploys LIVE; env + domain + public-access remain
-The `beacon` project is created and deploying `READY` (build config already set — see "Already done").
-Remaining:
-- **Environment variables** (Project → Settings → Environment Variables): `DATABASE_URL`,
-  `GITHUB_TOKEN` (a PAT for scan rate limits), `NEXT_PUBLIC_SITE_URL=https://beacon.dev`, plus the
-  Stripe / OAuth / managed-key vars below. I can set these via the Vercel API once you provide the
-  values (in a gitignored file / env, never chat).
-- **Public access** — pick one:
-  - **Add the `beacon.dev` domain** (Project → Domains). Protection excludes custom domains, so the
-    site goes public on the domain automatically. *(Recommended — you own the domain.)*
-  - **Disable Deployment Protection** (Project → Settings → Deployment Protection → Vercel
-    Authentication → off) to make the `*.vercel.app` URLs public.
+### 3. Vercel — project deploys LIVE + PUBLIC; env + domain remain
+The `beacon` project deploys `READY` and Deployment Protection is off (public). Remaining:
+- **`NEXT_PUBLIC_SITE_URL`** — **IMPORTANT for the SEO/badge loop.** Unset, the sitemap, robots.txt,
+  and the hosted badge-embed snippet default to `https://beacon.dev`, which isn't attached yet — so
+  every emitted badge/scorecard URL is a dead link and the sitemap points at a dead domain. Set it in
+  Vercel (Project → Settings → Environment Variables, Production+Preview) to the **currently live**
+  host `https://beacon-gamma-six.vercel.app` now, then switch to `https://beacon.dev` when the domain
+  is attached. *(I could not set this via the API — the CLI token lacks env-write scope; one field in
+  the dashboard.)*
+- **Other env vars**: `DATABASE_URL`, `GITHUB_TOKEN` (PAT for scan rate limits), `BEACON_SESSION_SECRET`
+  (required before enabling Pro — see step 7), plus the Stripe / OAuth / managed-key vars below.
+- **Domain**: add `beacon.dev` (Project → Domains) for the canonical URL, then update `NEXT_PUBLIC_SITE_URL`.
 
 ### 4. GitHub OAuth app → `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET`
 GitHub → Settings → Developer settings → **New OAuth App**. Homepage `https://beacon.dev`, callback
@@ -85,17 +83,15 @@ trial** with the `4242` card — card entry is yours, by policy.)
 `packages/cli/package.json` (name + `publishConfig.access: public`), `apps/action/action.yml`
 (`npx --yes @sgharlow/beacon@latest`), and the `npx` examples in the READMEs / CLAUDE.md.
 
+**✅ Publish blocker RESOLVED.** `@beacon/core` (a private workspace package) is now **bundled** into
+the CLI at publish time: `packages/cli/package.json`'s `prepublishOnly` runs `npm run bundle`
+(`build.mjs` → esbuild), inlining core + picocolors into a single self-contained `dist/cli.js` with
+**zero runtime deps**. Verified: the bundle runs standalone with the workspace symlink removed. So:
 ```bash
-npm login          # yours to run
+npm login                              # yours to run
+npm publish -w @sgharlow/beacon        # prepublishOnly bundles automatically
 ```
-**⚠️ Publish blocker to resolve first:** the CLI depends on `@beacon/core` as a workspace (`"*"`),
-which is **not** a published npm package — so `npm publish` of `@sgharlow/beacon` alone would install
-a broken `@beacon/core@*` from the registry. Before publishing, pick one:
-- **Bundle core into the CLI** (e.g. `tsup`/`esbuild` the CLI with `@beacon/core` inlined; then the
-  published package has no `@beacon/*` dep) — simplest for a single distributable. *(Recommended.)*
-- **Publish core too** as `@sgharlow/beacon-core` and depend on it by version.
-
-Once resolved, tell me and I'll wire the bundling + `npm publish` (I can't `npm login` for you).
+After publishing, `npx @sgharlow/beacon`, the landing-page command, and the GitHub Action all work.
 
 ### 7. (Optional) managed LLM for Pro → `BEACON_MANAGED_ANTHROPIC_KEY`
 Set an Anthropic key in Vercel env so Pro users get triggering/verification/constraint/exact-token

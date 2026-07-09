@@ -22,6 +22,8 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
       grade = card.grade;
     } else if (scan.skills.length > 1) {
       grade = averageGrade(scan);
+      // Repo-average badge is partial if ANY constituent skill was only partially graded (keyless).
+      card = { grade, partial: scan.skills.some((s) => s.scorecard.partial) } as Scorecard;
     }
   } catch {
     grade = "?";

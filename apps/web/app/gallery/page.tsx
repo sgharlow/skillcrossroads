@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { gradeHex } from "@beacon/core";
 import { gallery, type GallerySort } from "@/lib/gallery";
 import OptInForm from "./opt-in-form";
 
@@ -10,13 +11,6 @@ export const metadata: Metadata = {
 };
 
 export const dynamic = "force-dynamic";
-
-function gradeColor(grade: string): string {
-  if (grade.startsWith("A")) return "#35d0a5";
-  if (grade.startsWith("B")) return "#4fb8ff";
-  if (grade.startsWith("C")) return "#f5b44a";
-  return "#ff6b6b";
-}
 
 const SORTS: { key: GallerySort; label: string }[] = [
   { key: "score", label: "Top score" },
@@ -38,9 +32,10 @@ export default async function GalleryPage({
   searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const sp = await searchParams;
-  const sort = (typeof sp.sort === "string" ? sp.sort : "score") as GallerySort;
-  const minGrade = typeof sp.grade === "string" ? sp.grade : "";
-  const q = typeof sp.q === "string" ? sp.q : "";
+  // Validate query params (untrusted): fall back to defaults rather than passing junk into the store.
+  const sort: GallerySort = SORTS.some((s) => s.key === sp.sort) ? (sp.sort as GallerySort) : "score";
+  const minGrade = typeof sp.grade === "string" && /^[ABCDF]$/.test(sp.grade) ? sp.grade : "";
+  const q = typeof sp.q === "string" ? sp.q.slice(0, 100) : "";
 
   const entries = await gallery.list({ sort, minGrade: minGrade || undefined, q: q || undefined });
   const total = await gallery.count();
@@ -98,7 +93,7 @@ export default async function GalleryPage({
             <li key={e.id}>
               <a className="row" href={`/s/${e.id}`}>
                 <span className="rank">{i + 1}</span>
-                <span className="g" style={{ color: gradeColor(e.grade), borderColor: gradeColor(e.grade) }}>
+                <span className="g" style={{ color: gradeHex(e.grade), borderColor: gradeHex(e.grade) }}>
                   {e.grade}
                 </span>
                 <span className="sc">{e.overall}</span>

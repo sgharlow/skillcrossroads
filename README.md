@@ -82,8 +82,8 @@ Verdicts are cached by content hash in `.beacon-cache/`, so re-scanning an uncha
 free. Without a key, Beacon runs deterministic-only and marks Triggering as "not yet scored."
 
 A key also switches the token estimate to an **exact `count_tokens`** figure — the same tokenizer
-Claude Code's `/context` uses, so within ±0% of what a skill actually costs. Offline, Beacon shows a
-clearly-labeled rough estimate (skill markdown tokenizes denser than prose, so it can be ±15–20%).
+Claude Code's `/context` uses, so it's the same number a skill actually costs. Offline, Beacon shows
+a clearly-labeled rough estimate (skill markdown tokenizes denser than prose, so it can be ~10–25% off).
 
 ## What a report looks like
 

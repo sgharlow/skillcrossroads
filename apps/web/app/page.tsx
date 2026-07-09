@@ -31,7 +31,7 @@ export default function Home() {
         </p>
         <ScanForm />
         <p className="hint">
-          Scan any public repo, or run it locally: <code className="mono">npx beacon ./my-skill</code>
+          Scan any public repo, or run it locally: <code className="mono">npx @sgharlow/beacon ./my-skill</code>
         </p>
       </section>
 

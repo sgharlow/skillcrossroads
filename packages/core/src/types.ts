@@ -103,7 +103,7 @@ export interface CheckResult {
 /**
  * Runtime context for checks. Empty for the pure deterministic path; populated for BYOK runs.
  * `accurateTokens` is the exact `count_tokens` count of the entry file, precomputed once so sync
- * checks can report an exact (±5% of `/context`) figure instead of the rough estimate.
+ * checks can report the exact figure (the same tokenizer `/context` uses) instead of the estimate.
  */
 export interface CheckContext {
   /** Model client for LLM-assisted checks. Absent → those checks are skipped. */
