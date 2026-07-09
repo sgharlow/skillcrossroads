@@ -5,18 +5,21 @@ import pc from "picocolors";
 import {
   auditAsync,
   scanGitHubRepo,
+  scanLocalDir,
   isGitHubUrl,
   GitHubError,
   renderTerminal,
   renderHtml,
   renderBadge,
+  renderMarkdown,
+  meetsMinGrade,
   ParseError,
   createAnthropicClient,
   createAnthropicTokenCounter,
   createFileCache,
   type CheckContext,
   type AuditResult,
-  type RepoScanResult,
+  type ScannedSkill,
 } from "@beacon/core";
 
 const USAGE = `${pc.bold("beacon")} — Lighthouse for Claude Code artifacts
@@ -33,11 +36,15 @@ ${pc.bold("Options:")}
   --html[=<file>]    Also write a self-contained HTML scorecard (default: <name>.beacon.html).
   --badge[=<file>]   Also write an SVG grade badge (default: <name>.beacon.svg).
   --json             Emit the scorecard as JSON instead of the terminal report.
+  --markdown         Emit a Markdown report (for CI / PR comments).
+  --min-grade=<G>    Exit non-zero if any scanned skill grades below <G> (CI gate), e.g. B or C-.
   --no-llm           Deterministic checks only; skip LLM-assisted triggering analysis.
   --max=<n>          Cap the number of skills scanned from a repo.
   --no-color         Disable ANSI colors.
   -h, --help         Show this help.
   -v, --version      Show version.
+
+${pc.bold("A local path may be a single skill or a folder of skills")} (every SKILL.md is scanned).
 
 ${pc.bold("LLM-assisted checks (BYOK):")}
   Set ANTHROPIC_API_KEY to enable the triggering-quality check (TRIGGER-01).
@@ -45,7 +52,7 @@ ${pc.bold("LLM-assisted checks (BYOK):")}
 
 ${pc.bold("Examples:")}
   beacon ./my-skill
-  beacon ./my-skill --html --badge
+  beacon ./skills --markdown --min-grade=B      # CI: report + gate
   beacon https://github.com/anthropics/skills
   beacon anthropics/skills --max=10
   ANTHROPIC_API_KEY=sk-... beacon ./my-skill
@@ -57,6 +64,8 @@ type OptionalPath = string | true | undefined;
 interface Args {
   path?: string;
   json: boolean;
+  markdown: boolean;
+  minGrade?: string;
   html: OptionalPath;
   badge: OptionalPath;
   noLlm: boolean;
@@ -68,6 +77,7 @@ interface Args {
 function parseArgs(argv: readonly string[]): Args {
   const args: Args = {
     json: false,
+    markdown: false,
     html: undefined,
     badge: undefined,
     noLlm: false,
@@ -76,6 +86,8 @@ function parseArgs(argv: readonly string[]): Args {
   };
   for (const a of argv) {
     if (a === "--json") args.json = true;
+    else if (a === "--markdown" || a === "--md") args.markdown = true;
+    else if (a.startsWith("--min-grade=")) args.minGrade = a.slice("--min-grade=".length);
     else if (a === "-h" || a === "--help") args.help = true;
     else if (a === "-v" || a === "--version") args.version = true;
     else if (a === "--no-llm") args.noLlm = true;
@@ -124,11 +136,11 @@ function buildContext(noLlm: boolean, warnings: string[]): CheckContext {
   };
 }
 
-/** Emit one skill's report + any requested HTML/badge artifacts. */
+/** Emit one skill's report (terminal or markdown) + any requested HTML/badge artifacts. */
 function emitSingle(result: AuditResult, args: Args): void {
   const { scorecard, name } = result;
-  if (args.json) {
-    process.stdout.write(`${JSON.stringify({ name, ...scorecard }, null, 2)}\n`);
+  if (args.markdown) {
+    process.stdout.write(`${renderMarkdown(scorecard, { name })}\n`);
   } else {
     process.stdout.write(`\n${renderTerminal(scorecard, { name })}\n`);
   }
@@ -147,24 +159,57 @@ function gradeColor(grade: string): (s: string) => string {
   return pc.red;
 }
 
-/** Emit a batch table for a multi-skill repo scan. */
-function emitBatch(scan: RepoScanResult, url: string): void {
-  const rows = [...scan.skills].sort((a, b) => b.scorecard.overall - a.scorecard.overall);
-  process.stdout.write(
-    `\n${pc.bold("BEACON — repo scan")}  ${pc.dim(url)}\n` +
-      pc.dim(`  ref ${scan.ref} · tree ${scan.treeSha.slice(0, 10)} · ${rows.length} skills${scan.truncated ? " (truncated)" : ""}\n\n`),
-  );
+type ScanErr = { repoPath: string; message: string };
+interface BatchMeta {
+  ref?: string;
+  treeSha?: string;
+  truncated?: boolean;
+}
+
+/** Emit a multi-skill batch — a Markdown report (CI/PR) or a colored terminal table. */
+function emitBatch(
+  skills: readonly ScannedSkill[],
+  errors: readonly ScanErr[],
+  label: string,
+  args: Args,
+  meta: BatchMeta = {},
+): void {
+  const rows = [...skills].sort((a, b) => b.scorecard.overall - a.scorecard.overall);
+  const avg = rows.length ? rows.reduce((a, s) => a + s.scorecard.overall, 0) / rows.length : 0;
+
+  if (args.markdown) {
+    const out: string[] = [];
+    out.push(`### 🔦 Beacon — \`${label}\``);
+    out.push("");
+    out.push(`${rows.length} skills · average **${avg.toFixed(1)}/100**${meta.ref ? ` · ref \`${meta.ref}\`` : ""}`);
+    out.push("");
+    out.push("| Grade | Score | Skill | Path |");
+    out.push("|---|---:|---|---|");
+    for (const s of rows) out.push(`| ${s.scorecard.grade} | ${s.scorecard.overall} | ${s.name} | \`${s.repoPath}\` |`);
+    out.push("");
+    for (const s of rows.filter((r) => r.scorecard.results.some((x) => x.status !== "pass"))) {
+      out.push(`<details><summary>${s.scorecard.grade} — ${s.name}</summary>\n`);
+      out.push(renderMarkdown(s.scorecard, { name: s.name, level: 4 }));
+      out.push(`\n</details>`);
+    }
+    for (const e of errors) out.push(`- ⚠ \`${e.repoPath}\`: ${e.message}`);
+    process.stdout.write(`${out.join("\n")}\n`);
+    return;
+  }
+
+  const refNote =
+    (meta.ref ? ` · ref ${meta.ref}` : "") +
+    (meta.treeSha ? ` · tree ${meta.treeSha.slice(0, 10)}` : "") +
+    (meta.truncated ? " (truncated)" : "");
+  process.stdout.write(`\n${pc.bold("BEACON — scan")}  ${pc.dim(label)}\n` + pc.dim(`  ${rows.length} skills${refNote}\n\n`));
   for (const s of rows) {
     const g = gradeColor(s.scorecard.grade);
-    const grade = g(pc.bold(s.scorecard.grade.padEnd(2)));
-    const score = String(s.scorecard.overall).padStart(5);
-    process.stdout.write(`  ${grade}  ${score}  ${pc.dim(s.repoPath)}  ${s.name}\n`);
+    process.stdout.write(
+      `  ${g(pc.bold(s.scorecard.grade.padEnd(2)))}  ${String(s.scorecard.overall).padStart(5)}  ${pc.dim(s.repoPath)}  ${s.name}\n`,
+    );
   }
-  const avg = rows.length ? rows.reduce((a, s) => a + s.scorecard.overall, 0) / rows.length : 0;
   process.stdout.write(pc.dim(`\n  average ${avg.toFixed(1)}/100 across ${rows.length} skills\n`));
-  for (const e of scan.errors) {
-    process.stdout.write(pc.yellow(`  ⚠ ${e.repoPath}: ${e.message}\n`));
-  }
+  for (const e of errors) process.stdout.write(pc.yellow(`  ⚠ ${e.repoPath}: ${e.message}\n`));
 }
 
 async function main(): Promise<void> {
@@ -184,42 +229,24 @@ async function main(): Promise<void> {
   const ctx = buildContext(args.noLlm, warnings);
   const remote = isGitHubUrl(args.path) && !existsSync(args.path);
 
+  let skills: ScannedSkill[] = [];
+  let errors: ScanErr[] = [];
+  let meta: BatchMeta = {};
   try {
     if (remote) {
-      const scan = await scanGitHubRepo(args.path, ctx, {
-        token: process.env["GITHUB_TOKEN"],
-        max: args.max,
-      });
-      if (scan.skills.length === 0) {
-        if (scan.errors.length > 0) {
-          process.stderr.write(pc.red(`All ${scan.errors.length} skill(s) failed to scan:\n`));
-          for (const e of scan.errors) process.stderr.write(pc.red(`  ✗ ${e.repoPath}: ${e.message}\n`));
-        } else {
-          process.stderr.write(pc.yellow(`No SKILL.md found in ${args.path}\n`));
-        }
-        process.exit(1);
-      }
-      if (args.json) {
-        process.stdout.write(
-          `${JSON.stringify(
-            {
-              repo: args.path,
-              ref: scan.ref,
-              treeSha: scan.treeSha,
-              skills: scan.skills.map((s) => ({ repoPath: s.repoPath, name: s.name, ...s.scorecard })),
-              errors: scan.errors,
-            },
-            null,
-            2,
-          )}\n`,
-        );
-      } else if (scan.skills.length === 1) {
-        emitSingle(scan.skills[0] as AuditResult, args);
-      } else {
-        emitBatch(scan, args.path);
-      }
+      const scan = await scanGitHubRepo(args.path, ctx, { token: process.env["GITHUB_TOKEN"], max: args.max });
+      skills = [...scan.skills];
+      errors = [...scan.errors];
+      meta = { ref: scan.ref, treeSha: scan.treeSha, truncated: scan.truncated };
     } else {
-      emitSingle(await auditAsync(args.path, ctx), args);
+      const local = await scanLocalDir(args.path, ctx);
+      skills = [...local.skills];
+      errors = [...local.errors];
+      // Fallback: a direct SKILL.md file path, which the directory walk can't enumerate.
+      if (skills.length === 0 && errors.length === 0) {
+        const res = await auditAsync(args.path, ctx);
+        skills = [{ ...res, repoPath: "." }];
+      }
     }
   } catch (err) {
     if (err instanceof ParseError || err instanceof GitHubError) {
@@ -229,15 +256,53 @@ async function main(): Promise<void> {
     throw err;
   }
 
-  if (!args.json) {
+  if (skills.length === 0) {
+    if (errors.length > 0) {
+      process.stderr.write(pc.red(`All ${errors.length} skill(s) failed to scan:\n`));
+      for (const e of errors) process.stderr.write(pc.red(`  ✗ ${e.repoPath}: ${e.message}\n`));
+    } else {
+      process.stderr.write(pc.yellow(`No SKILL.md found in ${args.path}\n`));
+    }
+    process.exit(1);
+  }
+
+  // Render
+  if (args.json) {
+    const body =
+      skills.length === 1
+        ? { name: skills[0]!.name, ...skills[0]!.scorecard }
+        : { target: args.path, ...meta, skills: skills.map((s) => ({ repoPath: s.repoPath, name: s.name, ...s.scorecard })), errors };
+    process.stdout.write(`${JSON.stringify(body, null, 2)}\n`);
+  } else if (skills.length === 1) {
+    emitSingle(skills[0] as AuditResult, args);
+  } else {
+    emitBatch(skills, errors, args.path, args, meta);
+  }
+
+  // Gate
+  let gateFailed = false;
+  if (args.minGrade) {
+    const failing = skills.filter((s) => !meetsMinGrade(s.scorecard.grade, args.minGrade as string));
+    gateFailed = failing.length > 0;
+    if (!args.json) {
+      if (gateFailed) {
+        process.stdout.write(pc.red(`\n✗ Gate: ${failing.length}/${skills.length} skill(s) below ${args.minGrade}:\n`));
+        for (const s of failing) process.stdout.write(pc.red(`    ${s.scorecard.grade.padEnd(2)}  ${s.repoPath}  ${s.name}\n`));
+      } else {
+        process.stdout.write(pc.green(`\n✓ Gate: all ${skills.length} skill(s) meet ${args.minGrade}.\n`));
+      }
+    }
+  }
+
+  if (!args.json && !args.markdown) {
     for (const w of warnings) process.stdout.write(pc.yellow(`  ⚠ ${w}\n`));
     if (!ctx.model) {
-      process.stdout.write(
-        pc.dim("  Triggering analysis skipped — set ANTHROPIC_API_KEY to enable it (BYOK).\n"),
-      );
+      process.stdout.write(pc.dim("  Triggering analysis skipped — set ANTHROPIC_API_KEY to enable it (BYOK).\n"));
     }
     process.stdout.write("\n");
   }
+
+  if (gateFailed) process.exitCode = 1;
 }
 
 main().catch((err) => {

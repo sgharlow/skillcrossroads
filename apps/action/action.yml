@@ -1,0 +1,57 @@
+name: "Beacon — Skill Quality Gate"
+description: "Grade your Claude Code skills, comment a scorecard on the PR, and gate the build below a threshold."
+author: "Beacon"
+branding:
+  icon: "check-circle"
+  color: "yellow"
+
+inputs:
+  path:
+    description: "Path to a skill directory or a folder of skills (every SKILL.md is scanned)."
+    required: false
+    default: "."
+  min-grade:
+    description: "Fail the build if any skill grades below this (e.g. B, C-). Empty = report only, no gate."
+    required: false
+    default: ""
+  comment:
+    description: "Post (or update) a PR comment with the scorecard."
+    required: false
+    default: "true"
+  anthropic-api-key:
+    description: "Optional. Enables the LLM-assisted checks (triggering, verification, constraints)."
+    required: false
+    default: ""
+
+runs:
+  using: "composite"
+  steps:
+    - uses: actions/setup-node@v4
+      with:
+        node-version: "20"
+
+    - name: Beacon report
+      shell: bash
+      env:
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
+        GITHUB_TOKEN: ${{ github.token }}
+      run: |
+        npx --yes beacon@latest "${{ inputs.path }}" --markdown > "$RUNNER_TEMP/beacon-report.md" || true
+        cat "$RUNNER_TEMP/beacon-report.md" >> "$GITHUB_STEP_SUMMARY"
+
+    - name: Comment on PR
+      if: ${{ inputs.comment == 'true' && github.event_name == 'pull_request' }}
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ github.token }}
+        GITHUB_REPOSITORY: ${{ github.repository }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        REPORT_FILE: ${{ runner.temp }}/beacon-report.md
+      run: node "${{ github.action_path }}/comment.mjs"
+
+    - name: Gate
+      if: ${{ inputs.min-grade != '' }}
+      shell: bash
+      env:
+        ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
+      run: npx --yes beacon@latest "${{ inputs.path }}" --min-grade "${{ inputs.min-grade }}"

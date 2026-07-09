@@ -11,7 +11,8 @@ export { parseVerdict, mapVerdict, type TriggerVerdict } from "./checks/trigger-
 export { parseVerify, mapVerify, type VerifyVerdict } from "./checks/verify-04-verification.js";
 export { parseConstraints, mapConstraints, type ConstraintVerdict } from "./checks/clarity-05-constraints.js";
 export type { AsyncCheck, CheckContext } from "./checks/async.js";
-export { score, letterGrade } from "./score.js";
+export { score, letterGrade, gradeRank, meetsMinGrade, GRADE_ORDER } from "./score.js";
+export { renderMarkdown, type MarkdownOptions } from "./render/markdown.js";
 export type { ModelClient, StructuredRequest, JsonSchema } from "./llm/types.js";
 export { createAnthropicClient, DEFAULT_MODEL, ModelError } from "./llm/anthropic.js";
 export { createFileCache, createMemoryCache, hashKey, type Cache } from "./llm/cache.js";
@@ -28,8 +29,8 @@ export { renderHtml, type HtmlOptions } from "./render/html.js";
 export { renderBadge, type BadgeOptions } from "./render/badge.js";
 export { PALETTE, gradeHex } from "./render/theme.js";
 
-import { basename, join } from "node:path";
-import { mkdtempSync, rmSync } from "node:fs";
+import { basename, join, resolve, relative, sep } from "node:path";
+import { mkdtempSync, rmSync, existsSync, readdirSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { parse } from "./parse.js";
 import { runChecks, runChecksAsync } from "./checks/index.js";
@@ -80,6 +81,61 @@ export async function auditAsync(
 /** One graded skill from a repo scan, tagged with its path inside the repo. */
 export interface ScannedSkill extends AuditResult {
   readonly repoPath: string;
+}
+
+const IGNORED_WALK = new Set([".git", "node_modules", "dist", ".next", ".beacon-cache"]);
+
+/** Find every skill directory (containing SKILL.md) under a local path. Does not descend into one. */
+export function findLocalSkillDirs(root: string): string[] {
+  const abs = resolve(root);
+  if (!existsSync(abs)) return [];
+  const out: string[] = [];
+  const walk = (dir: string): void => {
+    let entries: string[];
+    try {
+      entries = readdirSync(dir);
+    } catch {
+      return;
+    }
+    if (entries.some((e) => e.toLowerCase() === "skill.md")) {
+      out.push(dir);
+      return; // a skill dir — don't descend further
+    }
+    for (const name of entries) {
+      if (IGNORED_WALK.has(name)) continue;
+      const full = join(dir, name);
+      try {
+        if (statSync(full).isDirectory()) walk(full);
+      } catch {
+        /* unreadable entry — skip */
+      }
+    }
+  };
+  walk(abs);
+  return out.sort();
+}
+
+export interface LocalScanResult {
+  readonly skills: readonly ScannedSkill[];
+  readonly errors: ReadonlyArray<{ repoPath: string; message: string }>;
+}
+
+/** Scan every skill under a local directory (CI checkout, a local skills folder). */
+export async function scanLocalDir(root: string, ctx: CheckContext = {}): Promise<LocalScanResult> {
+  const abs = resolve(root);
+  const dirs = findLocalSkillDirs(abs);
+  const skills: ScannedSkill[] = [];
+  const errors: Array<{ repoPath: string; message: string }> = [];
+  for (const dir of dirs) {
+    const repoPath = relative(abs, dir).split(sep).join("/") || basename(dir);
+    try {
+      const res = await auditAsync(dir, ctx);
+      skills.push({ ...res, repoPath });
+    } catch (err) {
+      errors.push({ repoPath, message: err instanceof Error ? err.message : String(err) });
+    }
+  }
+  return { skills, errors };
 }
 
 export interface RepoScanResult {

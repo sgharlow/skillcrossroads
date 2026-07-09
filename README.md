@@ -124,6 +124,26 @@ plus evidence. Category scores roll up to an overall 0–100 and a letter grade.
 The rubric is **versioned** — see [`Beacon-Build-Bible.md`](./Beacon-Build-Bible.md) for the full
 ~24-check catalog and roadmap.
 
+## Continuous integration (GitHub Action)
+
+Gate skill quality on every PR in three lines — the Action grades your skills, **comments a
+scorecard**, and **fails the build** below a grade you pick (full docs: [`apps/action`](./apps/action)):
+
+```yaml
+- uses: actions/checkout@v4
+- uses: sgharlow/beacon/apps/action@v1
+  with: { path: ./skills, min-grade: B }
+```
+
+The CLI is CI-native on its own, too:
+
+```bash
+beacon ./skills --markdown          # a Markdown report (job summary / PR comment)
+beacon ./skills --min-grade B       # exit non-zero if any skill is below B (the gate)
+```
+
+A local path may be a single skill or a **folder of skills** — every `SKILL.md` under it is scanned.
+
 ## Hosted web app (`@beacon/web`)
 
 A Next.js app (in `apps/web`) serves the shareable side of Beacon — it reuses `@beacon/core`:
@@ -143,8 +163,10 @@ Run locally: `cd apps/web && npm run dev`. Set `GITHUB_TOKEN` for higher GitHub 
 
 ## Status
 
-**v0.1 — `built`; CLI, repo-scanning, exact token counts, and the hosted web app `live-proven`
-locally; the Stripe paywall and Pro features `wired` (gated on account keys not yet configured).** Eleven deterministic checks (structure, a three-check **Token & Context Cost**
+**v0.1 — `built`; CLI, repo-scanning, exact token counts, local multi-skill scanning, Markdown
+reports, and score-gating `live-proven` locally; the hosted web app `live-proven` locally; the
+Stripe paywall, Pro features, and the PR-comment bot `wired` (gated on account keys / npm publish
+not yet configured).** Eleven deterministic checks (structure, a three-check **Token & Context Cost**
 pack, clarity, and a four-check **Safety & Security** pack: secrets, `allowed-tools`
 over-permissioning, destructive auto-invocation, `!`-block shell injection) on a local Skill
 directory or **any public GitHub repo by URL** (batch); three output surfaces

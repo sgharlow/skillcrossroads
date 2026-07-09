@@ -153,6 +153,16 @@ DB, and the managed key are Steve-court (batched account setup).
 - **Commits:** do NOT add a `Co-Authored-By: Claude` / "Generated with Claude" trailer (public
   repo; portfolio policy). Keep the Build Bible tracked and committed.
 
+## CI / GitHub Action (Sprint 9)
+
+The CLI is CI-native: a local path may be a **single skill or a folder of skills**
+(`scanLocalDir` finds every `SKILL.md`); `--markdown` emits a PR-comment-ready report
+(`renderMarkdown`, core); `--min-grade <G>` sets `process.exitCode = 1` when any skill grades below
+`<G>` (`meetsMinGrade` / `gradeRank` in `score.ts`) — the CI gate. `apps/action` is a **composite**
+GitHub Action (`action.yml` + `comment.mjs`, a dependency-free PR-comment poster that updates one
+marker comment in place). The action runs `npx beacon@latest`, so the "comments on a real PR" proof
+is batched with the npm publish; the gate + markdown + local batch are live-proven via the CLI.
+
 ## Running locally
 
 ```bash

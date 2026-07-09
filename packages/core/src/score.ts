@@ -7,6 +7,28 @@ import {
   type Scorecard,
 } from "./types.js";
 
+/** Letter grades best → worst, for ranking/gating. */
+export const GRADE_ORDER = [
+  "A+", "A", "A−", "B+", "B", "B−", "C+", "C", "C−", "D+", "D", "D−", "F",
+] as const;
+
+/** Rank of a grade (0 = best). Unknown grades rank worst. */
+export function gradeRank(grade: string): number {
+  const i = GRADE_ORDER.indexOf(grade as (typeof GRADE_ORDER)[number]);
+  return i === -1 ? GRADE_ORDER.length : i;
+}
+
+/**
+ * Does `grade` meet or beat `min`? Accepts an ASCII `-` for the `−` in minus grades (e.g. "A-").
+ * Returns true for an unrecognized `min` (no gate).
+ */
+export function meetsMinGrade(grade: string, min: string): boolean {
+  const normMin = min.trim().replace(/-/g, "−").toUpperCase();
+  const rank = gradeRank(normMin);
+  if (rank === GRADE_ORDER.length) return true; // unknown threshold → don't gate
+  return gradeRank(grade) <= rank;
+}
+
 /** Standard +/- letter-grade bands over a 0–100 score. */
 export function letterGrade(score: number): string {
   const s = Math.round(score);
