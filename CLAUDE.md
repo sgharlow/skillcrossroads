@@ -79,10 +79,12 @@ Each check emits `status` (`pass` | `warn` | `fail`), a `score` (0–100), and *
 cited, file-and-line, "claimed vs verified" voice IS the brand — every check must produce
 concrete receipts, never vibes. Register new checks in `packages/core/src/checks/index.ts`.
 
-The v0.1 catalog (deterministic): `STRUCT-01` valid YAML frontmatter · `STRUCT-02` recommended
-fields present · `STRUCT-05` supporting-file references resolve · `TOKEN-01` body under
-line/token budget · `CLARITY-03` no ASCII-art/persona filler · `SAFETY-01` no hardcoded
-secrets. Full ~24-check catalog is Appendix C of the Build Bible.
+The v0.1 catalog: **deterministic** — `STRUCT-01` valid YAML frontmatter · `STRUCT-02` recommended
+fields present · `STRUCT-05` supporting-file references resolve · `TOKEN-01` body under line/token
+budget · `CLARITY-03` no ASCII-art/persona filler · `SAFETY-01` no hardcoded secrets · `SAFETY-02`
+allowed-tools least-privilege · `SAFETY-03` no destructive auto-invocation · `SAFETY-04` no
+shell-injection in `!` blocks. **LLM-assisted (BYOK)** — `TRIGGER-01` description triggers reliably.
+Full ~24-check catalog is Appendix C of the Build Bible.
 
 ### Rubric & scoring
 

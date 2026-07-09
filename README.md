@@ -114,7 +114,7 @@ plus evidence. Category scores roll up to an overall 0–100 and a letter grade.
 | Triggering & Discoverability | 22% | description triggers reliably *(LLM-assisted, BYOK)* |
 | Clarity & Instruction Quality | 18% | no ASCII-art/persona filler |
 | Token & Context Cost | 15% | body under line/token budget |
-| Safety & Security | 15% | no hardcoded secrets |
+| Safety & Security | 15% | no hardcoded secrets, `allowed-tools` least-privilege, no destructive auto-invocation, no `!`-block shell injection |
 | Verifiability & Maintainability | 10% | *(later sprint)* |
 
 The rubric is **versioned** — see [`Beacon-Build-Bible.md`](./Beacon-Build-Bible.md) for the full
@@ -122,11 +122,13 @@ The rubric is **versioned** — see [`Beacon-Build-Bible.md`](./Beacon-Build-Bib
 
 ## Status
 
-**v0.1 — `built`, with the LLM triggering check and repo-scanning `live-proven`.** Deterministic
-checks on a local Skill directory or **any public GitHub repo by URL** (batch), three output
-surfaces (terminal scorecard, self-contained HTML report, embeddable SVG badge), plus the
-LLM-assisted **TRIGGER-01** triggering check (BYOK) — whose verdicts matched a hand-labeled 14-skill
-set at **92.9%** against the live API (Sprint 3 gate: ≥80%; run `npm run eval:triggering`). A batch
+**v0.1 — `built`, with the LLM triggering check and repo-scanning `live-proven`.** Nine
+deterministic checks (structure, token budget, clarity, and a four-check **Safety & Security** pack:
+secrets, `allowed-tools` over-permissioning, destructive auto-invocation, `!`-block shell injection)
+on a local Skill directory or **any public GitHub repo by URL** (batch); three output surfaces
+(terminal scorecard, self-contained HTML report, embeddable SVG badge); plus the LLM-assisted
+**TRIGGER-01** triggering check (BYOK) — whose verdicts matched a hand-labeled 14-skill set at
+**92.9%** against the live API (Sprint 3 gate: ≥80%; run `npm run eval:triggering`). A batch
 ["State of Claude Code Skills" report](./reports/state-of-claude-code-skills.md) is generated from
 live scans (`npm run report:skills`). Hosted reports with always-fresh badges, CI, and
 agent/MCP/plugin scoring are on the roadmap (Build Bible, Part 5).

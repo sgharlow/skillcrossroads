@@ -26,6 +26,9 @@ const CHECK_LABELS = {
   "TOKEN-01": "under the line/token budget",
   "CLARITY-03": "no ASCII-art / persona filler",
   "SAFETY-01": "no hardcoded secrets",
+  "SAFETY-02": "allowed-tools least-privilege",
+  "SAFETY-03": "no destructive auto-invocation",
+  "SAFETY-04": "no shell-injection in ! blocks",
 };
 
 const scanned = [];

@@ -29,6 +29,9 @@ STRUCT-05 supporting-file references resolve   ███████████
 TOKEN-01 under the line/token budget           ██████████████████░░  89%   (2 warn, 0 fail)
 CLARITY-03 no ASCII-art / persona filler       ████████████████████ 100%   (0 warn, 0 fail)
 SAFETY-01 no hardcoded secrets                 ████████████████████ 100%   (0 warn, 0 fail)
+SAFETY-02 allowed-tools least-privilege        ████████████████████ 100%   (0 warn, 0 fail)
+SAFETY-03 no destructive auto-invocation       ████████████████████ 100%   (0 warn, 0 fail)
+SAFETY-04 no shell-injection in ! blocks       ████████████████████ 100%   (0 warn, 0 fail)
 ```
 
 ## What this means
