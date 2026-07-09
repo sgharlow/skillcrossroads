@@ -119,7 +119,7 @@ plus evidence. Category scores roll up to an overall 0–100 and a letter grade.
 | Clarity & Instruction Quality | 18% | no ASCII-art/persona filler |
 | Token & Context Cost | 15% | body budget, progressive disclosure, description footprint (exact `count_tokens` with a key) |
 | Safety & Security | 15% | no hardcoded secrets, `allowed-tools` least-privilege, no destructive auto-invocation, no `!`-block shell injection |
-| Verifiability & Maintainability | 10% | *(later sprint)* |
+| Verifiability & Maintainability | 10% | verification step present *(LLM-assisted, BYOK)* |
 
 The rubric is **versioned** — see [`Beacon-Build-Bible.md`](./Beacon-Build-Bible.md) for the full
 ~24-check catalog and roadmap.
@@ -148,9 +148,10 @@ locally; the Stripe paywall and Pro features `wired` (gated on account keys not 
 pack, clarity, and a four-check **Safety & Security** pack: secrets, `allowed-tools`
 over-permissioning, destructive auto-invocation, `!`-block shell injection) on a local Skill
 directory or **any public GitHub repo by URL** (batch); three output surfaces
-(terminal scorecard, self-contained HTML report, embeddable SVG badge); plus the LLM-assisted
-**TRIGGER-01** triggering check (BYOK) — whose verdicts matched a hand-labeled 14-skill set at
-**92.9%** against the live API (Sprint 3 gate: ≥80%; run `npm run eval:triggering`). A batch
+(terminal scorecard, self-contained HTML report, embeddable SVG badge); plus two LLM-assisted checks
+(BYOK) — **TRIGGER-01** (triggering; verdicts matched a hand-labeled 14-skill set at **92.9%**
+against the live API, run `npm run eval:triggering`) and **VERIFY-04** (verification step present),
+which together fill the last two categories so **all six rubric categories score with a key**. A batch
 ["State of Claude Code Skills" report](./reports/state-of-claude-code-skills.md) is generated from
 live scans (`npm run report:skills`). Hosted reports with always-fresh badges, CI, and
 agent/MCP/plugin scoring are on the roadmap (Build Bible, Part 5).

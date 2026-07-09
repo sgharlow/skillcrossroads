@@ -41,9 +41,24 @@ describe("auditAsync", () => {
         onError: (id) => errors.push(id),
       },
     );
-    expect(errors).toEqual(["TRIGGER-01"]);
-    // triggering stays unevaluated rather than tanking the grade
+    // both LLM checks fail and are dropped
+    expect(errors).toContain("TRIGGER-01");
+    expect(errors).toContain("VERIFY-04");
+    // their categories stay unevaluated rather than tanking the grade
     expect(scorecard.categories.find((c) => c.key === "triggering")?.evaluated).toBe(false);
+    expect(scorecard.categories.find((c) => c.key === "verifiability")?.evaluated).toBe(false);
     expect(scorecard.overall).toBe(audit(fixture("good-skill")).scorecard.overall);
+  });
+
+  it("evaluates the verifiability category (all six with a model)", async () => {
+    const { scorecard } = await auditAsync(fixture("good-skill"), {
+      model: mockModel(() =>
+        Promise.resolve({ score: 90, verifies: true, finding: "runs a check", suggestion: "" }),
+      ),
+    });
+    expect(scorecard.categories.find((c) => c.key === "verifiability")?.evaluated).toBe(true);
+    expect(scorecard.results.some((r) => r.id === "VERIFY-04")).toBe(true);
+    // triggering + verifiability now both scored → full rubric, not partial
+    expect(scorecard.partial).toBe(false);
   });
 });
