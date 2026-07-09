@@ -114,6 +114,20 @@ content). A per-skill failure is recorded in `RepoScanResult.errors` and skipped
 returns partial results. All GitHub functions take an injectable `fetchImpl` so they're testable
 without network. Reports pin the git **tree sha** for reproducibility.
 
+## Hosted web app (`apps/web`, Next.js)
+
+The web app (Sprint 7) reuses `@beacon/core` — it does NOT reimplement scoring. Route handlers
+(`app/s/[...slug]`, `app/api/badge`, `app/api/scan`) run on the **Node runtime** (`export const
+runtime = "nodejs"`) because core uses `fs`/temp dirs; scans go through `scanGitHubRepo` and render
+via the same `renderHtml`/`renderBadge`. Badge/scorecard responses use `s-maxage` for
+always-fresh-with-short-TTL. GitHub OAuth (`app/api/auth/github`) is built but gated on
+`GITHUB_CLIENT_ID`/`SECRET` (returns 501 until set). Deploy target is Vercel (project + `beacon.dev`
+domain are Steve's to set up — not committed here).
+
+**Gotcha:** the web app uses `moduleResolution: "bundler"`, so relative imports inside `apps/web`
+take **no `.js` extension** (`./scan`, not `./scan.js`) — the opposite of core's NodeNext. Imports
+from `@beacon/core` are fine (package resolution).
+
 ## Conventions
 
 - **TypeScript, ESM (`"type": "module"`), NodeNext.** `strict` + `noUncheckedIndexedAccess` on.

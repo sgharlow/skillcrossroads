@@ -8,6 +8,11 @@ dist/
 build/
 *.tsbuildinfo
 
+# Next.js
+.next/
+next-env.d.ts
+.vercel
+
 # Test / coverage
 coverage/
 .vitest/

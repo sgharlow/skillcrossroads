@@ -124,10 +124,23 @@ plus evidence. Category scores roll up to an overall 0–100 and a letter grade.
 The rubric is **versioned** — see [`Beacon-Build-Bible.md`](./Beacon-Build-Bible.md) for the full
 ~24-check catalog and roadmap.
 
+## Hosted web app (`@beacon/web`)
+
+A Next.js app (in `apps/web`) serves the shareable side of Beacon — it reuses `@beacon/core`:
+
+- **Public scorecard pages** — `/s/owner/repo/path/to/skill` renders the Lighthouse-style HTML
+  scorecard (a repo URL renders a summary of every skill). Mobile-responsive, self-contained.
+- **Always-fresh badge endpoint** — `/api/badge/owner/repo/path.svg` returns the SVG grade badge,
+  scanned live with a short CDN TTL so it updates on re-scan.
+- **JSON API** — `/api/scan?repo=owner/repo`.
+- **GitHub OAuth** — `/api/auth/github` (build-ready; set `GITHUB_CLIENT_ID`/`SECRET` to enable).
+
+Run locally: `cd apps/web && npm run dev`. Set `GITHUB_TOKEN` for higher GitHub rate limits.
+
 ## Status
 
-**v0.1 — `built`, with the LLM triggering check, repo-scanning, and exact token counts
-`live-proven`.** Eleven deterministic checks (structure, a three-check **Token & Context Cost**
+**v0.1 — `built`, with the LLM triggering check, repo-scanning, exact token counts, and the hosted
+web app `live-proven` locally.** Eleven deterministic checks (structure, a three-check **Token & Context Cost**
 pack, clarity, and a four-check **Safety & Security** pack: secrets, `allowed-tools`
 over-permissioning, destructive auto-invocation, `!`-block shell injection) on a local Skill
 directory or **any public GitHub repo by URL** (batch); three output surfaces

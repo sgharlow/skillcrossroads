@@ -99,11 +99,11 @@ export interface RepoScanResult {
 export async function scanGitHubRepo(
   url: string,
   ctx: CheckContext = {},
-  opts: GitHubFetchOptions & { max?: number } = {},
+  opts: GitHubFetchOptions & { max?: number; subpath?: string } = {},
 ): Promise<RepoScanResult> {
   const target = parseGitHubUrl(url);
   const tree = await fetchRepoTree(target, opts);
-  const dirs = findSkillDirs(tree.entries, target.subpath);
+  const dirs = findSkillDirs(tree.entries, opts.subpath ?? target.subpath);
   const limited = opts.max ? dirs.slice(0, opts.max) : dirs;
 
   const dest = mkdtempSync(join(tmpdir(), "beacon-gh-"));

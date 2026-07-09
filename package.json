@@ -5,7 +5,8 @@
   "description": "Lighthouse for Claude Code artifacts — an evidence-cited quality scorecard, letter grade, and embeddable badge for Skills, subagents, MCP servers, and plugins.",
   "type": "module",
   "workspaces": [
-    "packages/*"
+    "packages/*",
+    "apps/*"
   ],
   "scripts": {
     "build": "npm run build --workspaces --if-present",
