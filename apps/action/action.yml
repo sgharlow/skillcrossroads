@@ -36,7 +36,7 @@ runs:
         ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        npx --yes beacon@latest "${{ inputs.path }}" --markdown > "$RUNNER_TEMP/beacon-report.md" || true
+        npx --yes @sgharlow/beacon@latest "${{ inputs.path }}" --markdown > "$RUNNER_TEMP/beacon-report.md" || true
         cat "$RUNNER_TEMP/beacon-report.md" >> "$GITHUB_STEP_SUMMARY"
 
     - name: Comment on PR
@@ -54,4 +54,4 @@ runs:
       shell: bash
       env:
         ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
-      run: npx --yes beacon@latest "${{ inputs.path }}" --min-grade "${{ inputs.min-grade }}"
+      run: npx --yes @sgharlow/beacon@latest "${{ inputs.path }}" --min-grade "${{ inputs.min-grade }}"

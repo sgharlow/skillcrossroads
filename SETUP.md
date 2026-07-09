@@ -79,13 +79,23 @@ trial** with the `4242` card — card entry is yours, by policy.)
 `customer.subscription.deleted`), and set `STRIPE_SECRET_KEY` / `STRIPE_PRICE_ID` /
 `STRIPE_WEBHOOK_SECRET` in Vercel.
 
-### 6. npm publish (the CLI + the Action's `npx beacon@latest`)
+### 6. npm publish — name chosen: `@sgharlow/beacon`
+`beacon` (unscoped) is taken on npm (someone else's v0.4.9), so the CLI package is renamed to
+**`@sgharlow/beacon`** (the installed command is still `beacon` via `bin`). Already updated:
+`packages/cli/package.json` (name + `publishConfig.access: public`), `apps/action/action.yml`
+(`npx --yes @sgharlow/beacon@latest`), and the `npx` examples in the READMEs / CLAUDE.md.
+
 ```bash
-npm login
+npm login          # yours to run
 ```
-**Name check first:** `beacon` is almost certainly taken on npm — run `npm view beacon` / pick a name
-(e.g. a scoped `@sgharlow/beacon`). Tell me the final name and I'll update `packages/cli/package.json`
-+ the Action (`apps/action`) references, then we `npm publish`.
+**⚠️ Publish blocker to resolve first:** the CLI depends on `@beacon/core` as a workspace (`"*"`),
+which is **not** a published npm package — so `npm publish` of `@sgharlow/beacon` alone would install
+a broken `@beacon/core@*` from the registry. Before publishing, pick one:
+- **Bundle core into the CLI** (e.g. `tsup`/`esbuild` the CLI with `@beacon/core` inlined; then the
+  published package has no `@beacon/*` dep) — simplest for a single distributable. *(Recommended.)*
+- **Publish core too** as `@sgharlow/beacon-core` and depend on it by version.
+
+Once resolved, tell me and I'll wire the bundling + `npm publish` (I can't `npm login` for you).
 
 ### 7. (Optional) managed LLM for Pro → `BEACON_MANAGED_ANTHROPIC_KEY`
 Set an Anthropic key in Vercel env so Pro users get triggering/verification/constraint/exact-token

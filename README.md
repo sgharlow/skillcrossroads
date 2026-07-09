@@ -30,8 +30,8 @@ node packages/cli/dist/cli.js ./path-to-a-skill
 # also write a shareable HTML scorecard and an SVG badge:
 node packages/cli/dist/cli.js ./path-to-a-skill --html --badge
 
-# once published to npm:
-npx beacon ./path-to-a-skill
+# once published to npm (installed command is still `beacon`):
+npx @sgharlow/beacon ./path-to-a-skill
 ```
 
 ### Scan a whole GitHub repo (no clone)

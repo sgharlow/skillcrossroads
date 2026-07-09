@@ -48,6 +48,6 @@ quality, verification, and constraint coverage.
 
 ## Notes
 
-- The action runs `npx beacon@latest`, so it tracks the published CLI.
+- The action runs `npx @sgharlow/beacon@latest`, so it tracks the published CLI.
 - Commenting needs `pull-requests: write`. On fork PRs the token is read-only; the action logs and
   continues rather than failing.
