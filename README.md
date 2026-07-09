@@ -2,7 +2,7 @@
 
 **Lighthouse for Claude Code artifacts.**
 
-![Beacon: A−](https://img.shields.io/badge/Beacon-A%E2%88%92-2ea043) &nbsp; ![rubric v1.0](https://img.shields.io/badge/rubric-v1.0-555)
+[![Beacon — live scorecard](https://img.shields.io/badge/Beacon-live%20scorecard-2ea043)](https://beacon-gamma-six.vercel.app/s/anthropics/skills) &nbsp; ![rubric v1.0](https://img.shields.io/badge/rubric-v1.0-555)
 
 Beacon audits a Claude Code artifact — a **Skill**, subagent, MCP server, or plugin — and
 returns an **evidence-cited quality scorecard with a letter grade**. It runs as a CLI today

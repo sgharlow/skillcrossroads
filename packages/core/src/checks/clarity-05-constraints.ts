@@ -134,7 +134,7 @@ export const clarity05: AsyncCheck = {
     const description = typeof fm?.["description"] === "string" ? (fm["description"] as string) : "";
     const bodyExcerpt = body.slice(0, 2500);
 
-    const key = hashKey("CLARITY-05", RUBRIC_VERSION, ctx.model.name, name, description, bodyExcerpt);
+    const key = hashKey("CLARITY-05", RUBRIC_VERSION, SYSTEM, ctx.model.name, name, description, bodyExcerpt);
     let raw = await ctx.cache?.get(key);
     if (raw === undefined) {
       raw = await ctx.model.generateStructured({

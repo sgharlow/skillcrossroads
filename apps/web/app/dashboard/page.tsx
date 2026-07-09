@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { gradeHex } from "@beacon/core";
+import { gradeHex, gradeRank } from "@beacon/core";
 import { scanHistory } from "@/lib/scans";
 
 export const dynamic = "force-dynamic";
@@ -9,13 +9,10 @@ export const metadata: Metadata = {
   robots: { index: false },
 };
 
-const GRADE_ORDER = ["A+", "A", "A−", "B+", "B", "B−", "C+", "C", "C−", "D+", "D", "D−", "F"];
-
 export default async function Dashboard() {
   const [stats, recent] = await Promise.all([scanHistory.stats(), scanHistory.recent(15)]);
-  const gradeRows = Object.entries(stats.byGrade).sort(
-    (a, b) => GRADE_ORDER.indexOf(a[0]) - GRADE_ORDER.indexOf(b[0]),
-  );
+  // Sort by the canonical grade ranking from @beacon/core (single source of truth — no local copy to drift).
+  const gradeRows = Object.entries(stats.byGrade).sort((a, b) => gradeRank(a[0]) - gradeRank(b[0]));
   const maxGrade = Math.max(1, ...gradeRows.map(([, n]) => n));
 
   return (

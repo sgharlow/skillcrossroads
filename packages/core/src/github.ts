@@ -165,7 +165,10 @@ export async function materializeSkill(
 ): Promise<string> {
   const maxContent = opts.maxContentFiles ?? 12;
   const prefix = skillDir ? `${skillDir}/` : "";
-  const localName = (skillDir || target.repo).replace(/[^\w.-]+/g, "-").replace(/^-+|-+$/g, "") || "skill";
+  // Encode path separators distinctly ("/" → "__") BEFORE slugging, so `a/b` and `a-b` don't collide
+  // into the same temp dir (which would mix their file lists / secret scans).
+  const localName =
+    (skillDir || target.repo).replace(/\//g, "__").replace(/[^\w.-]+/g, "-").replace(/^-+|-+$/g, "") || "skill";
   const localRoot = join(destRoot, localName);
 
   const blobs = tree.entries.filter(
@@ -177,7 +180,9 @@ export async function materializeSkill(
     const rel = skillDir === "" ? blob.path : blob.path.slice(prefix.length);
     const outPath = join(localRoot, rel);
     mkdirSync(dirname(outPath), { recursive: true });
-    const isEntry = posix.basename(rel).toLowerCase() === "skill.md";
+    // Only THIS skill's own top-level SKILL.md is fatal. A nested `sub/SKILL.md` (a separately-scanned
+    // skill) is just a supporting file here — its fetch failure must not abort the parent skill.
+    const isEntry = rel.toLowerCase() === "skill.md";
     const isBinary = BINARY_EXT.has(ext(rel));
     const wantContent = isEntry || (!isBinary && contentFetched < maxContent);
 

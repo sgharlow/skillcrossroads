@@ -32,7 +32,8 @@ export const safety03: Check = {
     const match = DESTRUCTIVE.exec(haystack);
 
     if (match && !isDisabled(fm)) {
-      const line = findLine(artifact.raw, (l) => DESTRUCTIVE.test(l));
+      // Point at the line holding the ACTUAL matched token, not merely the first destructive-looking line.
+      const line = findLine(artifact.raw, (l) => l.includes(match[0]));
       return {
         id: this.id,
         category: this.category,

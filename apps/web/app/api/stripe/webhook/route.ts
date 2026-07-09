@@ -32,6 +32,17 @@ export async function POST(req: Request): Promise<Response> {
       if (login) await entitlements.setPro(login, true, customer);
       break;
     }
+    case "customer.subscription.updated": {
+      // A subscription going past_due / unpaid / canceled / paused must lose Pro — not just an explicit delete.
+      const sub = event.data.object as Stripe.Subscription;
+      const customer = typeof sub.customer === "string" ? sub.customer : sub.customer.id;
+      const login = await entitlements.loginForCustomer(customer);
+      if (login) {
+        const active = sub.status === "active" || sub.status === "trialing";
+        await entitlements.setPro(login, active, customer);
+      }
+      break;
+    }
     case "customer.subscription.deleted": {
       const sub = event.data.object as Stripe.Subscription;
       const customer = typeof sub.customer === "string" ? sub.customer : sub.customer.id;

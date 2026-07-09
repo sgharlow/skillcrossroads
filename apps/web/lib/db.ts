@@ -1,3 +1,4 @@
+import { readFileSync } from "node:fs";
 import { Pool } from "pg";
 
 let pool: Pool | undefined;
@@ -16,11 +17,16 @@ export function getPool(): Pool {
     const connectionString = process.env.DATABASE_URL;
     if (!connectionString) throw new Error("DATABASE_URL is not set");
     const local = /@(localhost|127\.0\.0\.1)[:/]/.test(connectionString);
-    pool = new Pool({
-      connectionString,
-      ssl: local ? false : { rejectUnauthorized: false },
-      max: 5,
-    });
+    // Managed providers need TLS. Prefer strict verification: if a CA is provided (DATABASE_SSL_CA,
+    // PEM or a file path) verify against it; otherwise providers like Neon/Supabase present certs a
+    // default Node trust store may not chain, so fall back to encrypted-but-unverified (documented).
+    const ca = process.env.DATABASE_SSL_CA;
+    const ssl = local
+      ? false
+      : ca
+        ? { ca: ca.includes("BEGIN") ? ca : readFileSync(ca, "utf8"), rejectUnauthorized: true }
+        : { rejectUnauthorized: false };
+    pool = new Pool({ connectionString, ssl, max: 5 });
   }
   return pool;
 }

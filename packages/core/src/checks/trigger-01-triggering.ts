@@ -187,7 +187,8 @@ export const trigger01: AsyncCheck = {
         : basename(artifact.root);
     const bodyExcerpt = artifact.body.slice(0, 1500);
 
-    const key = hashKey("TRIGGER-01", RUBRIC_VERSION, ctx.model.name, name, description, bodyExcerpt);
+    // SYSTEM is in the key: editing the rubric prompt must invalidate cached verdicts even without a RUBRIC_VERSION bump.
+    const key = hashKey("TRIGGER-01", RUBRIC_VERSION, SYSTEM, ctx.model.name, name, description, bodyExcerpt);
     let raw = await ctx.cache?.get(key);
     if (raw === undefined) {
       raw = await ctx.model.generateStructured({

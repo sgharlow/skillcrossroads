@@ -23,15 +23,19 @@ export function gradeRank(grade: string): number {
  * Returns true for an unrecognized `min` (no gate).
  */
 export function meetsMinGrade(grade: string, min: string): boolean {
-  const normMin = min.trim().replace(/-/g, "−").toUpperCase();
-  const rank = gradeRank(normMin);
+  const norm = (g: string) => g.trim().replace(/-/g, "−").toUpperCase();
+  const rank = gradeRank(norm(min));
   if (rank === GRADE_ORDER.length) return true; // unknown threshold → don't gate
-  return gradeRank(grade) <= rank;
+  return gradeRank(norm(grade)) <= rank; // normalize the grade too, so "A-" from any source ranks correctly
 }
 
-/** Standard +/- letter-grade bands over a 0–100 score. */
+/**
+ * Standard +/- letter-grade bands over a 0–100 score. Bands apply to the score AS GIVEN (no internal
+ * rounding) so the grade always matches the number the scorecard displays — callers pass the exact
+ * value they show. See `score()`, which grades off its rounded `overall`.
+ */
 export function letterGrade(score: number): string {
-  const s = Math.round(score);
+  const s = score;
   if (s >= 97) return "A+";
   if (s >= 93) return "A";
   if (s >= 90) return "A−";
@@ -92,10 +96,12 @@ export function score(results: readonly CheckResult[]): Scorecard {
       ? 0
       : evaluated.reduce((sum, c) => sum + (c.score as number) * (c.weight / weightSum), 0);
 
+  // Grade off the SAME value we display (1-decimal), so "96.6 → A" never reads as "96.6 → A+".
+  const shown = Math.round(overall * 10) / 10;
   return {
     rubricVersion: RUBRIC_VERSION,
-    overall: Math.round(overall * 10) / 10,
-    grade: letterGrade(overall),
+    overall: shown,
+    grade: letterGrade(shown),
     categories,
     results: [...results],
     partial: evaluated.length < CATEGORIES.length,

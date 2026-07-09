@@ -105,14 +105,17 @@ export interface RenderOptions {
 
 /** Render a Scorecard as a colored terminal report. */
 export function renderTerminal(card: Scorecard, opts: RenderOptions = {}): string {
-  const name = (opts.name ?? "artifact").slice(0, 24);
+  // Truncate with an ellipsis (not a bare mid-word cut) and keep a 1-space margin before the border.
+  const RIGHT = INNER - 1;
+  const rawName = opts.name ?? "artifact";
+  const name = vlen(rawName) > 24 ? `${[...rawName].slice(0, 23).join("")}…` : rawName;
   const gc = gradeColor(card.grade);
 
   const llmRan = card.categories.find((c) => c.key === "triggering")?.evaluated ?? false;
   const mode = llmRan ? "LLM-assisted" : "deterministic";
-  const titleRow = rightAlign("  BEACON SCORECARD", name, INNER);
+  const titleRow = rightAlign("  BEACON SCORECARD", name, RIGHT);
   const overallText = `  Overall: ${card.grade}  (${card.overall}/100)`;
-  const overallPlain = rightAlign(overallText, `rubric v${card.rubricVersion} · ${mode}`, INNER);
+  const overallPlain = rightAlign(overallText, `rubric v${card.rubricVersion} · ${mode}`, RIGHT);
   // Colorize just the grade token inside the already-padded overall line.
   const overallRow = overallPlain.replace(card.grade, gc(pc.bold(card.grade)));
 

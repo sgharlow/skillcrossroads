@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { score, letterGrade } from "../src/score.js";
+import { score, letterGrade, meetsMinGrade } from "../src/score.js";
 import type { CheckResult, Category, CheckStatus } from "../src/types.js";
 
 function result(
@@ -25,6 +25,20 @@ describe("letterGrade", () => {
     [0, "F"],
   ])("maps %i → %s", (n, g) => {
     expect(letterGrade(n)).toBe(g);
+  });
+
+  it("bands apply to the value as-given, so a decimal grade matches the number shown (no rounding-up)", () => {
+    expect(letterGrade(96.6)).toBe("A"); // NOT A+ — the card shows 96.6, so the grade must be A
+    expect(letterGrade(89.9)).toBe("B+"); // NOT A− — bands are ≥90 for A−
+    expect(letterGrade(97)).toBe("A+");
+  });
+});
+
+describe("meetsMinGrade normalizes both sides", () => {
+  it("treats an ASCII-hyphen grade the same as a minus grade", () => {
+    expect(meetsMinGrade("A-", "A−")).toBe(true); // grade normalized, not just the threshold
+    expect(meetsMinGrade("B-", "B")).toBe(false); // B− does not meet B
+    expect(meetsMinGrade("A", "A-")).toBe(true);
   });
 });
 
