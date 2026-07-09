@@ -13,17 +13,27 @@ export { score, letterGrade } from "./score.js";
 export type { ModelClient, StructuredRequest, JsonSchema } from "./llm/types.js";
 export { createAnthropicClient, DEFAULT_MODEL, ModelError } from "./llm/anthropic.js";
 export { createFileCache, createMemoryCache, hashKey, type Cache } from "./llm/cache.js";
+export * from "./github.js";
 export { renderTerminal, type RenderOptions } from "./render/terminal.js";
 export { renderHtml, type HtmlOptions } from "./render/html.js";
 export { renderBadge, type BadgeOptions } from "./render/badge.js";
 export { PALETTE, gradeHex } from "./render/theme.js";
 
-import { basename } from "node:path";
+import { basename, join } from "node:path";
+import { mkdtempSync, rmSync } from "node:fs";
+import { tmpdir } from "node:os";
 import { parse } from "./parse.js";
 import { runChecks, runChecksAsync } from "./checks/index.js";
 import type { CheckContext } from "./checks/async.js";
 import { score } from "./score.js";
 import type { ArtifactType, Scorecard, Artifact } from "./types.js";
+import {
+  parseGitHubUrl,
+  fetchRepoTree,
+  findSkillDirs,
+  materializeSkill,
+  type GitHubFetchOptions,
+} from "./github.js";
 
 export interface AuditResult {
   readonly artifact: Artifact;
@@ -56,4 +66,55 @@ export async function auditAsync(
   const artifact = parse(inputPath, type);
   const scorecard = score(await runChecksAsync(artifact, ctx));
   return { artifact, scorecard, name: displayName(artifact) };
+}
+
+/** One graded skill from a repo scan, tagged with its path inside the repo. */
+export interface ScannedSkill extends AuditResult {
+  readonly repoPath: string;
+}
+
+export interface RepoScanResult {
+  /** The ref (branch/tag/sha) actually scanned. */
+  readonly ref: string;
+  /** Git tree sha — pins the exact content, so a report's figures are reproducible. */
+  readonly treeSha: string;
+  /** True if GitHub truncated the tree (very large repo). */
+  readonly truncated: boolean;
+  readonly skills: readonly ScannedSkill[];
+  /** Skills that could not be scanned (e.g. rate-limited), so a batch still returns partial results. */
+  readonly errors: ReadonlyArray<{ repoPath: string; message: string }>;
+}
+
+/**
+ * Scan every skill in a public GitHub repo by URL — no local clone for the user. Fetches each
+ * skill's files into a temp directory, grades them via the normal pipeline, then cleans up.
+ */
+export async function scanGitHubRepo(
+  url: string,
+  ctx: CheckContext = {},
+  opts: GitHubFetchOptions & { max?: number } = {},
+): Promise<RepoScanResult> {
+  const target = parseGitHubUrl(url);
+  const tree = await fetchRepoTree(target, opts);
+  const dirs = findSkillDirs(tree.entries, target.subpath);
+  const limited = opts.max ? dirs.slice(0, opts.max) : dirs;
+
+  const dest = mkdtempSync(join(tmpdir(), "beacon-gh-"));
+  const skills: ScannedSkill[] = [];
+  const errors: Array<{ repoPath: string; message: string }> = [];
+  try {
+    for (const dir of limited) {
+      const repoPath = dir || "(root)";
+      try {
+        const local = await materializeSkill(target, dir, tree, dest, opts);
+        const res = await auditAsync(local, ctx);
+        skills.push({ ...res, repoPath });
+      } catch (err) {
+        errors.push({ repoPath, message: err instanceof Error ? err.message : String(err) });
+      }
+    }
+  } finally {
+    rmSync(dest, { recursive: true, force: true });
+  }
+  return { ref: tree.ref, treeSha: tree.treeSha, truncated: tree.truncated, skills, errors };
 }

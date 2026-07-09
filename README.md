@@ -34,6 +34,19 @@ node packages/cli/dist/cli.js ./path-to-a-skill --html --badge
 npx beacon ./path-to-a-skill
 ```
 
+### Scan a whole GitHub repo (no clone)
+
+Point Beacon at a public repo and it grades every skill it finds — fetched via the GitHub API,
+nothing cloned on your side:
+
+```bash
+beacon https://github.com/anthropics/skills        # batch table of every skill
+beacon anthropics/skills --max=10                  # cap how many
+beacon anthropics/skills --json                    # machine-readable, with the pinned tree sha
+```
+
+Set `GITHUB_TOKEN` for higher rate limits on large repos.
+
 ### Share the result
 
 ```bash
@@ -109,12 +122,14 @@ The rubric is **versioned** — see [`Beacon-Build-Bible.md`](./Beacon-Build-Bib
 
 ## Status
 
-**v0.1 — `built`, with the LLM triggering check `live-proven`.** Deterministic checks on a local
-Skill directory, three output surfaces (terminal scorecard, self-contained HTML report, embeddable
-SVG badge), plus the LLM-assisted **TRIGGER-01** triggering check (BYOK) — whose verdicts matched a
-hand-labeled 14-skill set at **92.9%** against the live API (Sprint 3 gate: ≥80%; run it yourself
-with `npm run eval:triggering`). Hosted reports with always-fresh badges, CI, and agent/MCP/plugin
-scoring are on the roadmap (Build Bible, Part 5).
+**v0.1 — `built`, with the LLM triggering check and repo-scanning `live-proven`.** Deterministic
+checks on a local Skill directory or **any public GitHub repo by URL** (batch), three output
+surfaces (terminal scorecard, self-contained HTML report, embeddable SVG badge), plus the
+LLM-assisted **TRIGGER-01** triggering check (BYOK) — whose verdicts matched a hand-labeled 14-skill
+set at **92.9%** against the live API (Sprint 3 gate: ≥80%; run `npm run eval:triggering`). A batch
+["State of Claude Code Skills" report](./reports/state-of-claude-code-skills.md) is generated from
+live scans (`npm run report:skills`). Hosted reports with always-fresh badges, CI, and
+agent/MCP/plugin scoring are on the roadmap (Build Bible, Part 5).
 
 ## License
 

@@ -13,6 +13,7 @@
     "test:watch": "vitest",
     "typecheck": "tsc --build packages/cli/tsconfig.json",
     "eval:triggering": "node scripts/eval-triggering.mjs",
+    "report:skills": "node scripts/state-of-skills.mjs",
     "beacon": "node packages/cli/dist/cli.js"
   },
   "engines": {

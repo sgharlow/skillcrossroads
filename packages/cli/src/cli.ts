@@ -1,9 +1,12 @@
 #!/usr/bin/env node
-import { writeFileSync } from "node:fs";
+import { writeFileSync, existsSync } from "node:fs";
 import { resolve } from "node:path";
 import pc from "picocolors";
 import {
   auditAsync,
+  scanGitHubRepo,
+  isGitHubUrl,
+  GitHubError,
   renderTerminal,
   renderHtml,
   renderBadge,
@@ -11,21 +14,26 @@ import {
   createAnthropicClient,
   createFileCache,
   type CheckContext,
+  type AuditResult,
+  type RepoScanResult,
 } from "@beacon/core";
 
 const USAGE = `${pc.bold("beacon")} — Lighthouse for Claude Code artifacts
 
 ${pc.bold("Usage:")}
-  beacon <path-to-skill> [options]
+  beacon <path-to-skill | github-url> [options]
 
 ${pc.bold("Arguments:")}
-  <path-to-skill>    Path to a skill directory (containing SKILL.md) or the SKILL.md file.
+  <path-to-skill>    Local skill directory (containing SKILL.md) or the SKILL.md file.
+  <github-url>       Public GitHub repo to scan by URL (no clone), e.g.
+                     https://github.com/owner/repo  or  owner/repo
 
 ${pc.bold("Options:")}
   --html[=<file>]    Also write a self-contained HTML scorecard (default: <name>.beacon.html).
   --badge[=<file>]   Also write an SVG grade badge (default: <name>.beacon.svg).
   --json             Emit the scorecard as JSON instead of the terminal report.
   --no-llm           Deterministic checks only; skip LLM-assisted triggering analysis.
+  --max=<n>          Cap the number of skills scanned from a repo.
   --no-color         Disable ANSI colors.
   -h, --help         Show this help.
   -v, --version      Show version.
@@ -37,7 +45,8 @@ ${pc.bold("LLM-assisted checks (BYOK):")}
 ${pc.bold("Examples:")}
   beacon ./my-skill
   beacon ./my-skill --html --badge
-  beacon ./my-skill --json > report.json
+  beacon https://github.com/anthropics/skills
+  beacon anthropics/skills --max=10
   ANTHROPIC_API_KEY=sk-... beacon ./my-skill
 `;
 
@@ -50,6 +59,7 @@ interface Args {
   html: OptionalPath;
   badge: OptionalPath;
   noLlm: boolean;
+  max?: number;
   help: boolean;
   version: boolean;
 }
@@ -68,6 +78,7 @@ function parseArgs(argv: readonly string[]): Args {
     else if (a === "-h" || a === "--help") args.help = true;
     else if (a === "-v" || a === "--version") args.version = true;
     else if (a === "--no-llm") args.noLlm = true;
+    else if (a.startsWith("--max=")) args.max = Math.max(1, Number(a.slice("--max=".length)) || 1);
     else if (a === "--no-color" || a === "--color") continue; // picocolors reads the env
     else if (a === "--html") args.html = true;
     else if (a.startsWith("--html=")) args.html = a.slice("--html=".length);
@@ -110,6 +121,49 @@ function buildContext(noLlm: boolean, warnings: string[]): CheckContext {
   };
 }
 
+/** Emit one skill's report + any requested HTML/badge artifacts. */
+function emitSingle(result: AuditResult, args: Args): void {
+  const { scorecard, name } = result;
+  if (args.json) {
+    process.stdout.write(`${JSON.stringify({ name, ...scorecard }, null, 2)}\n`);
+  } else {
+    process.stdout.write(`\n${renderTerminal(scorecard, { name })}\n`);
+  }
+  if (args.html !== undefined) {
+    writeArtifact("html", args.html, name, renderHtml(scorecard, { name, scannedAt: today() }));
+  }
+  if (args.badge !== undefined) {
+    writeArtifact("svg", args.badge, name, renderBadge(scorecard));
+  }
+}
+
+function gradeColor(grade: string): (s: string) => string {
+  if (grade.startsWith("A")) return pc.green;
+  if (grade.startsWith("B")) return pc.cyan;
+  if (grade.startsWith("C")) return pc.yellow;
+  return pc.red;
+}
+
+/** Emit a batch table for a multi-skill repo scan. */
+function emitBatch(scan: RepoScanResult, url: string): void {
+  const rows = [...scan.skills].sort((a, b) => b.scorecard.overall - a.scorecard.overall);
+  process.stdout.write(
+    `\n${pc.bold("BEACON — repo scan")}  ${pc.dim(url)}\n` +
+      pc.dim(`  ref ${scan.ref} · tree ${scan.treeSha.slice(0, 10)} · ${rows.length} skills${scan.truncated ? " (truncated)" : ""}\n\n`),
+  );
+  for (const s of rows) {
+    const g = gradeColor(s.scorecard.grade);
+    const grade = g(pc.bold(s.scorecard.grade.padEnd(2)));
+    const score = String(s.scorecard.overall).padStart(5);
+    process.stdout.write(`  ${grade}  ${score}  ${pc.dim(s.repoPath)}  ${s.name}\n`);
+  }
+  const avg = rows.length ? rows.reduce((a, s) => a + s.scorecard.overall, 0) / rows.length : 0;
+  process.stdout.write(pc.dim(`\n  average ${avg.toFixed(1)}/100 across ${rows.length} skills\n`));
+  for (const e of scan.errors) {
+    process.stdout.write(pc.yellow(`  ⚠ ${e.repoPath}: ${e.message}\n`));
+  }
+}
+
 async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
 
@@ -125,31 +179,51 @@ async function main(): Promise<void> {
 
   const warnings: string[] = [];
   const ctx = buildContext(args.noLlm, warnings);
+  const remote = isGitHubUrl(args.path) && !existsSync(args.path);
 
-  let result;
   try {
-    result = await auditAsync(args.path, ctx);
+    if (remote) {
+      const scan = await scanGitHubRepo(args.path, ctx, {
+        token: process.env["GITHUB_TOKEN"],
+        max: args.max,
+      });
+      if (scan.skills.length === 0) {
+        if (scan.errors.length > 0) {
+          process.stderr.write(pc.red(`All ${scan.errors.length} skill(s) failed to scan:\n`));
+          for (const e of scan.errors) process.stderr.write(pc.red(`  ✗ ${e.repoPath}: ${e.message}\n`));
+        } else {
+          process.stderr.write(pc.yellow(`No SKILL.md found in ${args.path}\n`));
+        }
+        process.exit(1);
+      }
+      if (args.json) {
+        process.stdout.write(
+          `${JSON.stringify(
+            {
+              repo: args.path,
+              ref: scan.ref,
+              treeSha: scan.treeSha,
+              skills: scan.skills.map((s) => ({ repoPath: s.repoPath, name: s.name, ...s.scorecard })),
+              errors: scan.errors,
+            },
+            null,
+            2,
+          )}\n`,
+        );
+      } else if (scan.skills.length === 1) {
+        emitSingle(scan.skills[0] as AuditResult, args);
+      } else {
+        emitBatch(scan, args.path);
+      }
+    } else {
+      emitSingle(await auditAsync(args.path, ctx), args);
+    }
   } catch (err) {
-    if (err instanceof ParseError) {
+    if (err instanceof ParseError || err instanceof GitHubError) {
       process.stderr.write(pc.red(`✗ ${err.message}\n`));
       process.exit(1);
     }
     throw err;
-  }
-
-  const { scorecard, name } = result;
-
-  if (args.json) {
-    process.stdout.write(`${JSON.stringify({ name, ...scorecard }, null, 2)}\n`);
-  } else {
-    process.stdout.write(`\n${renderTerminal(scorecard, { name })}\n`);
-  }
-
-  if (args.html !== undefined) {
-    writeArtifact("html", args.html, name, renderHtml(scorecard, { name, scannedAt: today() }));
-  }
-  if (args.badge !== undefined) {
-    writeArtifact("svg", args.badge, name, renderBadge(scorecard));
   }
 
   if (!args.json) {

@@ -12,10 +12,12 @@ loop); money is the hosted tier (private-repo scanning, CI gating, dashboards �
 This repo currently implements **Sprint 1 / v0.1** only.
 
 **v0.1 scope (what exists now):** the `@beacon/core` engine + the `beacon` CLI, running
-**deterministic** checks (no network) on a **local Skill** directory, plus **one LLM-assisted
-check** (TRIGGER-01, BYOK — off unless `ANTHROPIC_API_KEY` is set). Three output surfaces: a
-terminal scorecard, a **self-contained HTML report** (`renderHtml`), and an **embeddable SVG
-badge** (`renderBadge`) — all with an overall 0–100 score and letter grade.
+**deterministic** checks on a **local Skill** directory **or any public GitHub repo by URL**
+(`scanGitHubRepo`, batch), plus **one LLM-assisted check** (TRIGGER-01, BYOK — off unless
+`ANTHROPIC_API_KEY` is set). Three output surfaces: a terminal scorecard, a **self-contained HTML
+report** (`renderHtml`), and an **embeddable SVG badge** (`renderBadge`) — all with an overall
+0–100 score and letter grade. `scripts/state-of-skills.mjs` batch-scans repos into a reproducible
+"State of Claude Code Skills" markdown report (the data-report growth loop).
 
 **Explicitly NOT in v0.1** (later sprints, each a shippable win — do not add speculatively):
 more LLM-assisted checks, hosted backend / always-fresh badge endpoint, auth, billing,
@@ -91,6 +93,17 @@ rubric bump is a content/announcement event, so never change weights silently.
 v0.1 only has checks in 4 of the 6 categories. Overall is computed over **evaluated categories
 only, with weights renormalized**, and unevaluated categories are shown as "not yet scored".
 This is deliberate honesty, not a bug — do not fake scores for categories without checks.
+
+### GitHub scanning (`github.ts`, `scanGitHubRepo`)
+
+Scanning a repo does **not** clone and does **not** change the local pipeline. It fetches the git
+tree, then **materializes** each skill into a temp dir and runs the *normal* `auditAsync` — so
+every check works unchanged. To respect GitHub rate limits, `materializeSkill` downloads real
+content only for `SKILL.md` (always) and a capped set of text files (for SAFETY-01); every other
+blob becomes an **empty placeholder** so the file list stays accurate (STRUCT-05 needs names, not
+content). A per-skill failure is recorded in `RepoScanResult.errors` and skipped — a batch always
+returns partial results. All GitHub functions take an injectable `fetchImpl` so they're testable
+without network. Reports pin the git **tree sha** for reproducibility.
 
 ## Conventions
 
