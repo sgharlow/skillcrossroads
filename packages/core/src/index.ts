@@ -9,6 +9,9 @@ export { parse, splitFrontmatter, ParseError } from "./parse.js";
 export { runChecks, CHECKS } from "./checks/index.js";
 export { score, letterGrade } from "./score.js";
 export { renderTerminal, type RenderOptions } from "./render/terminal.js";
+export { renderHtml, type HtmlOptions } from "./render/html.js";
+export { renderBadge, type BadgeOptions } from "./render/badge.js";
+export { PALETTE, gradeHex } from "./render/theme.js";
 
 import { basename } from "node:path";
 import { parse } from "./parse.js";

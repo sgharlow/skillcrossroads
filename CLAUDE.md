@@ -12,12 +12,18 @@ loop); money is the hosted tier (private-repo scanning, CI gating, dashboards �
 This repo currently implements **Sprint 1 / v0.1** only.
 
 **v0.1 scope (what exists now):** the `@beacon/core` engine + the `beacon` CLI, running
-**deterministic, no-LLM, no-network** checks on a **local Skill** directory, emitting a terminal
-scorecard with an overall 0–100 score and a letter grade.
+**deterministic, no-LLM, no-network** checks on a **local Skill** directory. Three output
+surfaces: a terminal scorecard, a **self-contained HTML report** (`renderHtml`), and an
+**embeddable SVG badge** (`renderBadge`) — all with an overall 0–100 score and letter grade.
 
 **Explicitly NOT in v0.1** (later sprints, each a shippable win — do not add speculatively):
-LLM-assisted checks, HTML scorecard, SVG badge, hosted backend, auth, billing,
+LLM-assisted checks, hosted backend / always-fresh badge endpoint, auth, billing,
 agents/MCP/plugin scoring, GitHub Action / CI, the public gallery.
+
+The visual renderers (`render/html.ts`, `render/badge.ts`) share one hex palette in
+`render/theme.ts` (the "harbor marker light" scheme); the terminal renderer uses picocolors
+separately. HTML output must stay **fully self-contained** — no external asset requests, all CSS
+inlined — and must **escape** every dynamic value (a scanned skill is untrusted input).
 
 ## The claim ladder (honest status, always)
 

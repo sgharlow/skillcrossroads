@@ -27,8 +27,25 @@ git clone <this-repo> && cd beacon
 npm install && npm run build
 node packages/cli/dist/cli.js ./path-to-a-skill
 
+# also write a shareable HTML scorecard and an SVG badge:
+node packages/cli/dist/cli.js ./path-to-a-skill --html --badge
+
 # once published to npm:
 npx beacon ./path-to-a-skill
+```
+
+### Share the result
+
+```bash
+beacon ./my-skill --html --badge
+#   wrote HTML → my-skill.beacon.html     ← self-contained, open or share it
+#   wrote SVG  → my-skill.beacon.svg      ← drop it in your README
+```
+
+Then embed the badge in your skill's README:
+
+```markdown
+![Beacon](./my-skill.beacon.svg)
 ```
 
 ## What a report looks like
@@ -79,8 +96,9 @@ The rubric is **versioned** — see [`Beacon-Build-Bible.md`](./Beacon-Build-Bib
 ## Status
 
 **v0.1 — `built` (code + tests green), not yet `live-proven`.** Deterministic checks on a local
-Skill directory, terminal output. LLM-assisted checks, the HTML scorecard, the embeddable SVG
-badge, hosted reports, CI, and agent/MCP/plugin scoring are on the roadmap (Build Bible, Part 5).
+Skill directory, with three output surfaces: a terminal scorecard, a self-contained HTML report,
+and an embeddable SVG badge. LLM-assisted checks, hosted reports with always-fresh badges, CI, and
+agent/MCP/plugin scoring are on the roadmap (Build Bible, Part 5).
 
 ## License
 

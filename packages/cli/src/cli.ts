@@ -1,6 +1,8 @@
 #!/usr/bin/env node
+import { writeFileSync } from "node:fs";
+import { resolve } from "node:path";
 import pc from "picocolors";
-import { audit, renderTerminal, ParseError } from "@beacon/core";
+import { audit, renderTerminal, renderHtml, renderBadge, ParseError } from "@beacon/core";
 
 const USAGE = `${pc.bold("beacon")} — Lighthouse for Claude Code artifacts
 
@@ -8,39 +10,68 @@ ${pc.bold("Usage:")}
   beacon <path-to-skill> [options]
 
 ${pc.bold("Arguments:")}
-  <path-to-skill>   Path to a skill directory (containing SKILL.md) or the SKILL.md file.
+  <path-to-skill>    Path to a skill directory (containing SKILL.md) or the SKILL.md file.
 
 ${pc.bold("Options:")}
-  --json            Emit the scorecard as JSON instead of the terminal report.
-  --no-color        Disable ANSI colors.
-  -h, --help        Show this help.
-  -v, --version     Show version.
+  --html[=<file>]    Also write a self-contained HTML scorecard (default: <name>.beacon.html).
+  --badge[=<file>]   Also write an SVG grade badge (default: <name>.beacon.svg).
+  --json             Emit the scorecard as JSON instead of the terminal report.
+  --no-color         Disable ANSI colors.
+  -h, --help         Show this help.
+  -v, --version      Show version.
 
 ${pc.bold("Examples:")}
   beacon ./my-skill
+  beacon ./my-skill --html --badge
+  beacon ./my-skill --html=report.html
   beacon ./my-skill --json > report.json
 `;
+
+/** A flag that takes an optional `=value`: undefined = absent, true = present (default path), string = explicit. */
+type OptionalPath = string | true | undefined;
 
 interface Args {
   path?: string;
   json: boolean;
+  html: OptionalPath;
+  badge: OptionalPath;
   help: boolean;
   version: boolean;
 }
 
 function parseArgs(argv: readonly string[]): Args {
-  const args: Args = { json: false, help: false, version: false };
+  const args: Args = { json: false, html: undefined, badge: undefined, help: false, version: false };
   for (const a of argv) {
     if (a === "--json") args.json = true;
     else if (a === "-h" || a === "--help") args.help = true;
     else if (a === "-v" || a === "--version") args.version = true;
-    else if (a === "--no-color" || a === "--color") continue; // handled by picocolors env
+    else if (a === "--no-color" || a === "--color") continue; // picocolors reads the env
+    else if (a === "--html") args.html = true;
+    else if (a.startsWith("--html=")) args.html = a.slice("--html=".length);
+    else if (a === "--badge") args.badge = true;
+    else if (a.startsWith("--badge=")) args.badge = a.slice("--badge=".length);
     else if (a.startsWith("-")) {
       process.stderr.write(pc.red(`Unknown option: ${a}\n`));
       process.exit(2);
     } else if (args.path === undefined) args.path = a;
   }
   return args;
+}
+
+/** Filesystem-safe slug for default output filenames. */
+function slug(name: string): string {
+  return name.replace(/[^a-z0-9._-]+/gi, "-").replace(/^-+|-+$/g, "") || "artifact";
+}
+
+function today(): string {
+  return new Date().toISOString().slice(0, 10);
+}
+
+function writeArtifact(kind: "html" | "svg", opt: OptionalPath, name: string, content: string): void {
+  const target = typeof opt === "string" ? opt : `${slug(name)}.beacon.${kind}`;
+  const abs = resolve(target);
+  writeFileSync(abs, content, "utf8");
+  process.stdout.write(pc.dim(`  wrote ${kind.toUpperCase()} → ${abs}\n`));
 }
 
 function main(): void {
@@ -67,14 +98,21 @@ function main(): void {
     throw err;
   }
 
+  const { scorecard, name } = result;
+
   if (args.json) {
-    process.stdout.write(
-      `${JSON.stringify({ name: result.name, ...result.scorecard }, null, 2)}\n`,
-    );
-    return;
+    process.stdout.write(`${JSON.stringify({ name, ...scorecard }, null, 2)}\n`);
+  } else {
+    process.stdout.write(`\n${renderTerminal(scorecard, { name })}\n`);
   }
 
-  process.stdout.write(`\n${renderTerminal(result.scorecard, { name: result.name })}\n\n`);
+  if (args.html !== undefined) {
+    writeArtifact("html", args.html, name, renderHtml(scorecard, { name, scannedAt: today() }));
+  }
+  if (args.badge !== undefined) {
+    writeArtifact("svg", args.badge, name, renderBadge(scorecard));
+  }
+  if (!args.json) process.stdout.write("\n");
 }
 
 main();
