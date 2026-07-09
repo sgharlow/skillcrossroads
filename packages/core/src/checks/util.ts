@@ -6,14 +6,8 @@ export function entryRel(artifact: Artifact): string {
   return relative(artifact.root, artifact.entryPath).split(sep).join("/");
 }
 
-/**
- * Rough token estimate. Beacon is deterministic and provider-agnostic in v0.1, so we use the
- * widely-cited ~4-chars-per-token heuristic rather than pulling in a tokenizer. Documented as an
- * estimate in all output. Good to within a small margin for English prose + markdown.
- */
-export function estimateTokens(text: string): number {
-  return Math.ceil(text.length / 4);
-}
+// Re-export the single calibrated estimator so every check shares one divisor.
+export { estimateTokens } from "../llm/tokens.js";
 
 /** 1-indexed line number of the first line matching `predicate`, or undefined. */
 export function findLine(text: string, predicate: (line: string) => boolean): number | undefined {

@@ -81,10 +81,17 @@ concrete receipts, never vibes. Register new checks in `packages/core/src/checks
 
 The v0.1 catalog: **deterministic** — `STRUCT-01` valid YAML frontmatter · `STRUCT-02` recommended
 fields present · `STRUCT-05` supporting-file references resolve · `TOKEN-01` body under line/token
-budget · `CLARITY-03` no ASCII-art/persona filler · `SAFETY-01` no hardcoded secrets · `SAFETY-02`
-allowed-tools least-privilege · `SAFETY-03` no destructive auto-invocation · `SAFETY-04` no
-shell-injection in `!` blocks. **LLM-assisted (BYOK)** — `TRIGGER-01` description triggers reliably.
+budget · `TOKEN-02` progressive disclosure · `TOKEN-03` description budget footprint · `CLARITY-03`
+no ASCII-art/persona filler · `SAFETY-01` no hardcoded secrets · `SAFETY-02` allowed-tools
+least-privilege · `SAFETY-03` no destructive auto-invocation · `SAFETY-04` no shell-injection in
+`!` blocks. **LLM-assisted (BYOK)** — `TRIGGER-01` description triggers reliably.
 Full ~24-check catalog is Appendix C of the Build Bible.
+
+**Token counting — honesty rule.** The char-based estimate is NOT ±5% accurate (skill markdown
+tokenizes denser than prose; `npm run eval:tokens` shows ~10–25% error, worst on code-heavy
+skills). Never present it as exact. The exact figure comes from `count_tokens` (the tokenizer
+`/context` uses) when a key is present — precomputed once in `runChecksAsync` and threaded to
+TOKEN-01 via `CheckContext.accurateTokens`. TOKEN-01 labels the number `exact` vs `rough est`.
 
 ### Rubric & scoring
 

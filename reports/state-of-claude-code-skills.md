@@ -6,7 +6,7 @@
 
 ## The headline
 
-Across 18 skills, the average Beacon score is **99.1/100**. The single most common problem is **under the line/token budget** (TOKEN-01): **11%** of skills don't cleanly pass it.
+Across 18 skills, the average Beacon score is **99.5/100**. The single most common problem is **under the line/token budget** (TOKEN-01): **11%** of skills don't cleanly pass it.
 
 ## Grade distribution
 
@@ -27,6 +27,8 @@ STRUCT-01 valid YAML frontmatter               ███████████
 STRUCT-02 recommended fields present           ████████████████████ 100%   (0 warn, 0 fail)
 STRUCT-05 supporting-file references resolve   ████████████████████ 100%   (0 warn, 0 fail)
 TOKEN-01 under the line/token budget           ██████████████████░░  89%   (2 warn, 0 fail)
+TOKEN-02 progressive disclosure                ███████████████████░  94%   (1 warn, 0 fail)
+TOKEN-03 description budget footprint          ███████████████████░  94%   (1 warn, 0 fail)
 CLARITY-03 no ASCII-art / persona filler       ████████████████████ 100%   (0 warn, 0 fail)
 SAFETY-01 no hardcoded secrets                 ████████████████████ 100%   (0 warn, 0 fail)
 SAFETY-02 allowed-tools least-privilege        ████████████████████ 100%   (0 warn, 0 fail)
@@ -36,11 +38,13 @@ SAFETY-04 no shell-injection in ! blocks       ███████████
 
 ## What this means
 
-**16 of 18 skills (89%)** pass every deterministic check cleanly.
+**15 of 18 skills (83%)** pass every deterministic check cleanly.
 
 The defects that *did* surface, even in well-maintained skills:
 
 - under the line/token budget (TOKEN-01): 2 of 18
+- progressive disclosure (TOKEN-02): 1 of 18
+- description budget footprint (TOKEN-03): 1 of 18
 
 Each is catchable **before** publishing, with `npx beacon ./your-skill` — and each is exactly the kind of thing that makes a good skill look broken in someone else's session.
 

@@ -4,6 +4,9 @@
  * The whole engine is a pure pipeline over these:
  *   parse(dir) → Artifact → runChecks → CheckResult[] → score → Scorecard → renderTerminal
  */
+import type { ModelClient } from "./llm/types.js";
+import type { Cache } from "./llm/cache.js";
+import type { TokenCounter } from "./llm/tokens.js";
 
 /** The kinds of Claude Code artifacts Beacon can grade. v0.1 implements `skill` only. */
 export type ArtifactType = "skill" | "subagent" | "mcp" | "plugin";
@@ -90,13 +93,31 @@ export interface CheckResult {
   readonly fix?: string;
 }
 
-/** A check module. Deterministic in v0.1: no network, no LLM. */
+/**
+ * Runtime context for checks. Empty for the pure deterministic path; populated for BYOK runs.
+ * `accurateTokens` is the exact `count_tokens` count of the entry file, precomputed once so sync
+ * checks can report an exact (±5% of `/context`) figure instead of the rough estimate.
+ */
+export interface CheckContext {
+  /** Model client for LLM-assisted checks. Absent → those checks are skipped. */
+  readonly model?: ModelClient;
+  /** Verdict cache. */
+  readonly cache?: Cache;
+  /** Exact token counter (count_tokens). Absent → checks fall back to the heuristic. */
+  readonly tokenCounter?: TokenCounter;
+  /** Precomputed exact token count of the entry file, if a tokenCounter was available. */
+  readonly accurateTokens?: number;
+  /** Reports a failed async/network step without failing the scan. */
+  onError?(checkId: string, err: unknown): void;
+}
+
+/** A check module. Deterministic checks ignore `ctx`; some read `ctx.accurateTokens`. */
 export interface Check {
   readonly id: string;
   readonly category: Category;
   readonly title: string;
   readonly weight: number;
-  run(artifact: Artifact): CheckResult;
+  run(artifact: Artifact, ctx?: CheckContext): CheckResult;
 }
 
 /** Per-category rollup within a scorecard. */

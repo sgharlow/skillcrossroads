@@ -4,7 +4,8 @@ import type { ModelClient, StructuredRequest } from "./types.js";
 export const DEFAULT_MODEL = "claude-opus-4-8";
 
 const API_URL = "https://api.anthropic.com/v1/messages";
-const API_VERSION = "2023-06-01";
+/** Anthropic API version header value, shared across API callers. */
+export const API_VERSION = "2023-06-01";
 
 export interface AnthropicClientOptions {
   /** BYOK Anthropic API key. */

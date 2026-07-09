@@ -75,6 +75,10 @@ BEACON_MODEL=claude-haiku-4-5 beacon ./my-skill   # cheaper model
 Verdicts are cached by content hash in `.beacon-cache/`, so re-scanning an unchanged skill is
 free. Without a key, Beacon runs deterministic-only and marks Triggering as "not yet scored."
 
+A key also switches the token estimate to an **exact `count_tokens`** figure — the same tokenizer
+Claude Code's `/context` uses, so within ±0% of what a skill actually costs. Offline, Beacon shows a
+clearly-labeled rough estimate (skill markdown tokenizes denser than prose, so it can be ±15–20%).
+
 ## What a report looks like
 
 ```
@@ -113,7 +117,7 @@ plus evidence. Category scores roll up to an overall 0–100 and a letter grade.
 | Correctness & Structure | 20% | valid frontmatter, recommended fields, references resolve |
 | Triggering & Discoverability | 22% | description triggers reliably *(LLM-assisted, BYOK)* |
 | Clarity & Instruction Quality | 18% | no ASCII-art/persona filler |
-| Token & Context Cost | 15% | body under line/token budget |
+| Token & Context Cost | 15% | body budget, progressive disclosure, description footprint (exact `count_tokens` with a key) |
 | Safety & Security | 15% | no hardcoded secrets, `allowed-tools` least-privilege, no destructive auto-invocation, no `!`-block shell injection |
 | Verifiability & Maintainability | 10% | *(later sprint)* |
 
@@ -122,10 +126,11 @@ The rubric is **versioned** — see [`Beacon-Build-Bible.md`](./Beacon-Build-Bib
 
 ## Status
 
-**v0.1 — `built`, with the LLM triggering check and repo-scanning `live-proven`.** Nine
-deterministic checks (structure, token budget, clarity, and a four-check **Safety & Security** pack:
-secrets, `allowed-tools` over-permissioning, destructive auto-invocation, `!`-block shell injection)
-on a local Skill directory or **any public GitHub repo by URL** (batch); three output surfaces
+**v0.1 — `built`, with the LLM triggering check, repo-scanning, and exact token counts
+`live-proven`.** Eleven deterministic checks (structure, a three-check **Token & Context Cost**
+pack, clarity, and a four-check **Safety & Security** pack: secrets, `allowed-tools`
+over-permissioning, destructive auto-invocation, `!`-block shell injection) on a local Skill
+directory or **any public GitHub repo by URL** (batch); three output surfaces
 (terminal scorecard, self-contained HTML report, embeddable SVG badge); plus the LLM-assisted
 **TRIGGER-01** triggering check (BYOK) — whose verdicts matched a hand-labeled 14-skill set at
 **92.9%** against the live API (Sprint 3 gate: ≥80%; run `npm run eval:triggering`). A batch

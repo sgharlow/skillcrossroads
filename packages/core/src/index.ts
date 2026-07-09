@@ -13,6 +13,13 @@ export { score, letterGrade } from "./score.js";
 export type { ModelClient, StructuredRequest, JsonSchema } from "./llm/types.js";
 export { createAnthropicClient, DEFAULT_MODEL, ModelError } from "./llm/anthropic.js";
 export { createFileCache, createMemoryCache, hashKey, type Cache } from "./llm/cache.js";
+export {
+  estimateTokens,
+  heuristicCounter,
+  createAnthropicTokenCounter,
+  CHARS_PER_TOKEN,
+  type TokenCounter,
+} from "./llm/tokens.js";
 export * from "./github.js";
 export { renderTerminal, type RenderOptions } from "./render/terminal.js";
 export { renderHtml, type HtmlOptions } from "./render/html.js";

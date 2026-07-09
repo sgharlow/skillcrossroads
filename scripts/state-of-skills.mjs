@@ -24,6 +24,8 @@ const CHECK_LABELS = {
   "STRUCT-02": "recommended fields present",
   "STRUCT-05": "supporting-file references resolve",
   "TOKEN-01": "under the line/token budget",
+  "TOKEN-02": "progressive disclosure",
+  "TOKEN-03": "description budget footprint",
   "CLARITY-03": "no ASCII-art / persona filler",
   "SAFETY-01": "no hardcoded secrets",
   "SAFETY-02": "allowed-tools least-privilege",

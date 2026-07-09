@@ -4,6 +4,8 @@ import { struct01 } from "./struct-01-frontmatter.js";
 import { struct02 } from "./struct-02-fields.js";
 import { struct05 } from "./struct-05-references.js";
 import { token01 } from "./token-01-budget.js";
+import { token02 } from "./token-02-disclosure.js";
+import { token03 } from "./token-03-desc-budget.js";
 import { clarity03 } from "./clarity-03-filler.js";
 import { safety01 } from "./safety-01-secrets.js";
 import { safety02 } from "./safety-02-permissions.js";
@@ -17,6 +19,8 @@ export const CHECKS: readonly Check[] = [
   struct02,
   struct05,
   token01,
+  token02,
+  token03,
   clarity03,
   safety01,
   safety02,
@@ -27,12 +31,25 @@ export const CHECKS: readonly Check[] = [
 /** LLM-assisted checks. Run only when a model client is supplied (BYOK). */
 export const ASYNC_CHECKS: readonly AsyncCheck[] = [trigger01];
 
-export { struct01, struct02, struct05, token01, clarity03, safety01, safety02, safety03, safety04, trigger01 };
+export {
+  struct01,
+  struct02,
+  struct05,
+  token01,
+  token02,
+  token03,
+  clarity03,
+  safety01,
+  safety02,
+  safety03,
+  safety04,
+  trigger01,
+};
 export type { AsyncCheck, CheckContext } from "./async.js";
 
-/** Run every deterministic check against an artifact. Sync, no network. */
-export function runChecks(artifact: Artifact): CheckResult[] {
-  return CHECKS.map((check) => check.run(artifact));
+/** Run every deterministic check against an artifact. Sync, no network. `ctx` is optional. */
+export function runChecks(artifact: Artifact, ctx?: CheckContext): CheckResult[] {
+  return CHECKS.map((check) => check.run(artifact, ctx));
 }
 
 /**
@@ -44,15 +61,26 @@ export async function runChecksAsync(
   artifact: Artifact,
   ctx: CheckContext = {},
 ): Promise<CheckResult[]> {
-  const deterministic = runChecks(artifact);
-  if (!ctx.model) return deterministic;
+  // Precompute the exact token count once (free count_tokens call) so TOKEN-01 can report it.
+  let accurateTokens = ctx.accurateTokens;
+  if (accurateTokens === undefined && ctx.tokenCounter) {
+    try {
+      accurateTokens = await ctx.tokenCounter.count(artifact.raw);
+    } catch (err) {
+      ctx.onError?.("TOKEN-01", err);
+    }
+  }
+  const enriched: CheckContext = accurateTokens === undefined ? ctx : { ...ctx, accurateTokens };
+
+  const deterministic = runChecks(artifact, enriched);
+  if (!enriched.model) return deterministic;
 
   const llm: CheckResult[] = [];
   for (const check of ASYNC_CHECKS) {
     try {
-      llm.push(await check.run(artifact, ctx));
+      llm.push(await check.run(artifact, enriched));
     } catch (err) {
-      ctx.onError?.(check.id, err);
+      enriched.onError?.(check.id, err);
     }
   }
   return [...deterministic, ...llm];

@@ -12,6 +12,7 @@ import {
   renderBadge,
   ParseError,
   createAnthropicClient,
+  createAnthropicTokenCounter,
   createFileCache,
   type CheckContext,
   type AuditResult,
@@ -113,9 +114,11 @@ function buildContext(noLlm: boolean, warnings: string[]): CheckContext {
   const apiKey = process.env["ANTHROPIC_API_KEY"];
   if (noLlm || !apiKey) return {};
   const model = createAnthropicClient({ apiKey, model: process.env["BEACON_MODEL"] });
+  const tokenCounter = createAnthropicTokenCounter({ apiKey, model: process.env["BEACON_MODEL"] });
   const cache = createFileCache();
   return {
     model,
+    tokenCounter,
     cache,
     onError: (id, err) => warnings.push(`${id} skipped: ${err instanceof Error ? err.message : String(err)}`),
   };

@@ -27,17 +27,20 @@ export const token01: Check = {
   category: "token",
   title: "Body under line/token budget",
   weight: 1,
-  run(artifact): CheckResult {
+  run(artifact, ctx): CheckResult {
     const file = entryRel(artifact);
     const lineCount = artifact.raw.split(/\r?\n/).length;
-    const tokens = estimateTokens(artifact.raw);
+    const exact = ctx?.accurateTokens !== undefined;
+    const tokens = exact ? (ctx!.accurateTokens as number) : estimateTokens(artifact.raw);
     const dollars = (tokens / 1_000_000) * REFERENCE_PRICE_PER_MTOK;
     const status = statusForLines(lineCount);
     const score = status === "pass" ? 100 : status === "warn" ? 65 : 25;
 
+    const tokenNote = exact
+      ? `${tokens.toLocaleString()} tokens (exact, count_tokens)`
+      : `~${tokens.toLocaleString()} tokens (rough est.)`;
     const costNote =
-      `~${tokens.toLocaleString()} tokens (est., ~4 chars/token); ` +
-      `~$${dollars.toFixed(4)} per load at $${REFERENCE_PRICE_PER_MTOK}/Mtok reference rate`;
+      `${tokenNote}; ~$${dollars.toFixed(4)} per load at $${REFERENCE_PRICE_PER_MTOK}/Mtok reference rate`;
 
     const message =
       status === "pass"
