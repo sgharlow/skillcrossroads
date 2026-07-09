@@ -83,15 +83,19 @@ trial** with the `4242` card — card entry is yours, by policy.)
 `packages/cli/package.json` (name + `publishConfig.access: public`), `apps/action/action.yml`
 (`npx --yes @sgharlow/beacon@latest`), and the `npx` examples in the READMEs / CLAUDE.md.
 
-**✅ Publish blocker RESOLVED.** `@beacon/core` (a private workspace package) is now **bundled** into
-the CLI at publish time: `packages/cli/package.json`'s `prepublishOnly` runs `npm run bundle`
-(`build.mjs` → esbuild), inlining core + picocolors into a single self-contained `dist/cli.js` with
-**zero runtime deps**. Verified: the bundle runs standalone with the workspace symlink removed. So:
+**✅ PUBLISHED + LIVE (2026-07-09).** `@sgharlow/beacon@0.1.0` is on npm, **public**, verified end-to-end:
+`npx @sgharlow/beacon@latest` runs standalone from a clean dir (core is bundled in via
+`prepublishOnly` → esbuild; zero runtime deps). The Action, the landing-page command, and the README
+`npx` instructions all work.
+
+**⚠️ For future version bumps — always pass `--access public`:**
 ```bash
-npm login                              # yours to run
-npm publish -w @sgharlow/beacon        # prepublishOnly bundles automatically
+npm version patch -w @sgharlow/beacon      # bump
+npm publish -w @sgharlow/beacon --access public
 ```
-After publishing, `npx @sgharlow/beacon`, the landing-page command, and the GitHub Action all work.
+The `-w` workspace flag does NOT honor the package's `publishConfig.access`, so the first publish
+went out **restricted** and had to be flipped with `npm access set status=public @sgharlow/beacon`.
+Passing `--access public` explicitly avoids that.
 
 ### 7. (Optional) managed LLM for Pro → `BEACON_MANAGED_ANTHROPIC_KEY`
 Set an Anthropic key in Vercel env so Pro users get triggering/verification/constraint/exact-token
