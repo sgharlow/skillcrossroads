@@ -3,3 +3,7 @@ apps/web/.env.local
 **/node_modules
 **/.next
 packages/*/dist
+# Never ship tsc --build incremental cache: if .tsbuildinfo ships but dist/ is
+# excluded, the cloud tsc thinks core is "already built" and skips emitting dist,
+# so @beacon/core resolves to nothing → module_not_found in the web build.
+**/*.tsbuildinfo

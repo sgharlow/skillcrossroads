@@ -1,4 +1,10 @@
 export const metadata = { title: "Beacon Pro — welcome" };
+// Rendered on-demand (not statically prerendered). A purely-static leaf under the
+// page-less `/pro` segment trips Vercel's @vercel/next route→output mapping
+// ("Unable to find lambda for route: /pro/success"); rendering it dynamically
+// creates the lambda the builder expects. It's also a post-checkout landing page,
+// so on-demand rendering is the natural choice.
+export const dynamic = "force-dynamic";
 
 export default function ProSuccess() {
   return (

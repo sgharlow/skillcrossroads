@@ -9,20 +9,36 @@ chat**.
 
 - **DB layer** — Postgres-backed entitlements / gallery / scan-history, live-proven against a local
   Postgres. Schema in `apps/web/db/schema.sql`; apply with `npm run db:migrate` (uses `DATABASE_URL`).
-- **Build fixed** — `tsc --build` for the workspace packages; the web app builds from the repo root
-  (`npm run build --workspace @beacon/web`). Verified locally.
-- **Vercel project `beacon`** created under your account (root `vercel.json` configures the monorepo
-  build). *(An empty `web` project was created by a first mis-linked attempt — delete it in the
-  dashboard, one click.)*
+- **Repo pushed** — `github.com/sgharlow/beacon` (private), branch `main`.
+- **Build fixed + deployed LIVE to Vercel** — the `beacon` project builds and deploys `READY` in both
+  preview and production (canonical prod alias `beacon-gamma-six.vercel.app`). The build config lives
+  in the **Vercel project settings** (not a `vercel.json` — that file was removed):
+  - Root Directory: *(empty — repo root)*; Node 22.x; Framework: Next.js
+  - Install: `npm install --include=dev`
+  - Build: `npm run build --workspace @beacon/core && npm run build --workspace @beacon/web`
+  - Output: `apps/web/.next`
+  - Two deploy bugs were found and fixed (see below).
+- **Deploy fixes** (committed):
+  1. `.vercelignore` now excludes `**/*.tsbuildinfo`, and the core/cli builds use `tsc --build
+     --force`. *Root cause:* the CLI shipped the `tsc --build` incremental cache but `.vercelignore`
+     excludes `packages/*/dist`, so the cloud `tsc` thought core was "already built", skipped emitting
+     `dist/`, and the web build failed `module_not_found: @beacon/core`.
+  2. `app/pro/success/page.tsx` is `dynamic = "force-dynamic"`. *Root cause:* a purely-static leaf
+     under the page-less `/pro` segment tripped Vercel's `@vercel/next` route→output mapping
+     ("Unable to find lambda for route: /pro/success").
+- **NOTE — not yet publicly reachable.** The project's Vercel Deployment Protection
+  (`ssoProtection: all_except_custom_domains`) gates every `*.vercel.app` URL behind Vercel SSO
+  (a `302 → vercel.com/sso-api`). Beacon is a public product, so **either** attach the `beacon.dev`
+  custom domain (protection excludes custom domains — it goes public automatically) **or** turn
+  Deployment Protection off for the project. Your call (see step 3).
+- *(An empty `web` project was created by a first mis-linked attempt — delete it in the dashboard, one click.)*
 
 ## The remaining steps (in order)
 
-### 1. Push the repo to GitHub
-Needed for the Vercel Git integration (clean build logs + native workspaces), the GitHub Action, and
-npm visibility.
-```bash
-gh repo create beacon --private --source=. --remote=origin --push   # gh is already authed
-```
+### 1. Push the repo to GitHub — ✅ DONE
+`github.com/sgharlow/beacon` (private, branch `main`). Optionally connect it to the Vercel project
+for Git-push auto-deploys + in-dashboard build logs (currently deploys are done via `vercel deploy`
+from the CLI, which works fine).
 
 ### 2. Cloud Postgres → `DATABASE_URL`
 Pick one (free tiers fine): **Neon** (neon.tech) or **Supabase**. Create a project, copy the
@@ -33,14 +49,18 @@ DATABASE_URL="postgres://…" npm --workspace @beacon/web run db:migrate   # cre
 Set `DATABASE_URL` in Vercel (step 3). *Note: managed providers need SSL — `lib/db.ts` enables it
 automatically for non-localhost hosts.*
 
-### 3. Vercel (Git integration + env + domain)
-In the Vercel dashboard → **Add New → Project → import the GitHub repo**:
-- **Root Directory:** `apps/web`
-- **Build/Install:** the root `vercel.json` already sets them (or set Build = `npm run build
-  --workspace @beacon/web`, Output = `apps/web/.next`).
-- **Environment variables:** `DATABASE_URL`, `GITHUB_TOKEN` (a PAT for scan rate limits),
-  `NEXT_PUBLIC_SITE_URL=https://beacon.dev`, plus the Stripe / OAuth / managed-key vars below.
-- **Domain:** add `beacon.dev` (you own it) under the project's Domains.
+### 3. Vercel — project deploys LIVE; env + domain + public-access remain
+The `beacon` project is created and deploying `READY` (build config already set — see "Already done").
+Remaining:
+- **Environment variables** (Project → Settings → Environment Variables): `DATABASE_URL`,
+  `GITHUB_TOKEN` (a PAT for scan rate limits), `NEXT_PUBLIC_SITE_URL=https://beacon.dev`, plus the
+  Stripe / OAuth / managed-key vars below. I can set these via the Vercel API once you provide the
+  values (in a gitignored file / env, never chat).
+- **Public access** — pick one:
+  - **Add the `beacon.dev` domain** (Project → Domains). Protection excludes custom domains, so the
+    site goes public on the domain automatically. *(Recommended — you own the domain.)*
+  - **Disable Deployment Protection** (Project → Settings → Deployment Protection → Vercel
+    Authentication → off) to make the `*.vercel.app` URLs public.
 
 ### 4. GitHub OAuth app → `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET`
 GitHub → Settings → Developer settings → **New OAuth App**. Homepage `https://beacon.dev`, callback
