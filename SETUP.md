@@ -47,15 +47,17 @@ GitHub → Settings → Developer settings → **New OAuth App**. Homepage `http
 `https://beacon.dev/api/auth/github/callback`. Add both to Vercel env. (Private-repo scanning needs
 the `repo` scope — the app already requests `read:user`; widen if you want private scans.)
 
-### 5. Stripe → `STRIPE_SECRET_KEY` / `STRIPE_PRICE_ID` / `STRIPE_WEBHOOK_SECRET`
-One-time login, then I can create the Pro price and prove the checkout end-to-end:
-```bash
-stripe login                 # opens the browser to your Stripe account (test mode)
-```
-Then ping me — I'll create the $19/mo Pro **Price**, wire the keys, run `stripe listen` for the
-webhook secret, and drive the checkout to the Stripe page (you enter the 4242 test card — I don't
-handle card numbers, by policy). Set the three vars in Vercel + the webhook endpoint
-`https://beacon.dev/api/stripe/webhook`.
+### 5. Stripe — ✅ DONE (test) locally; production wiring remains
+Proven this session: `stripe login`, created **Beacon Pro** + a **$19/mo** Price
+(`price_1TrAm9Gs40KMmT4XM4rbrNPI`, 14-day trial), wired test keys into `apps/web/.env.local`, and
+verified end-to-end — a real `checkout.stripe.com` session renders correctly and a
+`checkout.session.completed` webhook flipped `testuser pro=true` in Postgres. (Didn't click **Start
+trial** with the `4242` card — card entry is yours, by policy.)
+
+**Production:** in the Stripe dashboard create a **live** Pro Price, add a webhook endpoint
+`https://beacon.dev/api/stripe/webhook` (events `checkout.session.completed`,
+`customer.subscription.deleted`), and set `STRIPE_SECRET_KEY` / `STRIPE_PRICE_ID` /
+`STRIPE_WEBHOOK_SECRET` in Vercel.
 
 ### 6. npm publish (the CLI + the Action's `npx beacon@latest`)
 ```bash
