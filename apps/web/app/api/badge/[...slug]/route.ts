@@ -1,11 +1,12 @@
 import { renderBadge, type Scorecard } from "@beacon/core";
 import { parseSlug, scanTarget, averageGrade } from "@/lib/scan";
+import { resolveScanOptions } from "@/lib/pro-scan";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /** GET /api/badge/:owner/:repo[/...subpath][.svg] — always-fresh SVG grade badge. */
-export async function GET(_req: Request, { params }: { params: Promise<{ slug: string[] }> }): Promise<Response> {
+export async function GET(req: Request, { params }: { params: Promise<{ slug: string[] }> }): Promise<Response> {
   const { slug } = await params;
   const parts = [...slug];
   if (parts.length) parts[parts.length - 1] = (parts[parts.length - 1] as string).replace(/\.svg$/i, "");
@@ -14,7 +15,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
 
   let grade = "?";
   try {
-    const scan = await scanTarget(target);
+    const scan = await scanTarget(target, await resolveScanOptions(req));
     if (scan.skills.length === 1) grade = scan.skills[0]!.scorecard.grade;
     else if (scan.skills.length > 1) grade = averageGrade(scan);
   } catch {

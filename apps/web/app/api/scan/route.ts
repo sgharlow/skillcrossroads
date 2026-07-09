@@ -1,4 +1,5 @@
 import { parseSlug, scanTarget } from "@/lib/scan";
+import { resolveScanOptions } from "@/lib/pro-scan";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -11,7 +12,7 @@ export async function GET(req: Request): Promise<Response> {
   if (!target) return Response.json({ error: "bad repo" }, { status: 400 });
 
   try {
-    const scan = await scanTarget(target);
+    const scan = await scanTarget(target, await resolveScanOptions(req));
     return Response.json(
       {
         repo: `${target.owner}/${target.repo}`,

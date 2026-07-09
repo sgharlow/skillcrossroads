@@ -1,4 +1,4 @@
-import { scanGitHubRepo, letterGrade, type RepoScanResult } from "@beacon/core";
+import { scanGitHubRepo, letterGrade, type RepoScanResult, type CheckContext } from "@beacon/core";
 
 export interface SlugTarget {
   owner: string;
@@ -21,18 +21,31 @@ export function parseSlug(slug: string[]): SlugTarget | null {
 const TTL_MS = 5 * 60 * 1000;
 const cache = new Map<string, { at: number; result: RepoScanResult }>();
 
-/** Scan a target with a short per-instance cache. Deterministic (no server LLM key in v0.1). */
-export async function scanTarget(t: SlugTarget): Promise<RepoScanResult> {
-  const hit = cache.get(t.slug);
-  const now = Date.now();
-  if (hit && now - hit.at < TTL_MS) return hit.result;
+export interface ScanOptions {
+  /** GitHub token — a Pro user's OAuth token for private repos; else the server token. */
+  token?: string;
+  /** Check context — carries the managed LLM model for Pro users. */
+  ctx?: CheckContext;
+}
 
-  const result = await scanGitHubRepo(`${t.owner}/${t.repo}`, {}, {
-    token: process.env.GITHUB_TOKEN,
+/**
+ * Scan a target. Free/public scans (no token, deterministic) are cached per-instance; authenticated
+ * Pro scans (private repos and/or managed LLM) are user-specific and never cached.
+ */
+export async function scanTarget(t: SlugTarget, opts: ScanOptions = {}): Promise<RepoScanResult> {
+  const cacheable = !opts.token && !opts.ctx?.model;
+  if (cacheable) {
+    const hit = cache.get(t.slug);
+    if (hit && Date.now() - hit.at < TTL_MS) return hit.result;
+  }
+
+  const result = await scanGitHubRepo(`${t.owner}/${t.repo}`, opts.ctx ?? {}, {
+    token: opts.token ?? process.env.GITHUB_TOKEN,
     subpath: t.subpath,
     max: 25,
   });
-  cache.set(t.slug, { at: now, result });
+
+  if (cacheable) cache.set(t.slug, { at: Date.now(), result });
   return result;
 }
 

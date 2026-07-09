@@ -134,13 +134,17 @@ A Next.js app (in `apps/web`) serves the shareable side of Beacon — it reuses 
   scanned live with a short CDN TTL so it updates on re-scan.
 - **JSON API** — `/api/scan?repo=owner/repo`.
 - **GitHub OAuth** — `/api/auth/github` (build-ready; set `GITHUB_CLIENT_ID`/`SECRET` to enable).
+- **Pro tier (open-core)** — `/pricing` (Free / Pro $19 / Team $99). Stripe subscription checkout
+  (`/api/checkout` + `/api/stripe/webhook`), Pro entitlements, and Pro-only **private-repo scanning**
+  + **managed LLM** (no user key needed). All gated on `STRIPE_*` / `BEACON_MANAGED_ANTHROPIC_KEY`
+  env vars — the **free tier is unaffected** when they're unset.
 
 Run locally: `cd apps/web && npm run dev`. Set `GITHUB_TOKEN` for higher GitHub rate limits.
 
 ## Status
 
-**v0.1 — `built`, with the LLM triggering check, repo-scanning, exact token counts, and the hosted
-web app `live-proven` locally.** Eleven deterministic checks (structure, a three-check **Token & Context Cost**
+**v0.1 — `built`; CLI, repo-scanning, exact token counts, and the hosted web app `live-proven`
+locally; the Stripe paywall and Pro features `wired` (gated on account keys not yet configured).** Eleven deterministic checks (structure, a three-check **Token & Context Cost**
 pack, clarity, and a four-check **Safety & Security** pack: secrets, `allowed-tools`
 over-permissioning, destructive auto-invocation, `!`-block shell injection) on a local Skill
 directory or **any public GitHub repo by URL** (batch); three output surfaces

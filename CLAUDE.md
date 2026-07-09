@@ -128,6 +128,17 @@ domain are Steve's to set up — not committed here).
 take **no `.js` extension** (`./scan`, not `./scan.js`) — the opposite of core's NodeNext. Imports
 from `@beacon/core` are fine (package resolution).
 
+### Monetization (Sprint 8, open-core)
+
+Stripe subscription checkout (`/api/checkout`, `mode:"subscription"`, **never** pass
+`payment_method_types`) + webhook (`/api/stripe/webhook`, signature-verified) flip a **Pro
+entitlement** (`lib/entitlements.ts` — in-memory now, **Postgres in production**). Pro unlocks
+**private-repo scanning** (the user's OAuth token) and **managed LLM** (server
+`BEACON_MANAGED_ANTHROPIC_KEY`, so TRIGGER-01 + exact tokens run without the user's key) via
+`resolveScanOptions`. **The free tier must never depend on any of this** — every paid path is env-
+gated and returns a clean 501 unconfigured; public deterministic scans always work. Stripe keys, the
+DB, and the managed key are Steve-court (batched account setup).
+
 ## Conventions
 
 - **TypeScript, ESM (`"type": "module"`), NodeNext.** `strict` + `noUncheckedIndexedAccess` on.

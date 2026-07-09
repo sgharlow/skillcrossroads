@@ -8,9 +8,12 @@ export default function Home() {
           <span className="lamp" aria-hidden />
           Beacon
         </span>
-        <a className="ghlink" href="/api/auth/github">
-          Sign in with GitHub
-        </a>
+        <nav className="links">
+          <a href="/pricing">Pricing</a>
+          <a className="ghlink" href="/api/auth/github">
+            Sign in with GitHub
+          </a>
+        </nav>
       </header>
 
       <section className="hero">
@@ -57,8 +60,10 @@ export default function Home() {
         .nav{display:flex;align-items:center;justify-content:space-between}
         .brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:15px}
         .lamp{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 50% 40%,var(--beam),#b9791f);box-shadow:0 0 14px #ffc24b99}
-        .ghlink{font-size:13.5px;color:var(--fog);text-decoration:none;border:1px solid var(--ink3);border-radius:8px;padding:8px 14px}
-        .ghlink:hover{border-color:var(--beam);color:var(--foam)}
+        .links{display:flex;align-items:center;gap:16px}
+        .links>a{font-size:13.5px;color:var(--fog);text-decoration:none}
+        .ghlink{border:1px solid var(--ink3);border-radius:8px;padding:8px 14px}
+        .links>a:hover{border-color:var(--beam);color:var(--foam)}
         .hero{text-align:center;padding:64px 0 40px;position:relative}
         .hero::before{content:"";position:absolute;inset:-40px 0 auto;height:220px;pointer-events:none;
           background:radial-gradient(420px 160px at 50% 0,#ffc24b1f,transparent 70%)}

@@ -1,5 +1,6 @@
 import { renderHtml } from "@beacon/core";
 import { parseSlug, scanTarget } from "@/lib/scan";
+import { resolveScanOptions } from "@/lib/pro-scan";
 import { renderRepoSummaryHtml } from "@/lib/summary";
 
 export const runtime = "nodejs";
@@ -8,7 +9,7 @@ export const dynamic = "force-dynamic";
 const HTML = { "content-type": "text/html; charset=utf-8" } as const;
 
 /** GET /s/:owner/:repo[/...subpath] — shareable public scorecard (one skill) or repo summary. */
-export async function GET(_req: Request, { params }: { params: Promise<{ slug: string[] }> }): Promise<Response> {
+export async function GET(req: Request, { params }: { params: Promise<{ slug: string[] }> }): Promise<Response> {
   const { slug } = await params;
   const target = parseSlug(slug);
   if (!target) {
@@ -20,7 +21,7 @@ export async function GET(_req: Request, { params }: { params: Promise<{ slug: s
 
   let scan;
   try {
-    scan = await scanTarget(target);
+    scan = await scanTarget(target, await resolveScanOptions(req));
   } catch (err) {
     return new Response(`<h1>Scan failed</h1><p>${err instanceof Error ? err.message : "error"}</p>`, {
       status: 502,
