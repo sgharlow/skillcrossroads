@@ -158,6 +158,9 @@ A Next.js app (in `apps/web`) serves the shareable side of Beacon — it reuses 
   (`/api/checkout` + `/api/stripe/webhook`), Pro entitlements, and Pro-only **private-repo scanning**
   + **managed LLM** (no user key needed). All gated on `STRIPE_*` / `BEACON_MANAGED_ANTHROPIC_KEY`
   env vars — the **free tier is unaffected** when they're unset.
+- **Public gallery** — `/gallery`, a leaderboard of opted-in scored skills (opt in via
+  `/api/gallery/opt-in`), server-rendered and SEO-indexed (`sitemap.xml` + `robots.txt`), with
+  sort (score / recent / name) and filter (min-grade / search).
 
 Run locally: `cd apps/web && npm run dev`. Set `GITHUB_TOKEN` for higher GitHub rate limits.
 
@@ -165,8 +168,8 @@ Run locally: `cd apps/web && npm run dev`. Set `GITHUB_TOKEN` for higher GitHub 
 
 **v0.1 — `built`; CLI, repo-scanning, exact token counts, local multi-skill scanning, Markdown
 reports, and score-gating `live-proven` locally; the hosted web app `live-proven` locally; the
-Stripe paywall, Pro features, and the PR-comment bot `wired` (gated on account keys / npm publish
-not yet configured).** Eleven deterministic checks (structure, a three-check **Token & Context Cost**
+Stripe paywall, Pro features, PR-comment bot, and the public gallery `wired` (opt-in flow, sort,
+filter, and SEO live-proven locally; persistence/cross-instance sharing needs the batched DB).** Eleven deterministic checks (structure, a three-check **Token & Context Cost**
 pack, clarity, and a four-check **Safety & Security** pack: secrets, `allowed-tools`
 over-permissioning, destructive auto-invocation, `!`-block shell injection) on a local Skill
 directory or **any public GitHub repo by URL** (batch); three output surfaces

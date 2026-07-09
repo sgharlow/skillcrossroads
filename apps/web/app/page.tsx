@@ -9,6 +9,7 @@ export default function Home() {
           Beacon
         </span>
         <nav className="links">
+          <a href="/gallery">Gallery</a>
           <a href="/pricing">Pricing</a>
           <a className="ghlink" href="/api/auth/github">
             Sign in with GitHub

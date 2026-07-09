@@ -140,6 +140,17 @@ entitlement** (`lib/entitlements.ts` — in-memory now, **Postgres in production
 gated and returns a clean 501 unconfigured; public deterministic scans always work. Stripe keys, the
 DB, and the managed key are Steve-court (batched account setup).
 
+### Public gallery (Sprint 10)
+
+`/gallery` is a server-rendered, SEO-indexed (`app/sitemap.ts` + `app/robots.ts`) leaderboard of
+opted-in skills, with sort (score/recent/name) + filter (min-grade/search). Opt-in via
+`/api/gallery/opt-in` (scans then lists). Backed by `lib/gallery.ts` (in-memory, **Postgres in
+production**). **Known limitation, by design:** the in-memory store is **not shared across Next
+route/page bundles or serverless instances**, so an opt-in POST isn't visible to the gallery page
+until the DB backs it. A static `SEED` gives every instance the same starter leaderboard so the UI
+renders consistently meanwhile — exactly why the gallery (and entitlements) need the shared DB
+before real use.
+
 ## Conventions
 
 - **TypeScript, ESM (`"type": "module"`), NodeNext.** `strict` + `noUncheckedIndexedAccess` on.
