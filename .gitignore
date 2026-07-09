@@ -39,3 +39,5 @@ Thumbs.db
 *.beacon.html
 *.beacon.svg
 .beacon-cache/
+
+.vercel
