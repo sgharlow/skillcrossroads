@@ -24,9 +24,9 @@ describe("demand-loop closers in renderHtml", () => {
     const html = renderHtml(card("A", false), {
       name: "x",
       homeUrl: "/",
-      embed: { badgeUrl: "https://beacon.dev/api/badge/o/r.svg", scorecardUrl: "https://beacon.dev/s/o/r" },
+      embed: { badgeUrl: "https://crossroads.app/api/badge/o/r.svg", scorecardUrl: "https://crossroads.app/s/o/r" },
     });
-    expect(html).toContain("[![Beacon](https://beacon.dev/api/badge/o/r.svg)](https://beacon.dev/s/o/r)");
+    expect(html).toContain("[![Crossroads](https://crossroads.app/api/badge/o/r.svg)](https://crossroads.app/s/o/r)");
   });
 
   it("escapes URLs passed into the embed/CTA (defense-in-depth)", () => {

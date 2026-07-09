@@ -1,12 +1,68 @@
+/*
+ * Crossroads design tokens. Wayfinding developer-tool aesthetic: restrained neutrals, generous
+ * whitespace, and the three "directions" as the only saturated colors —
+ *   ship = green, fix = amber, rethink = red (a route from green through amber to red).
+ * Full light + dark, driven by the OS preference (no toggle, no localStorage).
+ */
 :root {
-  color-scheme: dark;
-  --ink: #0b1220;
-  --ink2: #121d2f;
-  --ink3: #1b2a42;
-  --fog: #8ca0bf;
-  --foam: #e8eef7;
-  --beam: #ffc24b;
-  --aqua: #35d0a5;
+  color-scheme: light dark;
+
+  /* Neutrals — dark is the default; light overrides below. */
+  --bg: #0b1220;
+  --surface: #111c2e;
+  --surface-2: #0e1726;
+  --line: #223148;
+  --fg: #e9eef7;
+  --muted: #94a5c1;
+  --faint: #6f81a0;
+
+  /* The three directions — same hues in both themes for a consistent signal. */
+  --ship: #33b465;
+  --fix: #e0a020;
+  --rethink: #e5555a;
+
+  /* Primary action = "go" green, the wayfinding accent. */
+  --accent: #33b465;
+  --accent-ink: #06210f;
+  --accent-hover: #3cc673;
+
+  --radius: 12px;
+  --maxw: 1040px;
+  --mono: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+  --ui: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+}
+
+@media (prefers-color-scheme: light) {
+  :root {
+    --bg: #ffffff;
+    --surface: #f7f9fc;
+    --surface-2: #eef2f8;
+    --line: #e2e8f1;
+    --fg: #0e1a2d;
+    --muted: #55647e;
+    --faint: #7a8aa3;
+
+    --ship: #1f9d54;
+    --fix: #b7790a;
+    --rethink: #d23b41;
+
+    --accent: #1f9d54;
+    --accent-ink: #ffffff;
+    --accent-hover: #1a8a49;
+  }
+}
+
+/* Legacy aliases — the existing product pages (gallery, dashboard, pricing, trends) still use these
+   var names. Mapped onto the new theme-aware tokens so those pages inherit the Crossroads palette and
+   work in light + dark without a rewrite. */
+:root {
+  --ink: var(--bg);
+  --ink2: var(--surface);
+  --ink3: var(--line);
+  --fog: var(--muted);
+  --foam: var(--fg);
+  --beam: var(--accent);
+  --aqua: var(--ship);
 }
 
 * {
@@ -15,13 +71,23 @@
   padding: 0;
 }
 
+html {
+  scroll-behavior: smooth;
+}
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+}
+
 body {
-  background: var(--ink);
-  color: var(--foam);
-  font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+  background: var(--bg);
+  color: var(--fg);
+  font-family: var(--ui);
   line-height: 1.6;
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
 }
 
 a {
@@ -29,18 +95,17 @@ a {
 }
 
 .mono {
-  font-family: ui-monospace, "Cascadia Code", "SF Mono", Menlo, Consolas, monospace;
+  font-family: var(--mono);
 }
 
-/* Visible keyboard focus for every interactive element (WCAG 2.4.7). Individual pages set
-   outline:none on inputs; this restores a clear focus ring for keyboard users only. */
+/* Visible keyboard focus for every interactive element (WCAG 2.4.7). */
 a:focus-visible,
 button:focus-visible,
 input:focus-visible,
 select:focus-visible,
 textarea:focus-visible,
 [tabindex]:focus-visible {
-  outline: 2px solid var(--beam);
+  outline: 2px solid var(--accent);
   outline-offset: 2px;
   border-radius: 4px;
 }

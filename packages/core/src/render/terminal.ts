@@ -113,7 +113,7 @@ export function renderTerminal(card: Scorecard, opts: RenderOptions = {}): strin
 
   const llmRan = card.categories.find((c) => c.key === "triggering")?.evaluated ?? false;
   const mode = llmRan ? "LLM-assisted" : "deterministic";
-  const titleRow = rightAlign("  BEACON SCORECARD", name, RIGHT);
+  const titleRow = rightAlign("  CROSSROADS SCORECARD", name, RIGHT);
   const overallText = `  Overall: ${card.grade}  (${card.overall}/100)`;
   const overallPlain = rightAlign(overallText, `rubric v${card.rubricVersion} · ${mode}`, RIGHT);
   // Colorize just the grade token inside the already-padded overall line.

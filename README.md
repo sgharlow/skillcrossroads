@@ -1,22 +1,30 @@
-# Beacon
+# Crossroads
 
-**Lighthouse for Claude Code artifacts.**
+**Know before you ship.** The signpost for Claude Code skills, agents, and MCP servers.
 
-[![Beacon — live scorecard](https://img.shields.io/badge/Beacon-live%20scorecard-2ea043)](https://beacon-gamma-six.vercel.app/s/anthropics/skills) &nbsp; ![rubric v1.0](https://img.shields.io/badge/rubric-v1.0-555)
+[![Crossroads — live scorecard](https://img.shields.io/badge/crossroads-live%20scorecard-2ea043)](https://crossroads.app/s/anthropics/skills) &nbsp; ![rubric v1.0](https://img.shields.io/badge/rubric-v1.0-555)
 
-Beacon audits a Claude Code artifact — a **Skill**, subagent, MCP server, or plugin — and
-returns an **evidence-cited quality scorecard with a letter grade**. It runs as a CLI today
-(`beacon ./my-skill`), and — on the roadmap — in CI (a GitHub Action that comments on PRs) and
-as a hosted web report with a shareable URL and an always-fresh embeddable badge.
+Every skill hits a crossroads before you ship it. Crossroads reads a Claude Code artifact — a
+**Skill**, subagent, MCP server, or plugin — against an evidence-based rubric and points you one of
+three ways: **ship, fix, or rethink**. You get a letter grade, an embeddable badge, and a fix list —
+every finding cited to a file and line.
+
+- **Ship** — grade A/B. It is ready. Here is your badge.
+- **Fix** — grade C/D. Specific, evidence-cited problems to correct first.
+- **Rethink** — grade E/F. Fundamental issues (will not trigger, unsafe, untested).
 
 > Anthropic's `skill-creator` measures *effectiveness* (does the skill lift task success?).
-> Beacon grades *craftsmanship and safety* (is it well-built, discoverable, and safe to ship?).
-> They complement each other. **No one else owns the graded-scorecard-plus-badge lane.**
+> Crossroads grades *craftsmanship and safety* (is it well-built, discoverable, and safe to ship?).
+> They complement each other. No one else owns the graded-scorecard-plus-badge lane.
+
+> **Note:** the CLI is published today as `@sgharlow/beacon` (`npx @sgharlow/beacon ./my-skill`); the
+> `crossroads` package name is part of an in-progress rename. Internal package names (`@beacon/core`)
+> and env vars still use the old name until that migration lands.
 
 ## Why
 
 The #1 real-world skill failure is *"my skill never fires."* The #2 is *"it works on my
-machine but ships with a hardcoded key / an over-broad tool grant / no tests."* Beacon catches
+machine but ships with a hardcoded key / an over-broad tool grant / no tests."* Crossroads catches
 those **before you publish**, with file-and-line receipts — not vibes.
 
 ## Install & use
@@ -36,7 +44,7 @@ npx @sgharlow/beacon ./path-to-a-skill
 
 ### Scan a whole GitHub repo (no clone)
 
-Point Beacon at a public repo and it grades every skill it finds — fetched via the GitHub API,
+Point Crossroads at a public repo and it grades every skill it finds — fetched via the GitHub API,
 nothing cloned on your side:
 
 ```bash
@@ -61,10 +69,10 @@ can click through and scan their own skill:
 
 ```markdown
 <!-- local static badge -->
-![Beacon](./my-skill.beacon.svg)
+![Crossroads](./my-skill.beacon.svg)
 
 <!-- hosted: re-scans on its own, links to the full scorecard -->
-[![Beacon](https://beacon.dev/api/badge/OWNER/REPO.svg)](https://beacon.dev/s/OWNER/REPO)
+[![Crossroads](https://crossroads.app/api/badge/OWNER/REPO.svg)](https://crossroads.app/s/OWNER/REPO)
 ```
 
 ### LLM-assisted triggering check (BYOK)
@@ -79,17 +87,17 @@ BEACON_MODEL=claude-haiku-4-5 beacon ./my-skill   # cheaper model
 ```
 
 Verdicts are cached by content hash in `.beacon-cache/`, so re-scanning an unchanged skill is
-free. Without a key, Beacon runs deterministic-only and marks Triggering as "not yet scored."
+free. Without a key, Crossroads runs deterministic-only and marks Triggering as "not yet scored."
 
 A key also switches the token estimate to an **exact `count_tokens`** figure — the same tokenizer
-Claude Code's `/context` uses, so it's the same number a skill actually costs. Offline, Beacon shows
+Claude Code's `/context` uses, so it's the same number a skill actually costs. Offline, Crossroads shows
 a clearly-labeled rough estimate (skill markdown tokenizes denser than prose, so it can be ~10–25% off).
 
 ## What a report looks like
 
 ```
 ┌───────────────────────────────────────────────────────────────┐
-│  BEACON SCORECARD                          recipe-001          │
+│  CROSSROADS SCORECARD                      recipe-001          │
 │  Overall: B−  (78/100)          rubric v1.0 · deterministic    │
 ├───────────────────────────────────────────────────────────────┤
 │  Correctness & Structure   ████████████████░░░░  82   ⚠ 1      │
@@ -152,9 +160,9 @@ A local path may be a single skill or a **folder of skills** — every `SKILL.md
 
 ## Hosted web app (`@beacon/web`)
 
-A Next.js app (in `apps/web`) serves the shareable side of Beacon — it reuses `@beacon/core`:
+A Next.js app (in `apps/web`) serves the shareable side of Crossroads — it reuses `@beacon/core`:
 
-- **Public scorecard pages** — `/s/owner/repo/path/to/skill` renders the Lighthouse-style HTML
+- **Public scorecard pages** — `/s/owner/repo/path/to/skill` renders the scorecard HTML
   scorecard (a repo URL renders a summary of every skill). Mobile-responsive, self-contained.
 - **Always-fresh badge endpoint** — `/api/badge/owner/repo/path.svg` returns the SVG grade badge,
   scanned live with a short CDN TTL so it updates on re-scan.

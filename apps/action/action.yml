@@ -1,9 +1,9 @@
-name: "Beacon — Skill Quality Gate"
+name: "Crossroads — Skill Quality Gate"
 description: "Grade your Claude Code skills, comment a scorecard on the PR, and gate the build below a threshold."
-author: "Beacon"
+author: "Crossroads"
 branding:
-  icon: "check-circle"
-  color: "yellow"
+  icon: "compass"
+  color: "green"
 
 inputs:
   path:
@@ -34,21 +34,21 @@ runs:
     # LLM checks aren't paid for twice. Inputs are passed via env (not `${{ }}` interpolation) to
     # avoid shell injection. `set +e` keeps a below-threshold exit from aborting the step, so the
     # comment still posts; the captured code is re-raised by the Gate step.
-    - name: Beacon
-      id: beacon
+    - name: Crossroads
+      id: crossroads
       shell: bash
       env:
-        BEACON_PATH: ${{ inputs.path }}
-        BEACON_MIN_GRADE: ${{ inputs.min-grade }}
+        CROSSROADS_PATH: ${{ inputs.path }}
+        CROSSROADS_MIN_GRADE: ${{ inputs.min-grade }}
         ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
         GITHUB_TOKEN: ${{ github.token }}
       run: |
         set +e
-        args=("$BEACON_PATH" --markdown)
-        if [ -n "$BEACON_MIN_GRADE" ]; then args+=("--min-grade=$BEACON_MIN_GRADE"); fi
-        npx --yes @sgharlow/beacon@latest "${args[@]}" > "$RUNNER_TEMP/beacon-report.md"
+        args=("$CROSSROADS_PATH" --markdown)
+        if [ -n "$CROSSROADS_MIN_GRADE" ]; then args+=("--min-grade=$CROSSROADS_MIN_GRADE"); fi
+        npx --yes @sgharlow/beacon@latest "${args[@]}" > "$RUNNER_TEMP/crossroads-report.md"
         echo "exit=$?" >> "$GITHUB_OUTPUT"
-        cat "$RUNNER_TEMP/beacon-report.md" >> "$GITHUB_STEP_SUMMARY"
+        cat "$RUNNER_TEMP/crossroads-report.md" >> "$GITHUB_STEP_SUMMARY"
 
     - name: Comment on PR
       if: ${{ inputs.comment == 'true' && github.event_name == 'pull_request' }}
@@ -57,10 +57,10 @@ runs:
         GITHUB_TOKEN: ${{ github.token }}
         GITHUB_REPOSITORY: ${{ github.repository }}
         PR_NUMBER: ${{ github.event.pull_request.number }}
-        REPORT_FILE: ${{ runner.temp }}/beacon-report.md
+        REPORT_FILE: ${{ runner.temp }}/crossroads-report.md
       run: node "${{ github.action_path }}/comment.mjs"
 
     - name: Gate
       if: ${{ inputs.min-grade != '' }}
       shell: bash
-      run: exit ${{ steps.beacon.outputs.exit }}
+      run: exit ${{ steps.crossroads.outputs.exit }}

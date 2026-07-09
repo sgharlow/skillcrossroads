@@ -1,14 +1,14 @@
 #!/usr/bin/env node
 /**
- * Post (or update) a single Beacon scorecard comment on a pull request.
- * Uses the GitHub REST API via fetch — no dependencies. Finds a prior Beacon comment by a hidden
+ * Post (or update) a single Crossroads scorecard comment on a pull request.
+ * Uses the GitHub REST API via fetch — no dependencies. Finds a prior Crossroads comment by a hidden
  * marker and edits it in place, so re-runs don't spam the PR.
  *
  * Env: GITHUB_TOKEN, GITHUB_REPOSITORY (owner/repo), PR_NUMBER, REPORT_FILE.
  */
 import { readFileSync } from "node:fs";
 
-const MARKER = "<!-- beacon-scorecard -->";
+const MARKER = "<!-- crossroads-scorecard -->";
 const API = process.env.GITHUB_API_URL || "https://api.github.com";
 
 const token = process.env.GITHUB_TOKEN;
@@ -17,7 +17,7 @@ const pr = process.env.PR_NUMBER;
 const reportFile = process.env.REPORT_FILE;
 
 if (!token || !repo || !pr || !reportFile) {
-  console.log("Beacon comment: missing GITHUB_TOKEN / GITHUB_REPOSITORY / PR_NUMBER / REPORT_FILE — skipping.");
+  console.log("Crossroads comment: missing GITHUB_TOKEN / GITHUB_REPOSITORY / PR_NUMBER / REPORT_FILE — skipping.");
   process.exit(0);
 }
 
@@ -28,7 +28,7 @@ try {
   report = "";
 }
 if (!report) {
-  console.log("Beacon comment: empty report — skipping.");
+  console.log("Crossroads comment: empty report — skipping.");
   process.exit(0);
 }
 
@@ -36,9 +36,9 @@ const headers = {
   authorization: `Bearer ${token}`,
   accept: "application/vnd.github+json",
   "content-type": "application/json",
-  "user-agent": "beacon-action",
+  "user-agent": "crossroads-action",
 };
-const body = `${MARKER}\n${report}\n\n<sub>Graded by Beacon — the Lighthouse for Claude Code artifacts.</sub>`;
+const body = `${MARKER}\n${report}\n\n<sub>Graded by Crossroads — the signpost for Claude Code skills, agents, and MCP servers.</sub>`;
 
 async function gh(method, path, payload) {
   const res = await fetch(`${API}${path}`, {
@@ -50,7 +50,7 @@ async function gh(method, path, payload) {
   return res.json();
 }
 
-/** Find an existing Beacon comment id (by marker) across the PR's comments. */
+/** Find an existing Crossroads comment id (by marker) across the PR's comments. */
 async function findExisting() {
   let page = 1;
   for (;;) {
@@ -66,12 +66,12 @@ try {
   const existing = await findExisting();
   if (existing) {
     await gh("PATCH", `/repos/${repo}/issues/comments/${existing}`, { body });
-    console.log(`Beacon comment: updated #${existing}.`);
+    console.log(`Crossroads comment: updated #${existing}.`);
   } else {
     const created = await gh("POST", `/repos/${repo}/issues/${pr}/comments`, { body });
-    console.log(`Beacon comment: created #${created.id}.`);
+    console.log(`Crossroads comment: created #${created.id}.`);
   }
 } catch (err) {
   // Never fail the build just because commenting failed (e.g. fork PR with a read-only token).
-  console.log(`Beacon comment: ${err instanceof Error ? err.message : String(err)} — continuing.`);
+  console.log(`Crossroads comment: ${err instanceof Error ? err.message : String(err)} — continuing.`);
 }

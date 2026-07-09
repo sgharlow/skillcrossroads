@@ -2,7 +2,7 @@
   "name": "beacon-monorepo",
   "version": "0.1.0",
   "private": true,
-  "description": "Lighthouse for Claude Code artifacts — an evidence-cited quality scorecard, letter grade, and embeddable badge for Skills, subagents, MCP servers, and plugins.",
+  "description": "Crossroads — the signpost for Claude Code artifacts. An evidence-based quality scorecard, letter grade, and embeddable badge for Skills, subagents, MCP servers, and plugins: ship, fix, or rethink before you release.",
   "type": "module",
   "workspaces": [
     "packages/*",

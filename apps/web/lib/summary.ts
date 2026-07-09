@@ -27,7 +27,7 @@ export function renderRepoSummaryHtml(scan: RepoScanResult, t: SlugTarget, opts:
   return `<!doctype html>
 <html lang="en"><head>
 <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Beacon — ${esc(t.owner)}/${esc(t.repo)}</title>
+<title>Crossroads — ${esc(t.owner)}/${esc(t.repo)}</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}:root{color-scheme:dark}
 body{background:${PALETTE.ink};color:${PALETTE.foam};font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;padding:32px 20px;line-height:1.5}
@@ -55,7 +55,7 @@ footer a{color:${PALETTE.fog}}
 </style></head>
 <body><main class="wrap">
   <div class="top"><span class="lamp"></span>${
-    opts.homeUrl ? `<a class="brand-link" href="${esc(opts.homeUrl)}"><span class="brand">Beacon</span></a>` : `<span class="brand">Beacon</span>`
+    opts.homeUrl ? `<a class="brand-link" href="${esc(opts.homeUrl)}"><span class="brand">Crossroads</span></a>` : `<span class="brand">Crossroads</span>`
   }</div>
   <h1>${esc(t.owner)}/${esc(t.repo)}</h1>
   <p class="meta">${rows.length} skills · average <span class="avg">${avgGrade} (${avg}/100)</span> · ref ${esc(scan.ref)} · deterministic</p>
@@ -67,7 +67,7 @@ footer a{color:${PALETTE.fog}}
       : ""
   }
   <footer>Graded by ${
-    opts.homeUrl ? `<a href="${esc(opts.homeUrl)}"><strong>Beacon</strong></a>` : "<strong>Beacon</strong>"
-  } — Lighthouse for Claude Code artifacts.</footer>
+    opts.homeUrl ? `<a href="${esc(opts.homeUrl)}"><strong>Crossroads</strong></a>` : "<strong>Crossroads</strong>"
+  } — the signpost for Claude Code skills, agents, and MCP servers.</footer>
 </main></body></html>`;
 }

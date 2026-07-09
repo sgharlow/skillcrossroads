@@ -20,7 +20,7 @@ describe("renderBadge", () => {
     expect(svg).toContain('xmlns="http://www.w3.org/2000/svg"');
     expect(svg).toContain('role="img"');
     expect(svg).toContain("A−");
-    expect(svg).toContain("beacon");
+    expect(svg).toContain("crossroads");
     // no external references
     expect(svg).not.toMatch(/href=|<image|url\(http/);
   });

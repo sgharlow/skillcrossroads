@@ -8,7 +8,7 @@ export const dynamic = "force-dynamic";
 export async function generateMetadata({ params }: { params: Promise<{ slug: string[] }> }): Promise<Metadata> {
   const { slug } = await params;
   const key = slug.filter(Boolean).join("/");
-  return { title: `Beacon — score history for ${key}` };
+  return { title: `Score history for ${key}` };
 }
 
 export default async function TrendsPage({ params }: { params: Promise<{ slug: string[] }> }) {
@@ -24,7 +24,7 @@ export default async function TrendsPage({ params }: { params: Promise<{ slug: s
       <header className="nav">
         <a className="brand" href="/">
           <span className="lamp" aria-hidden />
-          Beacon
+          Crossroads
         </a>
         <a className="link" href={`/s/${key}`}>
           View scorecard →

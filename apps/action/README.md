@@ -1,21 +1,21 @@
-# Beacon — GitHub Action
+# Crossroads — GitHub Action
 
-Add a quality gate to your Claude Code skills in three lines. On every pull request, Beacon grades
-the skills in your repo, **comments a scorecard**, and (optionally) **fails the build** if any skill
-drops below a grade you choose.
+Add a quality gate to your Claude Code skills in three lines. On every pull request, Crossroads
+grades the skills in your repo, **comments a scorecard**, and (optionally) **fails the build** if any
+skill drops below a grade you choose.
 
 ## Quick start
 
-Create `.github/workflows/beacon.yml`:
+Create `.github/workflows/crossroads.yml`:
 
 ```yaml
-name: Beacon
+name: Crossroads
 on: pull_request
 permissions:
   contents: read
   pull-requests: write   # needed to post the scorecard comment
 jobs:
-  beacon:
+  crossroads:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -25,7 +25,11 @@ jobs:
           min-grade: B        # fail the check if any skill is below B
 ```
 
-That's it. Open a PR touching a skill and Beacon posts a scorecard comment and gates the build.
+That's it. Open a PR touching a skill and Crossroads posts a scorecard comment and gates the build.
+
+> **Note:** the action is referenced today as `sgharlow/beacon/apps/action@v1` and installs the CLI as
+> `@sgharlow/beacon` — the repository and package rename to `crossroads` is in progress. The scorecard
+> it posts is already Crossroads-branded.
 
 ## Inputs
 
@@ -38,16 +42,15 @@ That's it. Open a PR touching a skill and Beacon posts a scorecard comment and g
 
 ## What it does
 
-1. **Report** — runs `beacon <path> --markdown`, writes it to the job summary, and (on PRs) posts it
-   as a comment that updates in place on re-runs (no spam).
-2. **Gate** — if `min-grade` is set, runs `beacon <path> --min-grade <grade>`; a below-threshold
-   skill exits non-zero and fails the check.
+1. **Report** — grades your skills, writes the Markdown scorecard to the job summary, and (on PRs)
+   posts it as a comment that updates in place on re-runs (no spam).
+2. **Gate** — if `min-grade` is set, any skill below the threshold exits non-zero and fails the check.
 
 Deterministic checks run with no configuration. Provide `anthropic-api-key` to also score triggering
 quality, verification, and constraint coverage.
 
 ## Notes
 
-- The action runs `npx @sgharlow/beacon@latest`, so it tracks the published CLI.
+- The action installs the published CLI (`@sgharlow/beacon@latest`), so it tracks the latest release.
 - Commenting needs `pull-requests: write`. On fork PRs the token is read-only; the action logs and
   continues rather than failing.

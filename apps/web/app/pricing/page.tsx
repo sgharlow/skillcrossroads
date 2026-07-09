@@ -1,6 +1,6 @@
 import SubscribeButton from "./subscribe-button";
 
-export const metadata = { title: "Beacon — Pricing" };
+export const metadata = { title: "Pricing" };
 
 const FREE = ["CLI + public repo scans", "Full deterministic rubric", "Triggering & exact tokens (your own key)", "Local HTML report + SVG badge"];
 const PRO = ["Everything in Free", "Private-repo scanning", "Managed LLM — no key needed", "Hosted scorecards + always-fresh badges", "Score history"];
@@ -30,7 +30,7 @@ export default function Pricing() {
       <header className="nav">
         <a className="brand" href="/">
           <span className="lamp" aria-hidden />
-          Beacon
+          Crossroads
         </a>
       </header>
 
@@ -42,7 +42,7 @@ export default function Pricing() {
       <section className="grid">
         <Tier name="Free" price="$0" per="" items={FREE} cta={<a className="ghost" href="/">Get started</a>} />
         <Tier name="Pro" price="$19" per="/mo" items={PRO} cta={<SubscribeButton />} />
-        <Tier name="Team" price="$99" per="/mo · 5 seats" items={TEAM} cta={<a className="ghost" href="mailto:hello@beacon.dev?subject=Beacon%20Team">Contact us</a>} />
+        <Tier name="Team" price="$99" per="/mo · 5 seats" items={TEAM} cta={<a className="ghost" href="mailto:hello@crossroads.app?subject=Crossroads%20Team">Contact us</a>} />
       </section>
 
       <p className="foot">14-day free trial on Pro · cancel anytime · secured by Stripe</p>

@@ -1,16 +1,16 @@
 # The State of Claude Code Skills
 
-*An evidence-based audit of 214 public Claude Code skills across 18 repositories, graded by **Beacon** — the Lighthouse for Claude Code artifacts. Includes the LLM-assisted triggering check. Every figure is traceable to the pinned git trees in the methodology.*
+*An evidence-based audit of 214 public Claude Code skills across 18 repositories, graded by **Crossroads** — the signpost for Claude Code artifacts. Includes the LLM-assisted triggering check. Every figure is traceable to the pinned git trees in the methodology.*
 
 > **Scope.** A deliberately mixed sample: Anthropic's well-maintained `anthropics/skills` catalog alongside a spread of community-authored repos (up to 12 skills each). This is a read on skills people actually publish — not a curated best-of.
 
 ## The headline
 
-**Among skills Beacon could score, 73% have a description that won't reliably trigger** — 93 (43%) outright unlikely to fire, 63 (29%) borderline. "My skill never fires" is the #1 real-world skill failure, and it hides in the frontmatter `description`.
+**Among skills Crossroads could score, 73% have a description that won't reliably trigger** — 93 (43%) outright unlikely to fire, 63 (29%) borderline. "My skill never fires" is the #1 real-world skill failure, and it hides in the frontmatter `description`.
 
-Beacon scored **214 of 214** skills for triggering.
+Crossroads scored **214 of 214** skills for triggering.
 
-The average Beacon score across all 214 skills is **73.6/100**.
+The average Crossroads score across all 214 skills is **73.6/100**.
 
 ## Will your skill even fire? (Triggering & Discoverability)
 
@@ -59,7 +59,7 @@ _LLM checks (TRIGGER-01, CLARITY-05, VERIFY-04) show a smaller `n` than the dete
 
 ## What this means
 
-**0 of 214 skills (0%)** pass every check Beacon ran, cleanly.
+**0 of 214 skills (0%)** pass every check Crossroads ran, cleanly.
 
 The most common defects across the sample:
 
@@ -78,7 +78,7 @@ Each is catchable **before** publishing, with `npx @sgharlow/beacon ./your-skill
 
 ## Methodology & reproducibility
 
-Beacon's deterministic checks (no LLM) plus the LLM-assisted triggering check (TRIGGER-01) were run against each repo's git tree at the sha below. Deterministic figures are bit-reproducible from those trees; LLM verdicts are content-hash cached and pinned to the same trees, but model output is not guaranteed bit-identical across runs.
+Crossroads' deterministic checks (no LLM) plus the LLM-assisted triggering check (TRIGGER-01) were run against each repo's git tree at the sha below. Deterministic figures are bit-reproducible from those trees; LLM verdicts are content-hash cached and pinned to the same trees, but model output is not guaranteed bit-identical across runs.
 
 | Repo | Ref | Tree sha | Skills | Errors |
 |---|---|---|---|---|

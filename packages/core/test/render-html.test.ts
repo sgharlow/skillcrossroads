@@ -10,7 +10,7 @@ describe("renderHtml", () => {
     const { scorecard, name } = audit(fixture("good-skill"));
     const html = renderHtml(scorecard, { name, scannedAt: "2026-07-08" });
     expect(html.startsWith("<!doctype html>")).toBe(true);
-    expect(html).toContain("<title>Beacon — meeting-notes</title>");
+    expect(html).toContain("<title>Crossroads — meeting-notes</title>");
     expect(html).toContain(scorecard.grade);
     expect(html).toContain("Correctness &amp; Structure");
     expect(html).toContain("not yet scored (v0.1)"); // partial categories

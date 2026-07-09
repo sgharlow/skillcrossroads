@@ -4,7 +4,7 @@ import { gallery } from "@/lib/gallery";
 export const dynamic = "force-dynamic";
 
 function baseUrl(): string {
-  return process.env.NEXT_PUBLIC_SITE_URL ?? "https://beacon.dev";
+  return process.env.NEXT_PUBLIC_SITE_URL ?? "https://crossroads.app";
 }
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {

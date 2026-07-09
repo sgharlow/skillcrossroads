@@ -5,7 +5,7 @@ import { scanHistory } from "@/lib/scans";
 export const dynamic = "force-dynamic";
 
 export const metadata: Metadata = {
-  title: "Beacon — metrics dashboard",
+  title: "Metrics dashboard",
   robots: { index: false },
 };
 
@@ -20,7 +20,7 @@ export default async function Dashboard() {
       <header className="nav">
         <a className="brand" href="/">
           <span className="lamp" aria-hidden />
-          Beacon
+          Crossroads
         </a>
         <a className="link" href="/gallery">
           Gallery →
