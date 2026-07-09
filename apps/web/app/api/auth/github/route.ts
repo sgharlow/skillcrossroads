@@ -1,3 +1,5 @@
+import { randomBytes } from "node:crypto";
+
 export const runtime = "nodejs";
 
 /**
@@ -17,11 +19,22 @@ export async function GET(req: Request): Promise<Response> {
       { status: 501 },
     );
   }
-  const origin = new URL(req.url).origin;
+  const url = new URL(req.url);
+  const origin = url.origin;
   const redirectUri = `${origin}/api/auth/github/callback`;
+  // CSRF: a random state, stored HttpOnly and echoed in the callback, defeats OAuth login-CSRF.
+  const state = randomBytes(16).toString("hex");
   const authorize = new URL("https://github.com/login/oauth/authorize");
   authorize.searchParams.set("client_id", clientId);
   authorize.searchParams.set("redirect_uri", redirectUri);
   authorize.searchParams.set("scope", "read:user"); // least-privilege; add repo scope for private scans (Pro)
-  return Response.redirect(authorize.toString(), 302);
+  authorize.searchParams.set("state", state);
+  const secure = url.protocol === "https:" ? "; Secure" : "";
+  return new Response(null, {
+    status: 302,
+    headers: {
+      location: authorize.toString(),
+      "set-cookie": `beacon_oauth_state=${state}; HttpOnly; Path=/; SameSite=Lax; Max-Age=600${secure}`,
+    },
+  });
 }

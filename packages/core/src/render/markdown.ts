@@ -6,6 +6,33 @@ export interface MarkdownOptions {
   level?: number;
 }
 
+/**
+ * Escape untrusted scanned-skill text for safe inline Markdown. A scanned skill is untrusted input:
+ * without this, a skill name/message like `![x](http://tracker/pixel)` or `pay | now` injects an
+ * image, breaks a `</details>` block, or corrupts a table when echoed into a PR comment. Neutralizes
+ * the injection-relevant characters only — raw HTML (`<>`), links/images (`[]`), code spans (`` ` ``),
+ * and table pipes (`|`) — plus newlines. Leaves ordinary punctuation (hyphens, dots) intact.
+ * Only for UNTRUSTED values (skill name, evidence messages, fixes) — never for Beacon's own check ids/titles.
+ */
+function mdText(s: string): string {
+  return String(s)
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/[`[\]|]/g, "\\$&")
+    .replace(/\s*\r?\n\s*/g, " ")
+    .trim();
+}
+
+/** Escape a value shown inside a backtick code span: kill backticks (can't be backslash-escaped) + newlines. */
+function mdCode(s: string): string {
+  return String(s).replace(/`/g, "'").replace(/\s*\r?\n\s*/g, " ").trim();
+}
+
+/** Public: escape untrusted text for a Markdown table cell (also used by the CLI batch table). */
+export function mdCell(s: string): string {
+  return mdText(s);
+}
+
 function gradeEmoji(grade: string): string {
   if (grade.startsWith("A")) return "🟢";
   if (grade.startsWith("B")) return "🔵";
@@ -18,16 +45,18 @@ function statusMark(status: string): string {
 }
 
 function categoryRow(cat: CategoryScore): string {
+  // cat.label is a fixed rubric label (trusted) — no escaping needed.
   if (!cat.evaluated) return `| ${cat.label} | — | _not scored_ |`;
   const summary = cat.failCount > 0 ? `✗ ${cat.failCount}` : cat.warnCount > 0 ? `⚠ ${cat.warnCount}` : "✓";
   return `| ${cat.label} | ${Math.round(cat.score as number)} | ${summary} |`;
 }
 
 function fixLine(r: CheckResult): string {
+  // r.id / r.title are Beacon's own constants (trusted); ev.file/message and r.fix are untrusted.
   const ev = r.evidence[0];
-  const loc = ev?.line ? `\`${ev.file}:${ev.line}\`` : ev?.file ? `\`${ev.file}\`` : "";
-  const detail = ev?.message ?? "";
-  const fix = r.fix ? `\n  - _Fix:_ ${r.fix}` : "";
+  const loc = ev?.line ? `\`${mdCode(ev.file)}:${ev.line}\`` : ev?.file ? `\`${mdCode(ev.file)}\`` : "";
+  const detail = ev?.message ? mdText(ev.message) : "";
+  const fix = r.fix ? `\n  - _Fix:_ ${mdText(r.fix)}` : "";
   return `- ${statusMark(r.status)} **${r.id}** ${r.title} — ${loc} ${detail}${fix}`;
 }
 
@@ -38,7 +67,7 @@ export function renderMarkdown(card: Scorecard, opts: MarkdownOptions = {}): str
   const mode = card.categories.find((c) => c.key === "triggering")?.evaluated ? "LLM-assisted" : "deterministic";
 
   const lines: string[] = [];
-  lines.push(`${h} ${gradeEmoji(card.grade)} Beacon: ${card.grade} — \`${name}\``);
+  lines.push(`${h} ${gradeEmoji(card.grade)} Beacon: ${card.grade} — \`${mdCode(name)}\``);
   lines.push("");
   lines.push(`**Overall ${card.overall}/100** · rubric v${card.rubricVersion} · ${mode}`);
   lines.push("");

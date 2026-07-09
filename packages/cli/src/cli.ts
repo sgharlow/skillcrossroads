@@ -12,6 +12,7 @@ import {
   renderHtml,
   renderBadge,
   renderMarkdown,
+  mdCell,
   meetsMinGrade,
   ParseError,
   createAnthropicClient,
@@ -84,14 +85,25 @@ function parseArgs(argv: readonly string[]): Args {
     help: false,
     version: false,
   };
-  for (const a of argv) {
+  const setMax = (v: string): void => {
+    args.max = Math.max(1, Number(v) || 1);
+  };
+  for (let i = 0; i < argv.length; i++) {
+    const a = argv[i] as string;
+    // A required-value flag may be given as `--flag=value` or `--flag value` (the form the GitHub
+    // Action and most users type). Consume the next arg for the space form.
+    const takesValue = (flag: string): string | undefined => {
+      if (a === flag) return argv[++i];
+      if (a.startsWith(`${flag}=`)) return a.slice(flag.length + 1);
+      return undefined;
+    };
     if (a === "--json") args.json = true;
     else if (a === "--markdown" || a === "--md") args.markdown = true;
-    else if (a.startsWith("--min-grade=")) args.minGrade = a.slice("--min-grade=".length);
+    else if (a === "--min-grade" || a.startsWith("--min-grade=")) args.minGrade = takesValue("--min-grade");
+    else if (a === "--max" || a.startsWith("--max=")) setMax(takesValue("--max") ?? "");
     else if (a === "-h" || a === "--help") args.help = true;
     else if (a === "-v" || a === "--version") args.version = true;
     else if (a === "--no-llm") args.noLlm = true;
-    else if (a.startsWith("--max=")) args.max = Math.max(1, Number(a.slice("--max=".length)) || 1);
     else if (a === "--no-color" || a === "--color") continue; // picocolors reads the env
     else if (a === "--html") args.html = true;
     else if (a.startsWith("--html=")) args.html = a.slice("--html=".length);
@@ -114,11 +126,15 @@ function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-function writeArtifact(kind: "html" | "svg", opt: OptionalPath, name: string, content: string): void {
+/** The site whose scorecards/badges the CLI points at (override for self-hosting). */
+const SITE_URL = process.env["BEACON_SITE_URL"] ?? "https://beacon.dev";
+
+function writeArtifact(kind: "html" | "svg", opt: OptionalPath, name: string, content: string): string {
   const target = typeof opt === "string" ? opt : `${slug(name)}.beacon.${kind}`;
   const abs = resolve(target);
   writeFileSync(abs, content, "utf8");
   process.stdout.write(pc.dim(`  wrote ${kind.toUpperCase()} → ${abs}\n`));
+  return target;
 }
 
 /** Build the LLM check context from the environment, or an empty context (deterministic-only). */
@@ -145,10 +161,17 @@ function emitSingle(result: AuditResult, args: Args): void {
     process.stdout.write(`\n${renderTerminal(scorecard, { name })}\n`);
   }
   if (args.html !== undefined) {
-    writeArtifact("html", args.html, name, renderHtml(scorecard, { name, scannedAt: today() }));
+    writeArtifact("html", args.html, name, renderHtml(scorecard, { name, scannedAt: today(), homeUrl: SITE_URL }));
   }
   if (args.badge !== undefined) {
-    writeArtifact("svg", args.badge, name, renderBadge(scorecard));
+    const target = writeArtifact("svg", args.badge, name, renderBadge(scorecard));
+    // Emit the one copy-paste line an author needs — this is how the badge loop actually spreads.
+    const rel = target.startsWith(".") || target.startsWith("/") ? target : `./${target}`;
+    process.stdout.write(pc.dim(`  embed it:  `) + `![Beacon](${rel})\n`);
+    process.stdout.write(
+      pc.dim(`  or an always-fresh, linked badge from ${SITE_URL} once your repo is public:\n`) +
+        pc.dim(`    [![Beacon](${SITE_URL}/api/badge/OWNER/REPO.svg)](${SITE_URL}/s/OWNER/REPO)\n`),
+    );
   }
 }
 
@@ -185,14 +208,15 @@ function emitBatch(
     out.push("");
     out.push("| Grade | Score | Skill | Path |");
     out.push("|---|---:|---|---|");
-    for (const s of rows) out.push(`| ${s.scorecard.grade} | ${s.scorecard.overall} | ${s.name} | \`${s.repoPath}\` |`);
+    for (const s of rows)
+      out.push(`| ${s.scorecard.grade} | ${s.scorecard.overall} | ${mdCell(s.name)} | \`${mdCell(s.repoPath)}\` |`);
     out.push("");
     for (const s of rows.filter((r) => r.scorecard.results.some((x) => x.status !== "pass"))) {
-      out.push(`<details><summary>${s.scorecard.grade} — ${s.name}</summary>\n`);
+      out.push(`<details><summary>${s.scorecard.grade} — ${mdCell(s.name)}</summary>\n`);
       out.push(renderMarkdown(s.scorecard, { name: s.name, level: 4 }));
       out.push(`\n</details>`);
     }
-    for (const e of errors) out.push(`- ⚠ \`${e.repoPath}\`: ${e.message}`);
+    for (const e of errors) out.push(`- ⚠ \`${mdCell(e.repoPath)}\`: ${mdCell(e.message)}`);
     process.stdout.write(`${out.join("\n")}\n`);
     return;
   }

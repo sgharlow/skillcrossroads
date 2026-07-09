@@ -58,6 +58,13 @@ export interface Artifact {
   readonly bodyStartLine: number;
   /** Supporting files present under `root` (relative POSIX paths), excluding the entry file. */
   readonly files: readonly string[];
+  /**
+   * Files that are present in `files` but whose CONTENT was not available to the checks — e.g. a
+   * GitHub scan that materialized names but skipped downloading some text files to respect rate
+   * limits. Content-scanning checks (SAFETY-01) disclose this so a "clean" verdict never implies
+   * full coverage. Undefined/empty on a local scan (everything was read).
+   */
+  readonly unscannedFiles?: readonly string[];
 }
 
 export type CheckStatus = "pass" | "warn" | "fail";

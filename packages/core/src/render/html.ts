@@ -6,6 +6,18 @@ export interface HtmlOptions {
   name?: string;
   /** ISO date string (e.g. "2026-07-08") shown in the header. Omit to hide. */
   scannedAt?: string;
+  /**
+   * Top-of-funnel URL for the "Scan your own skill" CTA (and the brand/footer links). This closes
+   * the badge → scorecard → scan-your-own loop — without it a shared scorecard is a dead end.
+   * The CLI passes the site URL; the hosted app passes "/".
+   */
+  homeUrl?: string;
+  /**
+   * When set (hosted scorecards), render an "Embed this badge" block with a copy-paste snippet that
+   * wraps the always-fresh badge in a link back to this scorecard — the linked badge is the viral
+   * primitive. Omitted by the CLI so the local HTML file stays fully self-contained (no requests).
+   */
+  embed?: { badgeUrl: string; scorecardUrl: string };
 }
 
 /** Escape text for safe embedding in HTML element content and attribute values. */
@@ -157,6 +169,17 @@ header.top::before{content:"";position:absolute;inset:0;pointer-events:none;
 .fix-do span{color:${PALETTE.pass};font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:.08em;margin-right:6px}
 .clean{padding:26px;border-top:1px solid ${PALETTE.ink3};color:${PALETTE.pass};font-weight:600}
 .note{color:${PALETTE.fog};font-size:12px;margin-top:14px}
+.brand-link{color:inherit;text-decoration:none}
+.cta-wrap{padding:22px 26px 26px;border-top:1px solid ${PALETTE.ink3};display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between}
+.cta-blurb{color:${PALETTE.fog};font-size:13.5px;max-width:52ch}
+.cta{display:inline-block;background:${PALETTE.beam};color:#0b1220;font-weight:700;border-radius:10px;padding:11px 20px;text-decoration:none;white-space:nowrap}
+.cta:hover{filter:brightness(1.08)}
+.embed{padding:20px 26px 24px;border-top:1px solid ${PALETTE.ink3}}
+.embed h2{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:${PALETTE.fog};margin-bottom:12px}
+.embed-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.embed-row img{display:block}
+.embed-code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:${PALETTE.foam};
+  background:${PALETTE.ink};border:1px solid ${PALETTE.ink3};border-radius:8px;padding:10px 12px;overflow-x:auto;white-space:pre}
 footer{text-align:center;color:${PALETTE.fog};font-size:12px;margin-top:20px}
 footer a{color:${PALETTE.fog}}
 .reveal{opacity:0;transform:translateY(8px);animation:rise .5s ease forwards}
@@ -189,6 +212,28 @@ export function renderHtml(card: Scorecard, opts: HtmlOptions = {}): string {
     ? `<div class="note">Partial grade — some rubric categories have no checks in this version and are excluded from the overall.</div>`
     : "";
 
+  const brand = opts.homeUrl
+    ? `<a class="brand-link" href="${esc(opts.homeUrl)}"><span class="brand">Beacon</span></a>`
+    : `<span class="brand">Beacon</span>`;
+
+  const ctaSection = opts.homeUrl
+    ? `<div class="cta-wrap">
+      <span class="cta-blurb">Grade your own Claude Code skill — evidence-cited, file-and-line, free.</span>
+      <a class="cta" href="${esc(opts.homeUrl)}">Scan your own skill →</a>
+    </div>`
+    : "";
+
+  const embedSection = opts.embed
+    ? `<section class="embed">
+      <h2>Embed this badge</h2>
+      <div class="embed-row">
+        <a href="${esc(opts.embed.scorecardUrl)}"><img src="${esc(opts.embed.badgeUrl)}" alt="Beacon grade ${esc(card.grade)}" height="20"></a>
+        <span class="cta-blurb">Always-fresh — it re-scans and updates on its own.</span>
+      </div>
+      <pre class="embed-code">[![Beacon](${esc(opts.embed.badgeUrl)})](${esc(opts.embed.scorecardUrl)})</pre>
+    </section>`
+    : "";
+
   return `<!doctype html>
 <html lang="en">
 <head>
@@ -202,7 +247,7 @@ export function renderHtml(card: Scorecard, opts: HtmlOptions = {}): string {
   <div class="card reveal">
     <header class="top">
       <span class="lamp" aria-hidden="true"></span>
-      <span class="brand">Beacon</span>
+      ${brand}
       <span class="top-meta"><span class="top-name">${esc(name)}</span><br>${meta}</span>
     </header>
     <section class="summary">
@@ -216,8 +261,12 @@ export function renderHtml(card: Scorecard, opts: HtmlOptions = {}): string {
     </section>
     ${fixesSection}
     ${partialNote ? `<div class="fixes" style="border-top:none;padding-top:0">${partialNote}</div>` : ""}
+    ${embedSection}
+    ${ctaSection}
   </div>
-  <footer>Graded by <strong>Beacon</strong> — Lighthouse for Claude Code artifacts. Evidence-cited, file-and-line. No vibes.</footer>
+  <footer>Graded by ${
+    opts.homeUrl ? `<a href="${esc(opts.homeUrl)}"><strong>Beacon</strong></a>` : "<strong>Beacon</strong>"
+  } — Lighthouse for Claude Code artifacts. Evidence-cited, file-and-line. No vibes.</footer>
 </main>
 </body>
 </html>

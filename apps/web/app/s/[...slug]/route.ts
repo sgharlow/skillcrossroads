@@ -40,10 +40,18 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
   // Record each scored skill for score-history / trends (fire-and-forget).
   recordScans(target.owner, target.repo, scan.skills);
 
+  const origin = new URL(req.url).origin;
   const body =
     scan.skills.length === 1
-      ? renderHtml(scan.skills[0]!.scorecard, { name: scan.skills[0]!.name })
-      : renderRepoSummaryHtml(scan, target);
+      ? renderHtml(scan.skills[0]!.scorecard, {
+          name: scan.skills[0]!.name,
+          homeUrl: "/",
+          embed: {
+            badgeUrl: `${origin}/api/badge/${target.slug}.svg`,
+            scorecardUrl: `${origin}/s/${target.slug}`,
+          },
+        })
+      : renderRepoSummaryHtml(scan, target, { homeUrl: "/" });
 
   return new Response(body, {
     headers: { ...HTML, "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=600" },

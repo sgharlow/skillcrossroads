@@ -40,7 +40,10 @@ function textWidth(s: string): number {
  */
 export function renderBadge(card: Scorecard, opts: BadgeOptions = {}): string {
   const label = opts.label ?? "beacon";
-  const value = opts.value ?? card.grade;
+  // A partial grade (some rubric categories unscored — e.g. keyless/deterministic-only, where
+  // Triggering & Verifiability don't run) is marked with a trailing "*" so the badge never implies
+  // a full assessment. Honesty over vanity: a full grade needs an Anthropic key (or Pro).
+  const value = opts.value ?? (card.partial ? `${card.grade}*` : card.grade);
   const color = gradeHex(card.grade);
 
   const PAD = 6;
@@ -53,7 +56,7 @@ export function renderBadge(card: Scorecard, opts: BadgeOptions = {}): string {
 
   const el = xmlEscape(label);
   const ev = xmlEscape(value);
-  const aria = `${el}: ${ev}`;
+  const aria = card.partial && !opts.value ? `${el}: ${ev} (partial grade — some categories not scored)` : `${el}: ${ev}`;
 
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${totalW}" height="${H}" role="img" aria-label="${aria}">
   <title>${aria}</title>

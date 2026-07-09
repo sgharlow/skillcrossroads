@@ -12,7 +12,7 @@ export { parseVerify, mapVerify, type VerifyVerdict } from "./checks/verify-04-v
 export { parseConstraints, mapConstraints, type ConstraintVerdict } from "./checks/clarity-05-constraints.js";
 export type { AsyncCheck, CheckContext } from "./checks/async.js";
 export { score, letterGrade, gradeRank, meetsMinGrade, GRADE_ORDER } from "./score.js";
-export { renderMarkdown, type MarkdownOptions } from "./render/markdown.js";
+export { renderMarkdown, mdCell, type MarkdownOptions } from "./render/markdown.js";
 export type { ModelClient, StructuredRequest, JsonSchema } from "./llm/types.js";
 export { createAnthropicClient, DEFAULT_MODEL, ModelError } from "./llm/anthropic.js";
 export { createFileCache, createMemoryCache, hashKey, type Cache } from "./llm/cache.js";
@@ -72,8 +72,13 @@ export async function auditAsync(
   inputPath: string,
   ctx: CheckContext = {},
   type: ArtifactType = "skill",
+  extra: { unscannedFiles?: readonly string[] } = {},
 ): Promise<AuditResult> {
-  const artifact = parse(inputPath, type);
+  const base = parse(inputPath, type);
+  const artifact: Artifact =
+    extra.unscannedFiles && extra.unscannedFiles.length > 0
+      ? { ...base, unscannedFiles: extra.unscannedFiles }
+      : base;
   const scorecard = score(await runChecksAsync(artifact, ctx));
   return { artifact, scorecard, name: displayName(artifact) };
 }
@@ -171,8 +176,12 @@ export async function scanGitHubRepo(
     for (const dir of limited) {
       const repoPath = dir || "(root)";
       try {
-        const local = await materializeSkill(target, dir, tree, dest, opts);
-        const res = await auditAsync(local, ctx);
+        const unscanned: string[] = [];
+        const local = await materializeSkill(target, dir, tree, dest, {
+          ...opts,
+          onPlaceholder: (rel) => unscanned.push(rel),
+        });
+        const res = await auditAsync(local, ctx, "skill", { unscannedFiles: unscanned });
         skills.push({ ...res, repoPath });
       } catch (err) {
         errors.push({ repoPath, message: err instanceof Error ? err.message : String(err) });

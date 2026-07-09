@@ -55,10 +55,16 @@ beacon ./my-skill --html --badge
 #   wrote SVG  → my-skill.beacon.svg      ← drop it in your README
 ```
 
-Then embed the badge in your skill's README:
+Then embed the badge in your skill's README — the local file, or (recommended) the hosted
+**always-fresh** badge wrapped in a link to your public scorecard, so every visitor who sees it
+can click through and scan their own skill:
 
 ```markdown
+<!-- local static badge -->
 ![Beacon](./my-skill.beacon.svg)
+
+<!-- hosted: re-scans on its own, links to the full scorecard -->
+[![Beacon](https://beacon.dev/api/badge/OWNER/REPO.svg)](https://beacon.dev/s/OWNER/REPO)
 ```
 
 ### LLM-assisted triggering check (BYOK)

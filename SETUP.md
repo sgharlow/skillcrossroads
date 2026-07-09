@@ -110,6 +110,7 @@ checks without their own key.
 | `NEXT_PUBLIC_SITE_URL` | Vercel | Canonical URL for sitemap/robots |
 | `STRIPE_SECRET_KEY` / `STRIPE_PRICE_ID` / `STRIPE_WEBHOOK_SECRET` | Vercel | Pro checkout + webhook |
 | `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET` | Vercel | Sign-in with GitHub |
+| `BEACON_SESSION_SECRET` | Vercel | **Required for Pro.** HMAC-signs the identity cookie so Pro entitlement (and managed-LLM spend) can't be forged. Set any long random string. |
 | `BEACON_MANAGED_ANTHROPIC_KEY` | Vercel | Managed LLM checks for Pro |
 
 Every paid/optional feature is env-gated: unset → a clean 501 (or in-memory/deterministic fallback);

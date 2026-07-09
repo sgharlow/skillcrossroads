@@ -22,6 +22,14 @@ export async function POST(req: Request): Promise<Response> {
   }
 
   const session = readSession(req);
+  // Require a verified GitHub identity: the webhook flips Pro on client_reference_id, so a signed-out
+  // checkout would charge the card (after the trial) and never grant Pro. Fail before creating it.
+  if (!session.login) {
+    return Response.json(
+      { error: "Sign in with GitHub before subscribing.", signIn: "/api/auth/github" },
+      { status: 401 },
+    );
+  }
   const origin = new URL(req.url).origin;
 
   // No payment_method_types — Stripe picks eligible methods dynamically (best-practice).

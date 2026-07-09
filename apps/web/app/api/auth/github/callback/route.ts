@@ -1,4 +1,14 @@
+import { signUserValue } from "@/lib/session";
+
 export const runtime = "nodejs";
+
+function readCookie(req: Request, name: string): string | undefined {
+  for (const part of (req.headers.get("cookie") ?? "").split(/;\s*/)) {
+    const eq = part.indexOf("=");
+    if (eq !== -1 && part.slice(0, eq) === name) return part.slice(eq + 1);
+  }
+  return undefined;
+}
 
 /**
  * GET /api/auth/github/callback — exchange the OAuth code for a token and set a session cookie.
@@ -16,6 +26,13 @@ export async function GET(req: Request): Promise<Response> {
   const code = url.searchParams.get("code");
   if (!code) return Response.json({ error: "missing code" }, { status: 400 });
 
+  // CSRF: the `state` we sent (stored HttpOnly) must echo back, or this is a forged/replayed callback.
+  const state = url.searchParams.get("state");
+  const expectedState = readCookie(req, "beacon_oauth_state");
+  if (!state || !expectedState || state !== expectedState) {
+    return Response.json({ error: "invalid OAuth state" }, { status: 400 });
+  }
+
   const tokenRes = await fetch("https://github.com/login/oauth/access_token", {
     method: "POST",
     headers: { "content-type": "application/json", accept: "application/json" },
@@ -32,15 +49,17 @@ export async function GET(req: Request): Promise<Response> {
   const user = (await userRes.json()) as { login?: string };
 
   // HttpOnly session cookie — the raw token never reaches the browser JS.
+  const secure = url.protocol === "https:" ? "; Secure" : "";
   const headers = new Headers({ location: "/" });
   headers.append(
     "set-cookie",
-    `beacon_gh=${encodeURIComponent(token.access_token)}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800${
-      url.protocol === "https:" ? "; Secure" : ""
-    }`,
+    `beacon_gh=${encodeURIComponent(token.access_token)}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800${secure}`,
   );
   if (user.login) {
-    headers.append("set-cookie", `beacon_user=${encodeURIComponent(user.login)}; Path=/; SameSite=Lax; Max-Age=604800`);
+    // Signed (see signUserValue) so the identity that drives Pro entitlement can't be forged.
+    headers.append("set-cookie", `beacon_user=${signUserValue(user.login)}; Path=/; SameSite=Lax; Max-Age=604800${secure}`);
   }
+  // Clear the one-time state cookie.
+  headers.append("set-cookie", `beacon_oauth_state=; Path=/; Max-Age=0${secure}`);
   return new Response(null, { status: 302, headers });
 }

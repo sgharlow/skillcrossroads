@@ -89,6 +89,14 @@ export const safety01: Check = {
       if (content !== null) findings.push(...scanText(content, rel));
     }
 
+    // Honest coverage: on a rate-limited GitHub scan some text files were never downloaded, so a
+    // "clean" result must not imply the whole skill was inspected.
+    const unscanned = artifact.unscannedFiles ?? [];
+    const coverageNote =
+      unscanned.length > 0
+        ? ` (${unscanned.length} text file${unscanned.length === 1 ? "" : "s"} not inspected — content not fetched; re-scan locally for full coverage)`
+        : "";
+
     if (findings.length > 0) {
       return {
         id: this.id,
@@ -109,7 +117,7 @@ export const safety01: Check = {
       weight: this.weight,
       status: "pass",
       score: 100,
-      evidence: [{ file: entryRel(artifact), message: "No hardcoded secrets detected." }],
+      evidence: [{ file: entryRel(artifact), message: `No hardcoded secrets detected${coverageNote}.` }],
     };
   },
 };

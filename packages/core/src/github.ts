@@ -139,6 +139,13 @@ async function fetchRaw(
 export interface MaterializeOptions extends GitHubFetchOptions {
   /** Max supporting text files to actually download (for the secret scan). Others are placeholders. */
   maxContentFiles?: number;
+  /**
+   * Called with the relative path of every non-binary text file that was NOT downloaded (skipped
+   * for the rate-limit cap, or whose fetch failed) — i.e. a file whose content the secret scan
+   * never saw. Lets the caller disclose partial coverage. Binary files are not reported (they
+   * aren't secret-scanned anyway).
+   */
+  onPlaceholder?: (rel: string) => void;
 }
 
 /**
@@ -171,10 +178,12 @@ export async function materializeSkill(
     const outPath = join(localRoot, rel);
     mkdirSync(dirname(outPath), { recursive: true });
     const isEntry = posix.basename(rel).toLowerCase() === "skill.md";
-    const wantContent = isEntry || (!BINARY_EXT.has(ext(rel)) && contentFetched < maxContent);
+    const isBinary = BINARY_EXT.has(ext(rel));
+    const wantContent = isEntry || (!isBinary && contentFetched < maxContent);
 
     if (!wantContent) {
       writeFileSync(outPath, "", "utf8"); // placeholder — keeps the file list accurate
+      if (!isBinary) opts.onPlaceholder?.(rel); // a text file we didn't scan for secrets
       continue;
     }
     try {
@@ -184,6 +193,7 @@ export async function materializeSkill(
     } catch (err) {
       if (isEntry) throw err; // no SKILL.md content → this skill can't be graded
       writeFileSync(outPath, "", "utf8"); // supporting-file fetch failed (rate limit) → placeholder
+      if (!isBinary) opts.onPlaceholder?.(rel);
     }
   }
   return localRoot;

@@ -13,16 +13,24 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
   const target = parseSlug(parts);
   if (!target) return new Response("Bad badge path", { status: 400 });
 
+  let card: Scorecard | null = null;
   let grade = "?";
   try {
     const scan = await scanTarget(target, await resolveScanOptions(req));
-    if (scan.skills.length === 1) grade = scan.skills[0]!.scorecard.grade;
-    else if (scan.skills.length > 1) grade = averageGrade(scan);
+    if (scan.skills.length === 1) {
+      card = scan.skills[0]!.scorecard; // real scorecard → badge discloses a partial (keyless) grade
+      grade = card.grade;
+    } else if (scan.skills.length > 1) {
+      grade = averageGrade(scan);
+    }
   } catch {
     grade = "?";
   }
 
-  const svg = renderBadge({ grade } as Scorecard, grade === "?" ? { value: "n/a" } : {});
+  const svg =
+    grade === "?"
+      ? renderBadge({ grade } as Scorecard, { value: "n/a" })
+      : renderBadge(card ?? ({ grade } as Scorecard));
   return new Response(svg, {
     headers: {
       "content-type": "image/svg+xml; charset=utf-8",

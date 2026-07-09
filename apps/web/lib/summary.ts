@@ -6,7 +6,7 @@ function esc(s: string): string {
 }
 
 /** A repo-level summary page: every skill in the repo with its grade, linking to each scorecard. */
-export function renderRepoSummaryHtml(scan: RepoScanResult, t: SlugTarget): string {
+export function renderRepoSummaryHtml(scan: RepoScanResult, t: SlugTarget, opts: { homeUrl?: string } = {}): string {
   const rows = [...scan.skills].sort((a, b) => b.scorecard.overall - a.scorecard.overall);
   const avg = averageScore(scan);
   const avgGrade = averageGrade(scan);
@@ -45,15 +45,29 @@ h1{font-size:20px;margin:14px 0 2px;font-weight:700}
 .sc{font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
 .nm{font-weight:600}
 .pt{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:${PALETTE.fog}}
+.cta-wrap{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-top:22px;padding-top:20px;border-top:1px solid ${PALETTE.ink3}}
+.cta-blurb{color:${PALETTE.fog};font-size:13.5px;max-width:52ch}
+.cta{display:inline-block;background:${PALETTE.beam};color:#0b1220;font-weight:700;border-radius:10px;padding:11px 20px;text-decoration:none;white-space:nowrap}
+a.brand-link{color:inherit;text-decoration:none}
 footer{color:${PALETTE.fog};font-size:12px;margin-top:22px;text-align:center}
+footer a{color:${PALETTE.fog}}
 @media(max-width:520px){.row{grid-template-columns:40px 40px 1fr}.pt{display:none}}
 </style></head>
 <body><main class="wrap">
-  <div class="top"><span class="lamp"></span><span class="brand">Beacon</span></div>
+  <div class="top"><span class="lamp"></span>${
+    opts.homeUrl ? `<a class="brand-link" href="${esc(opts.homeUrl)}"><span class="brand">Beacon</span></a>` : `<span class="brand">Beacon</span>`
+  }</div>
   <h1>${esc(t.owner)}/${esc(t.repo)}</h1>
   <p class="meta">${rows.length} skills · average <span class="avg">${avgGrade} (${avg}/100)</span> · ref ${esc(scan.ref)} · deterministic</p>
   ${rowHtml}
   ${scan.errors.length ? `<p class="meta">${scan.errors.length} skill(s) could not be scanned.</p>` : ""}
-  <footer>Graded by <strong>Beacon</strong> — Lighthouse for Claude Code artifacts.</footer>
+  ${
+    opts.homeUrl
+      ? `<div class="cta-wrap"><span class="cta-blurb">Grade your own Claude Code skill — evidence-cited, file-and-line, free.</span><a class="cta" href="${esc(opts.homeUrl)}">Scan your own skill →</a></div>`
+      : ""
+  }
+  <footer>Graded by ${
+    opts.homeUrl ? `<a href="${esc(opts.homeUrl)}"><strong>Beacon</strong></a>` : "<strong>Beacon</strong>"
+  } — Lighthouse for Claude Code artifacts.</footer>
 </main></body></html>`;
 }
