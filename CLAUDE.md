@@ -151,6 +151,15 @@ until the DB backs it. A static `SEED` gives every instance the same starter lea
 renders consistently meanwhile — exactly why the gallery (and entitlements) need the shared DB
 before real use.
 
+### Score history & trend dashboard (Sprint 11)
+
+Every scorecard scan is recorded (`lib/record.ts`, fire-and-forget) into the `scans` table via the
+`scanHistory` store (`lib/scans.ts`: `record` / `history` / `recent` / `stats`; memory + Postgres).
+`/trends/[...slug]` renders a **self-contained inline SVG** trend chart (`lib/chart.ts` — no chart
+library, grade-colored dots) of a skill's overall score over time; `/dashboard` is the metrics view
+(totals, per-skill latest-grade distribution, recent scans). Built and live-proven against the real
+Postgres.
+
 ## Conventions
 
 - **TypeScript, ESM (`"type": "module"`), NodeNext.** `strict` + `noUncheckedIndexedAccess` on.

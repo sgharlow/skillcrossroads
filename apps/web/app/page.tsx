@@ -10,6 +10,7 @@ export default function Home() {
         </span>
         <nav className="links">
           <a href="/gallery">Gallery</a>
+          <a href="/dashboard">Metrics</a>
           <a href="/pricing">Pricing</a>
           <a className="ghlink" href="/api/auth/github">
             Sign in with GitHub

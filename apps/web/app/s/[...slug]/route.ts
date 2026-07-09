@@ -2,6 +2,7 @@ import { renderHtml } from "@beacon/core";
 import { parseSlug, scanTarget } from "@/lib/scan";
 import { resolveScanOptions } from "@/lib/pro-scan";
 import { renderRepoSummaryHtml } from "@/lib/summary";
+import { recordScans } from "@/lib/record";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -35,6 +36,9 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
       headers: HTML,
     });
   }
+
+  // Record each scored skill for score-history / trends (fire-and-forget).
+  recordScans(target.owner, target.repo, scan.skills);
 
   const body =
     scan.skills.length === 1

@@ -161,6 +161,9 @@ A Next.js app (in `apps/web`) serves the shareable side of Beacon — it reuses 
 - **Public gallery** — `/gallery`, a leaderboard of opted-in scored skills (opt in via
   `/api/gallery/opt-in`), server-rendered and SEO-indexed (`sitemap.xml` + `robots.txt`), with
   sort (score / recent / name) and filter (min-grade / search).
+- **Score history & trends** — every scan is recorded; `/trends/owner/repo/path` shows a
+  self-contained SVG trend chart of a skill's grade over time, and `/dashboard` is a metrics view
+  (total scans, skills tracked, grade distribution, recent activity).
 
 Run locally: `cd apps/web && npm run dev`. Set `GITHUB_TOKEN` for higher GitHub rate limits.
 
