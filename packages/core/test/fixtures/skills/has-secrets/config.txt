@@ -1,0 +1,3 @@
+# Example config — DO NOT ship real values here
+api_key = "notarealkey_abcdef1234567890"
+region = "us-east-1"

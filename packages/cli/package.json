@@ -1,0 +1,30 @@
+{
+  "name": "beacon",
+  "version": "0.1.0",
+  "description": "Lighthouse for Claude Code artifacts — CLI. Audit a Skill and get an evidence-cited quality scorecard with a letter grade.",
+  "type": "module",
+  "bin": {
+    "beacon": "./dist/cli.js"
+  },
+  "files": [
+    "dist"
+  ],
+  "scripts": {
+    "build": "tsc -p tsconfig.json",
+    "clean": "rimraf dist"
+  },
+  "dependencies": {
+    "@beacon/core": "*",
+    "picocolors": "^1.1.0"
+  },
+  "keywords": [
+    "claude",
+    "claude-code",
+    "skills",
+    "linter",
+    "quality",
+    "scorecard",
+    "audit"
+  ],
+  "license": "MIT"
+}
