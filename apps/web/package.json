@@ -6,7 +6,7 @@
   "type": "module",
   "scripts": {
     "dev": "next dev",
-    "build": "npm --prefix ../../packages/core run build && next build",
+    "build": "next build",
     "start": "next start",
     "db:migrate": "node db/migrate.mjs"
   },
