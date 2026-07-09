@@ -30,13 +30,24 @@ runs:
       with:
         node-version: "20"
 
-    - name: Beacon report
+    # Single scan: emit the Markdown report AND (if a threshold is set) gate in one pass, so the
+    # LLM checks aren't paid for twice. Inputs are passed via env (not `${{ }}` interpolation) to
+    # avoid shell injection. `set +e` keeps a below-threshold exit from aborting the step, so the
+    # comment still posts; the captured code is re-raised by the Gate step.
+    - name: Beacon
+      id: beacon
       shell: bash
       env:
+        BEACON_PATH: ${{ inputs.path }}
+        BEACON_MIN_GRADE: ${{ inputs.min-grade }}
         ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
         GITHUB_TOKEN: ${{ github.token }}
       run: |
-        npx --yes @sgharlow/beacon@latest "${{ inputs.path }}" --markdown > "$RUNNER_TEMP/beacon-report.md" || true
+        set +e
+        args=("$BEACON_PATH" --markdown)
+        if [ -n "$BEACON_MIN_GRADE" ]; then args+=("--min-grade=$BEACON_MIN_GRADE"); fi
+        npx --yes @sgharlow/beacon@latest "${args[@]}" > "$RUNNER_TEMP/beacon-report.md"
+        echo "exit=$?" >> "$GITHUB_OUTPUT"
         cat "$RUNNER_TEMP/beacon-report.md" >> "$GITHUB_STEP_SUMMARY"
 
     - name: Comment on PR
@@ -52,6 +63,4 @@ runs:
     - name: Gate
       if: ${{ inputs.min-grade != '' }}
       shell: bash
-      env:
-        ANTHROPIC_API_KEY: ${{ inputs.anthropic-api-key }}
-      run: npx --yes @sgharlow/beacon@latest "${{ inputs.path }}" --min-grade "${{ inputs.min-grade }}"
+      run: exit ${{ steps.beacon.outputs.exit }}

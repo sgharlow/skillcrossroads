@@ -321,7 +321,9 @@ async function main(): Promise<void> {
   if (args.minGrade) {
     const failing = skills.filter((s) => !meetsMinGrade(s.scorecard.grade, args.minGrade as string));
     gateFailed = failing.length > 0;
-    if (!args.json) {
+    // Only in the human terminal mode — never pollute a `--markdown`/`--json` report (which is piped
+    // to a PR comment / file). The exit code below still fires so CI gates regardless of mode.
+    if (!args.json && !args.markdown) {
       if (gateFailed) {
         process.stdout.write(pc.red(`\n✗ Gate: ${failing.length}/${skills.length} skill(s) below ${args.minGrade}:\n`));
         for (const s of failing) process.stdout.write(pc.red(`    ${s.scorecard.grade.padEnd(2)}  ${s.repoPath}  ${s.name}\n`));
