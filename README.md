@@ -48,6 +48,20 @@ Then embed the badge in your skill's README:
 ![Beacon](./my-skill.beacon.svg)
 ```
 
+### LLM-assisted triggering check (BYOK)
+
+The highest-value check — *"will this skill actually fire?"* — uses a model. Bring your own
+Anthropic key; deterministic checks always run without one.
+
+```bash
+export ANTHROPIC_API_KEY=sk-ant-...      # your key; nothing is sent without it
+beacon ./my-skill                        # now also scores Triggering & Discoverability
+BEACON_MODEL=claude-haiku-4-5 beacon ./my-skill   # cheaper model
+```
+
+Verdicts are cached by content hash in `.beacon-cache/`, so re-scanning an unchanged skill is
+free. Without a key, Beacon runs deterministic-only and marks Triggering as "not yet scored."
+
 ## What a report looks like
 
 ```
@@ -84,7 +98,7 @@ plus evidence. Category scores roll up to an overall 0–100 and a letter grade.
 | Category | Weight | Checks in v0.1 |
 |---|---|---|
 | Correctness & Structure | 20% | valid frontmatter, recommended fields, references resolve |
-| Triggering & Discoverability | 22% | *(LLM-assisted — later sprint)* |
+| Triggering & Discoverability | 22% | description triggers reliably *(LLM-assisted, BYOK)* |
 | Clarity & Instruction Quality | 18% | no ASCII-art/persona filler |
 | Token & Context Cost | 15% | body under line/token budget |
 | Safety & Security | 15% | no hardcoded secrets |
@@ -95,10 +109,12 @@ The rubric is **versioned** — see [`Beacon-Build-Bible.md`](./Beacon-Build-Bib
 
 ## Status
 
-**v0.1 — `built` (code + tests green), not yet `live-proven`.** Deterministic checks on a local
-Skill directory, with three output surfaces: a terminal scorecard, a self-contained HTML report,
-and an embeddable SVG badge. LLM-assisted checks, hosted reports with always-fresh badges, CI, and
-agent/MCP/plugin scoring are on the roadmap (Build Bible, Part 5).
+**v0.1 — `built`, with the LLM triggering check `live-proven`.** Deterministic checks on a local
+Skill directory, three output surfaces (terminal scorecard, self-contained HTML report, embeddable
+SVG badge), plus the LLM-assisted **TRIGGER-01** triggering check (BYOK) — whose verdicts matched a
+hand-labeled 14-skill set at **92.9%** against the live API (Sprint 3 gate: ≥80%; run it yourself
+with `npm run eval:triggering`). Hosted reports with always-fresh badges, CI, and agent/MCP/plugin
+scoring are on the roadmap (Build Bible, Part 5).
 
 ## License
 

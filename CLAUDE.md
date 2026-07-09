@@ -12,13 +12,27 @@ loop); money is the hosted tier (private-repo scanning, CI gating, dashboards �
 This repo currently implements **Sprint 1 / v0.1** only.
 
 **v0.1 scope (what exists now):** the `@beacon/core` engine + the `beacon` CLI, running
-**deterministic, no-LLM, no-network** checks on a **local Skill** directory. Three output
-surfaces: a terminal scorecard, a **self-contained HTML report** (`renderHtml`), and an
-**embeddable SVG badge** (`renderBadge`) — all with an overall 0–100 score and letter grade.
+**deterministic** checks (no network) on a **local Skill** directory, plus **one LLM-assisted
+check** (TRIGGER-01, BYOK — off unless `ANTHROPIC_API_KEY` is set). Three output surfaces: a
+terminal scorecard, a **self-contained HTML report** (`renderHtml`), and an **embeddable SVG
+badge** (`renderBadge`) — all with an overall 0–100 score and letter grade.
 
 **Explicitly NOT in v0.1** (later sprints, each a shippable win — do not add speculatively):
-LLM-assisted checks, hosted backend / always-fresh badge endpoint, auth, billing,
+more LLM-assisted checks, hosted backend / always-fresh badge endpoint, auth, billing,
 agents/MCP/plugin scoring, GitHub Action / CI, the public gallery.
+
+### LLM-assisted checks (BYOK) — the async path
+
+Deterministic checks stay **pure and sync** (`Check`, `runChecks`). LLM checks are a **separate**
+`AsyncCheck` contract (`checks/async.ts`) run by `runChecksAsync(artifact, ctx)` — never fold LLM
+I/O into the sync path. `ctx.model` (a model-agnostic `ModelClient`, `llm/`) gates them: no model →
+deterministic-only, and the LLM category stays "not yet scored" (the honest partial-grade design).
+A model error is reported via `ctx.onError` and the check is **dropped**, never allowed to tank the
+grade. Rules: model-agnostic (`ModelClient` interface, Anthropic impl via raw `fetch` — no SDK dep);
+**structured output only** (force a strict tool call, validate/clamp in `parseVerdict`); **cache by
+content hash** (`llm/cache.ts`) so unchanged artifacts re-scan free. Model defaults to
+`claude-opus-4-8`, override with `BEACON_MODEL`. TRIGGER-01 is **live-proven** (92.9% label
+agreement, gate ≥80% — `npm run eval:triggering` with a key).
 
 The visual renderers (`render/html.ts`, `render/badge.ts`) share one hex palette in
 `render/theme.ts` (the "harbor marker light" scheme); the terminal renderer uses picocolors
@@ -27,8 +41,9 @@ inlined — and must **escape** every dynamic value (a scanned skill is untruste
 
 ## The claim ladder (honest status, always)
 
-Never write "DONE" bare. This repo's status: **v0.1 is `built` (code + tests green)** — it is
-NOT `live-proven` (no public users), NOT `dogfooded` end-to-end beyond local smoke runs.
+Never write "DONE" bare. This repo's status: **v0.1 is `built` (code + tests green)**; the
+**TRIGGER-01 LLM check is `live-proven`** (ran against the real Anthropic API, 92.9% label
+agreement). The product as a whole is NOT `dogfooded` end-to-end (no public users, not on npm).
 When you finish work, state the ladder level. See the Build Bible §"claim ladder".
 
 ## Architecture

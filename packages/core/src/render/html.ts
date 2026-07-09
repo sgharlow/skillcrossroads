@@ -169,9 +169,10 @@ footer a{color:${PALETTE.fog}}
 export function renderHtml(card: Scorecard, opts: HtmlOptions = {}): string {
   const name = opts.name ?? "artifact";
   const fixes = rankFixes(card.results);
+  const llmRan = card.categories.find((c) => c.key === "triggering")?.evaluated ?? false;
   const meta = [
     `rubric v${esc(card.rubricVersion)}`,
-    "deterministic",
+    llmRan ? "LLM-assisted" : "deterministic",
     opts.scannedAt ? `scanned ${esc(opts.scannedAt)}` : "",
   ]
     .filter(Boolean)

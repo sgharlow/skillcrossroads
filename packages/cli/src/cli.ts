@@ -2,7 +2,16 @@
 import { writeFileSync } from "node:fs";
 import { resolve } from "node:path";
 import pc from "picocolors";
-import { audit, renderTerminal, renderHtml, renderBadge, ParseError } from "@beacon/core";
+import {
+  auditAsync,
+  renderTerminal,
+  renderHtml,
+  renderBadge,
+  ParseError,
+  createAnthropicClient,
+  createFileCache,
+  type CheckContext,
+} from "@beacon/core";
 
 const USAGE = `${pc.bold("beacon")} — Lighthouse for Claude Code artifacts
 
@@ -16,15 +25,20 @@ ${pc.bold("Options:")}
   --html[=<file>]    Also write a self-contained HTML scorecard (default: <name>.beacon.html).
   --badge[=<file>]   Also write an SVG grade badge (default: <name>.beacon.svg).
   --json             Emit the scorecard as JSON instead of the terminal report.
+  --no-llm           Deterministic checks only; skip LLM-assisted triggering analysis.
   --no-color         Disable ANSI colors.
   -h, --help         Show this help.
   -v, --version      Show version.
 
+${pc.bold("LLM-assisted checks (BYOK):")}
+  Set ANTHROPIC_API_KEY to enable the triggering-quality check (TRIGGER-01).
+  Override the model with BEACON_MODEL. Verdicts are cached in .beacon-cache/.
+
 ${pc.bold("Examples:")}
   beacon ./my-skill
   beacon ./my-skill --html --badge
-  beacon ./my-skill --html=report.html
   beacon ./my-skill --json > report.json
+  ANTHROPIC_API_KEY=sk-... beacon ./my-skill
 `;
 
 /** A flag that takes an optional `=value`: undefined = absent, true = present (default path), string = explicit. */
@@ -35,16 +49,25 @@ interface Args {
   json: boolean;
   html: OptionalPath;
   badge: OptionalPath;
+  noLlm: boolean;
   help: boolean;
   version: boolean;
 }
 
 function parseArgs(argv: readonly string[]): Args {
-  const args: Args = { json: false, html: undefined, badge: undefined, help: false, version: false };
+  const args: Args = {
+    json: false,
+    html: undefined,
+    badge: undefined,
+    noLlm: false,
+    help: false,
+    version: false,
+  };
   for (const a of argv) {
     if (a === "--json") args.json = true;
     else if (a === "-h" || a === "--help") args.help = true;
     else if (a === "-v" || a === "--version") args.version = true;
+    else if (a === "--no-llm") args.noLlm = true;
     else if (a === "--no-color" || a === "--color") continue; // picocolors reads the env
     else if (a === "--html") args.html = true;
     else if (a.startsWith("--html=")) args.html = a.slice("--html=".length);
@@ -74,7 +97,20 @@ function writeArtifact(kind: "html" | "svg", opt: OptionalPath, name: string, co
   process.stdout.write(pc.dim(`  wrote ${kind.toUpperCase()} → ${abs}\n`));
 }
 
-function main(): void {
+/** Build the LLM check context from the environment, or an empty context (deterministic-only). */
+function buildContext(noLlm: boolean, warnings: string[]): CheckContext {
+  const apiKey = process.env["ANTHROPIC_API_KEY"];
+  if (noLlm || !apiKey) return {};
+  const model = createAnthropicClient({ apiKey, model: process.env["BEACON_MODEL"] });
+  const cache = createFileCache();
+  return {
+    model,
+    cache,
+    onError: (id, err) => warnings.push(`${id} skipped: ${err instanceof Error ? err.message : String(err)}`),
+  };
+}
+
+async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
 
   if (args.version) {
@@ -87,9 +123,12 @@ function main(): void {
     return;
   }
 
+  const warnings: string[] = [];
+  const ctx = buildContext(args.noLlm, warnings);
+
   let result;
   try {
-    result = audit(args.path);
+    result = await auditAsync(args.path, ctx);
   } catch (err) {
     if (err instanceof ParseError) {
       process.stderr.write(pc.red(`✗ ${err.message}\n`));
@@ -112,7 +151,19 @@ function main(): void {
   if (args.badge !== undefined) {
     writeArtifact("svg", args.badge, name, renderBadge(scorecard));
   }
-  if (!args.json) process.stdout.write("\n");
+
+  if (!args.json) {
+    for (const w of warnings) process.stdout.write(pc.yellow(`  ⚠ ${w}\n`));
+    if (!ctx.model) {
+      process.stdout.write(
+        pc.dim("  Triggering analysis skipped — set ANTHROPIC_API_KEY to enable it (BYOK).\n"),
+      );
+    }
+    process.stdout.write("\n");
+  }
 }
 
-main();
+main().catch((err) => {
+  process.stderr.write(pc.red(`beacon: ${err instanceof Error ? err.stack ?? err.message : String(err)}\n`));
+  process.exit(1);
+});

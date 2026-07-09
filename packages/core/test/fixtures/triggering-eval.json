@@ -1,0 +1,89 @@
+{
+  "comment": "Hand-labeled triggering-quality dataset for TRIGGER-01. label 'good' = should reliably fire; 'bad' = will under- or over-trigger. Used by scripts/eval-triggering.mjs to check verdict agreement (Sprint 3 acceptance: >=80%).",
+  "cases": [
+    {
+      "name": "meeting-notes",
+      "description": "Turn raw meeting notes into a clean list of action items with owners and due dates. Use when the user says 'turn my notes into action items', 'who owns what from this call', or pastes meeting notes and asks for follow-ups.",
+      "body": "Extract every commitment from meeting notes and output an Action/Owner/Due table.",
+      "label": "good"
+    },
+    {
+      "name": "helper",
+      "description": "Helps with tasks.",
+      "body": "Assists the user with various things.",
+      "label": "bad"
+    },
+    {
+      "name": "pdf-extractor",
+      "description": "Extract tables and text from PDF files. Use when the user uploads a PDF and asks to 'pull the tables out of this PDF', 'extract text from this document', or 'get the data from this report'.",
+      "body": "Parses PDFs into structured text and CSV tables.",
+      "label": "good"
+    },
+    {
+      "name": "utils",
+      "description": "A collection of useful utilities and general-purpose functionality for the assistant.",
+      "body": "Grab-bag of helpers.",
+      "label": "bad"
+    },
+    {
+      "name": "sql-explainer",
+      "description": "Explain what a SQL query does in plain English. Use when the user pastes a SQL query and asks 'what does this query do', 'explain this SQL', or 'is this query correct'.",
+      "body": "Reads a SQL statement and returns a plain-language explanation of each clause.",
+      "label": "good"
+    },
+    {
+      "name": "do-everything",
+      "description": "Handles anything the user needs, from writing to coding to analysis to advice — always use this skill.",
+      "body": "General assistant.",
+      "label": "bad"
+    },
+    {
+      "name": "commit-message",
+      "description": "Write a conventional-commits message from a git diff. Use when the user says 'write a commit message', 'summarize these changes for a commit', or shows a staged diff and asks what to commit.",
+      "body": "Turns a diff into a type(scope): summary commit message with a body.",
+      "label": "good"
+    },
+    {
+      "name": "thing",
+      "description": "thing",
+      "body": "does the thing",
+      "label": "bad"
+    },
+    {
+      "name": "regex-builder",
+      "description": "Build and explain regular expressions. Use when the user asks 'write a regex that matches X', 'why does my regex not match', or 'explain this pattern'.",
+      "body": "Constructs and debugs regular expressions with a plain-language breakdown.",
+      "label": "good"
+    },
+    {
+      "name": "assistant-mode",
+      "description": "Enhances the assistant with additional context and capabilities for improved responses across all domains and use cases.",
+      "body": "Adds context.",
+      "label": "bad"
+    },
+    {
+      "name": "changelog",
+      "description": "Generate a release changelog from merged pull requests. Use when the user says 'write the changelog for this release', 'summarize what changed since the last version', or 'draft release notes'.",
+      "body": "Groups merged PRs into Added/Fixed/Changed sections for a release.",
+      "label": "good"
+    },
+    {
+      "name": "smart",
+      "description": "Makes the assistant smarter and more helpful.",
+      "body": "Improves responses.",
+      "label": "bad"
+    },
+    {
+      "name": "dockerfile-linter",
+      "description": "Review a Dockerfile for security and size issues. Use when the user pastes a Dockerfile and asks 'is this Dockerfile ok', 'how do I make this image smaller', or 'review my Dockerfile'.",
+      "body": "Flags root users, unpinned base images, and cache-busting layer order in a Dockerfile.",
+      "label": "good"
+    },
+    {
+      "name": "context",
+      "description": "Provides relevant context to the model when appropriate for the current situation.",
+      "body": "Injects context.",
+      "label": "bad"
+    }
+  ]
+}
