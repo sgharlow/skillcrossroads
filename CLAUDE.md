@@ -85,8 +85,8 @@ budget · `TOKEN-02` progressive disclosure · `TOKEN-03` description budget foo
 no ASCII-art/persona filler · `SAFETY-01` no hardcoded secrets · `SAFETY-02` allowed-tools
 least-privilege · `SAFETY-03` no destructive auto-invocation · `SAFETY-04` no shell-injection in
 `!` blocks. **LLM-assisted (BYOK)** — `TRIGGER-01` description triggers reliably · `VERIFY-04`
-verification step present (fills the Verifiability category → with a key, all six categories score).
-Full ~24-check catalog is Appendix C of the Build Bible.
+verification step present · `CLARITY-05` constraints & failure modes stated. (With a key, all six
+rubric categories score.) Full ~24-check catalog is Appendix C of the Build Bible.
 
 **Token counting — honesty rule.** The char-based estimate is NOT ±5% accurate (skill markdown
 tokenizes denser than prose; `npm run eval:tokens` shows ~10–25% error, worst on code-heavy

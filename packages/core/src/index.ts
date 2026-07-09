@@ -6,9 +6,10 @@
  */
 export * from "./types.js";
 export { parse, splitFrontmatter, ParseError } from "./parse.js";
-export { runChecks, runChecksAsync, CHECKS, ASYNC_CHECKS, trigger01, verify04 } from "./checks/index.js";
+export { runChecks, runChecksAsync, CHECKS, ASYNC_CHECKS, trigger01, verify04, clarity05 } from "./checks/index.js";
 export { parseVerdict, mapVerdict, type TriggerVerdict } from "./checks/trigger-01-triggering.js";
 export { parseVerify, mapVerify, type VerifyVerdict } from "./checks/verify-04-verification.js";
+export { parseConstraints, mapConstraints, type ConstraintVerdict } from "./checks/clarity-05-constraints.js";
 export type { AsyncCheck, CheckContext } from "./checks/async.js";
 export { score, letterGrade } from "./score.js";
 export type { ModelClient, StructuredRequest, JsonSchema } from "./llm/types.js";

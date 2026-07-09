@@ -41,9 +41,10 @@ describe("auditAsync", () => {
         onError: (id) => errors.push(id),
       },
     );
-    // both LLM checks fail and are dropped
+    // all LLM checks fail and are dropped
     expect(errors).toContain("TRIGGER-01");
     expect(errors).toContain("VERIFY-04");
+    expect(errors).toContain("CLARITY-05");
     // their categories stay unevaluated rather than tanking the grade
     expect(scorecard.categories.find((c) => c.key === "triggering")?.evaluated).toBe(false);
     expect(scorecard.categories.find((c) => c.key === "verifiability")?.evaluated).toBe(false);

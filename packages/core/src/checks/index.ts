@@ -13,6 +13,7 @@ import { safety03 } from "./safety-03-autoinvoke.js";
 import { safety04 } from "./safety-04-injection.js";
 import { trigger01 } from "./trigger-01-triggering.js";
 import { verify04 } from "./verify-04-verification.js";
+import { clarity05 } from "./clarity-05-constraints.js";
 
 /** The v0.1 deterministic check catalog. Adding a check = adding one entry here. */
 export const CHECKS: readonly Check[] = [
@@ -30,7 +31,7 @@ export const CHECKS: readonly Check[] = [
 ];
 
 /** LLM-assisted checks. Run only when a model client is supplied (BYOK). */
-export const ASYNC_CHECKS: readonly AsyncCheck[] = [trigger01, verify04];
+export const ASYNC_CHECKS: readonly AsyncCheck[] = [trigger01, verify04, clarity05];
 
 export {
   struct01,
@@ -46,6 +47,7 @@ export {
   safety04,
   trigger01,
   verify04,
+  clarity05,
 };
 export type { AsyncCheck, CheckContext } from "./async.js";
 
