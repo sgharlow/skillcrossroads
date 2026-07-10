@@ -174,14 +174,14 @@ The voice is the product: **evidence-cited, "claimed vs. verified," no false con
 Six weighted categories. Each runs individual **checks**; each check emits pass / warn / fail
 plus evidence. Category scores roll up to an overall 0–100 and a letter grade.
 
-| Category | Weight | Checks in v0.1 |
+| Category | Weight | Checks (rubric v1.1) |
 |---|---|---|
-| Correctness & Structure | 20% | valid frontmatter, recommended fields, references resolve |
-| Triggering & Discoverability | 22% | description triggers reliably *(LLM-assisted, BYOK)* |
-| Clarity & Instruction Quality | 18% | no ASCII-art/persona filler; constraints & failure modes stated *(LLM)* |
+| Correctness & Structure | 20% | valid frontmatter, recommended fields, references resolve; valid agent `model:` (AGENT-01); valid MCP config (MCP-01) |
+| Triggering & Discoverability | 22% | description length + invocation cues (TRIGGER-02/03, deterministic); triggers reliably *(LLM-assisted, BYOK)* |
+| Clarity & Instruction Quality | 18% | no ASCII-art/persona filler; `argument-hint` agreement (CMD-01); constraints & failure modes stated *(LLM)* |
 | Token & Context Cost | 15% | body budget, progressive disclosure, description footprint (exact `count_tokens` with a key) |
-| Safety & Security | 15% | no hardcoded secrets, `allowed-tools` least-privilege, no destructive auto-invocation, no `!`-block shell injection |
-| Verifiability & Maintainability | 10% | verification step present *(LLM-assisted, BYOK)* |
+| Safety & Security | 15% | no hardcoded secrets (incl. JSON env values), `allowed-tools`/`tools` least-privilege, no destructive auto-invocation, no `!`-block shell injection, pinned MCP servers + TLS transports (MCP-02/03) |
+| Verifiability & Maintainability | 10% | evals/tests present (VERIFY-01, deterministic); verification step quality *(LLM-assisted, BYOK)* |
 
 The rubric is **versioned** (`RUBRIC_VERSION` in `@beacon/core`); the implemented check catalog
 is [`packages/core/src/checks/index.ts`](./packages/core/src/checks/index.ts), with more checks
@@ -261,18 +261,18 @@ Run locally: `cd apps/web && npm run dev`. Set `GITHUB_TOKEN` for higher GitHub 
 **Live in production** — the hosted app (public scorecards, always-fresh badges, gallery, trends,
 and the published [State of Claude Code Skills report](https://skillcrossroads.com/report)) is
 `live-proven` at [skillcrossroads.com](https://skillcrossroads.com), and the CLI is published on
-npm as [`skillcrossroads`](https://www.npmjs.com/package/skillcrossroads). Sixteen deterministic
-checks (structure, a three-check **Token & Context Cost** pack, clarity, and a four-check
-**Safety & Security** pack: secrets, `allowed-tools` over-permissioning, destructive
-auto-invocation, `!`-block shell injection) run on a local Skill directory or **any public GitHub
-repo by URL** (batch); five output surfaces (terminal, self-contained HTML, SVG badge, Markdown,
-JSON); plus three LLM-assisted checks (BYOK) — **TRIGGER-01** (triggering; verdicts matched a
-hand-labeled 14-skill set at **92.9%** against the live API, run `npm run eval:triggering`),
-**VERIFY-04** (verification step present), and **CLARITY-05** (constraints & failure modes) — so
-**all six rubric categories score with a key**. The source report is generated from live scans
-(`npm run report:skills`). Honest remainder: the Stripe Pro tier and GitHub sign-in are `wired`
-and configured but not yet customer-proven, the GitHub Action has not yet commented on a real
-external PR, and agent/MCP/plugin scoring (skills only today) is on the roadmap.
+npm as [`skillcrossroads`](https://www.npmjs.com/package/skillcrossroads). **Nineteen
+deterministic checks** across skills, subagents, slash commands, and `.mcp.json` configs — plus
+three live MCP server checks behind `--mcp-live` and three LLM-assisted checks (BYOK) —
+**TRIGGER-01** (triggering; verdicts matched a hand-labeled 14-skill set at **92.9%** against the
+live API, run `npm run eval:triggering`), **VERIFY-04** (verification quality), and
+**CLARITY-05** (constraints & failure modes). Keyless **skill** scans score all six rubric
+categories (rubric v1.1); a key upgrades triggering to the LLM verdict. Scans run on local paths,
+pasted files (skillcrossroads.com/paste), or **any public GitHub repo by URL** (batch, including
+its agents/commands/MCP configs); six output surfaces (terminal, self-contained HTML, SVG badge,
+Markdown, JSON, GitHub annotations). The source report is generated from live scans
+(`npm run report:skills`). Honest remainder: the Stripe Pro tier and GitHub sign-in are
+configured and owner-dogfooded but not yet customer-proven, and plugin scoring is on the roadmap.
 
 ## License
 

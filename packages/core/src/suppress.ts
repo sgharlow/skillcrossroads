@@ -88,5 +88,6 @@ export function applySuppressions(card: Scorecard, config: CrossroadsConfig | nu
   const kept = card.results.filter((r) => !ids.has(r.id.toUpperCase()));
   if (kept.length === card.results.length) return card;
   const applied = config.suppressions.filter((s) => card.results.some((r) => r.id.toUpperCase() === s.id));
-  return { ...score(kept), suppressed: applied };
+  // Re-scoring must not drop kind — renderers key honesty gates (percentile) on it.
+  return { ...score(kept), kind: card.kind, suppressed: applied };
 }

@@ -212,8 +212,12 @@ export function renderHtml(card: Scorecard, opts: HtmlOptions = {}): string {
   const partialNote = card.partial
     ? `<div class="note">Partial grade — some rubric categories have no checks in this version and are excluded from the overall.</div>`
     : "";
-  // Ecosystem context on full-rubric scans only (a partial grade vs the full-rubric sample would overstate).
-  const contextNote = card.partial ? "" : `<div class="note">★ ${esc(percentileLabel(card.overall))}</div>`;
+  // Ecosystem context on full-rubric SKILL scans only — the sample is 214 skills; ranking an
+  // agent/command/mcp card against it would overstate (kind defaults to skill for legacy cards).
+  const contextNote =
+    !card.partial && (card.kind ?? "skill") === "skill"
+      ? `<div class="note">★ ${esc(percentileLabel(card.overall))}</div>`
+      : "";
   const suppressedNote =
     card.suppressed && card.suppressed.length > 0
       ? `<div class="note">⚠ ${card.suppressed.length} check(s) suppressed via ${CONFIG_FILENAME}: ${card.suppressed

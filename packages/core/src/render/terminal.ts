@@ -128,8 +128,9 @@ export function renderTerminal(card: Scorecard, opts: RenderOptions = {}): strin
   for (const cat of card.categories) lines.push(categoryRow(cat));
   lines.push(border("bottom"));
 
-  // Ecosystem context — full-rubric scans only (a partial grade vs the full-rubric sample would overstate).
-  if (!card.partial) lines.push(pc.dim(`  ${percentileLabel(card.overall)}`));
+  // Ecosystem context — full-rubric SKILL scans only: the sample is 214 skills, so ranking an
+  // agent/command/mcp card against it would overstate (kind defaults to skill for legacy cards).
+  if (!card.partial && (card.kind ?? "skill") === "skill") lines.push(pc.dim(`  ${percentileLabel(card.overall)}`));
 
   const fixes = rankFixes(card.results);
   if (fixes.length > 0) {
@@ -146,7 +147,7 @@ export function renderTerminal(card: Scorecard, opts: RenderOptions = {}): strin
     lines.push("");
     lines.push(
       pc.dim(
-        "Partial grade: some rubric categories have no checks in v0.1 and are excluded from the overall.",
+        "Partial grade: rubric categories with no applicable/scored checks for this scan are excluded from the overall.",
       ),
     );
   }

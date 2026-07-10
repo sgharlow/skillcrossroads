@@ -72,8 +72,8 @@ export function renderMarkdown(card: Scorecard, opts: MarkdownOptions = {}): str
   lines.push(`${h} ${gradeEmoji(card.grade)} Skill Crossroads: ${card.grade} — \`${mdCode(name)}\``);
   lines.push("");
   lines.push(`**Overall ${card.overall}/100** · rubric v${card.rubricVersion} · ${mode}`);
-  // Full-rubric scans only — a partial grade vs the full-rubric sample would overstate.
-  if (!card.partial) lines.push(`_${percentileLabel(card.overall)}_`);
+  // Full-rubric SKILL scans only — the sample is skills; other kinds must not rank against it.
+  if (!card.partial && (card.kind ?? "skill") === "skill") lines.push(`_${percentileLabel(card.overall)}_`);
   lines.push("");
   lines.push("| Category | Score | |");
   lines.push("|---|---:|---|");

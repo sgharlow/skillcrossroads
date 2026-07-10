@@ -162,7 +162,7 @@ function today(): string {
 }
 
 /** CLI version — keep in sync with packages/cli/package.json on every `npm version` bump. */
-const VERSION = "0.7.0";
+const VERSION = "0.7.1";
 
 /** The site whose scorecards/badges the CLI points at (override for self-hosting). */
 const SITE_URL = process.env["BEACON_SITE_URL"] ?? "https://skillcrossroads.com";
@@ -357,7 +357,8 @@ async function main(): Promise<void> {
           for (const s of intro.filter((x) => x.skipped))
             process.stderr.write(pc.dim(`  skipped "${s.server}" (url transport — stdio only)\n`));
           const live = gradeMcpLive(".mcp.json", intro);
-          if (live.length > 0) res = { ...res, scorecard: score([...res.scorecard.results, ...live]) };
+          if (live.length > 0)
+            res = { ...res, scorecard: { ...score([...res.scorecard.results, ...live]), kind: "mcp" } };
         } else if (args.mcpLive) {
           process.stderr.write(pc.yellow("  --mcp-live ignored: the target is not a .mcp.json\n"));
         }
@@ -391,8 +392,11 @@ async function main(): Promise<void> {
 
   // Sidecar outputs (CI): a machine-readable JSON file and/or GitHub annotation lines — written
   // alongside whatever report mode is active, never replacing it.
+  if (args.annotations && remote) {
+    process.stderr.write(pc.yellow("  --annotations ignored: annotations need a local checkout (file paths must exist in the repo).\n"));
+  }
   if (args.jsonFile) {
-    const body = { target: args.path, ...meta, skills: skills.map((s) => ({ repoPath: s.repoPath, name: s.name, ...s.scorecard })), errors };
+    const body = { target: args.path, ...meta, skills: skills.map((s) => ({ repoPath: s.repoPath, name: s.name, kind: s.artifact.type, ...s.scorecard })), errors };
     writeFileSync(resolve(args.jsonFile), `${JSON.stringify(body, null, 2)}\n`, "utf8");
     process.stderr.write(pc.dim(`  wrote JSON → ${resolve(args.jsonFile)}\n`));
   }
@@ -407,8 +411,8 @@ async function main(): Promise<void> {
   if (args.json) {
     const body =
       skills.length === 1
-        ? { name: skills[0]!.name, ...skills[0]!.scorecard }
-        : { target: args.path, ...meta, skills: skills.map((s) => ({ repoPath: s.repoPath, name: s.name, ...s.scorecard })), errors };
+        ? { name: skills[0]!.name, kind: skills[0]!.artifact.type, ...skills[0]!.scorecard }
+        : { target: args.path, ...meta, skills: skills.map((s) => ({ repoPath: s.repoPath, name: s.name, kind: s.artifact.type, ...s.scorecard })), errors };
     process.stdout.write(`${JSON.stringify(body, null, 2)}\n`);
   } else if (skills.length === 1) {
     emitSingle(skills[0] as AuditResult, args);

@@ -15,19 +15,20 @@ Skill Crossroads is **open-core**: the CLI and public audits are free (that is t
 badge loop); money is the hosted Pro tier (private-repo scanning, managed LLM checks, CI gating,
 dashboards).
 
-**Current scope (Sprints 1–11 shipped):** the `@beacon/core` engine + the `skillcrossroads` CLI
-(published on npm), running **11 deterministic checks** on a local Skill directory or any public
-GitHub repo by URL (`scanGitHubRepo`, batch), plus **three LLM-assisted checks** (TRIGGER-01,
-VERIFY-04, CLARITY-05 — BYOK, off unless `ANTHROPIC_API_KEY` is set; with a key all six rubric
-categories score). Output surfaces: terminal scorecard, self-contained HTML report, embeddable
-SVG badge, Markdown (CI/PR), and JSON. The hosted web app (scorecards, always-fresh badges,
-gallery, trends, the published data report at `/report`) is **live in production** at
-skillcrossroads.com; the GitHub Action (`apps/action`, tag `v1`) and Stripe Pro tier are built
-and configured. `scripts/state-of-skills.mjs` batch-scans repos into the reproducible
-"State of Claude Code Skills" report (the data-report growth loop).
+**Current scope (rubric v1.1):** the `@beacon/core` engine + the `skillcrossroads` CLI (npm),
+grading FOUR artifact kinds — **skills, subagents, slash commands, and `.mcp.json` configs**
+(kind-aware `applicableChecks`/`applicableAsyncChecks`; `mcp` is whitelist-only so prose checks
+never mis-fire on JSON). **19 deterministic checks** + 3 LLM-assisted (TRIGGER-01/VERIFY-04/
+CLARITY-05, BYOK, kind-scoped) + 3 live MCP server checks (`--mcp-live`, CLI-only opt-in —
+NEVER hosted: spawning configured commands server-side is RCE by design). Keyless SKILL scans
+score all six categories. Surfaces: terminal, HTML, badge, Markdown, JSON (`--json[=file]`),
+GitHub annotations (`--annotations`), paste-to-scan (`/paste`), hosted repo scans incl.
+single-file artifacts, `.skillcrossroads.json` config/suppression (SAFETY-* unsuppressible),
+ecosystem percentile (full-rubric SKILL cards only). Hosted app + GitHub Action (`v1`) + Stripe
+Pro all live and owner-dogfooded. `scripts/state-of-skills.mjs` regenerates the data report.
 
-**Not yet built** (roadmap — do not add speculatively): agent/MCP/plugin scoring (skills only
-today), more checks from the v1 catalog, org/team features.
+**Not yet built** (roadmap — do not add speculatively): plugin scoring, more checks from the
+v1 catalog, org/team features. Everything further is demand-gated (see ROADMAP.md).
 
 ### LLM-assisted checks (BYOK) — the async path
 
@@ -90,14 +91,14 @@ Each check emits `status` (`pass` | `warn` | `fail`), a `score` (0–100), and *
 cited, file-and-line, "claimed vs verified" voice IS the brand — every check must produce
 concrete receipts, never vibes. Register new checks in `packages/core/src/checks/index.ts`.
 
-The v0.1 catalog: **deterministic** — `STRUCT-01` valid YAML frontmatter · `STRUCT-02` recommended
-fields present · `STRUCT-05` supporting-file references resolve · `TOKEN-01` body under line/token
-budget · `TOKEN-02` progressive disclosure · `TOKEN-03` description budget footprint · `CLARITY-03`
-no ASCII-art/persona filler · `SAFETY-01` no hardcoded secrets · `SAFETY-02` allowed-tools
-least-privilege · `SAFETY-03` no destructive auto-invocation · `SAFETY-04` no shell-injection in
-`!` blocks. **LLM-assisted (BYOK)** — `TRIGGER-01` description triggers reliably · `VERIFY-04`
-verification step present · `CLARITY-05` constraints & failure modes stated. (With a key, all six
-rubric categories score.) The full ~24-check v1 catalog lives in the private Build Bible; the
+The current catalog (rubric v1.1): **deterministic** — `STRUCT-01/02/05` frontmatter/fields/refs ·
+`TOKEN-01/02/03` budgets + disclosure · `CLARITY-03` no filler · `SAFETY-01..04` secrets
+(incl. JSON env values)/least-privilege/auto-invoke/`!`-injection · `TRIGGER-02/03` description
+length + invocation cues · `VERIFY-01` evals present (skills) · `AGENT-01` model validity ·
+`CMD-01` argument-hint agreement · `MCP-01/02/03` config shape/pinning/TLS. **LLM-assisted
+(BYOK, kind-scoped)** — `TRIGGER-01` (skills+agents) · `VERIFY-04` · `CLARITY-05`. **Live MCP
+(`--mcp-live`)** — `MCPT-01/02/03` reachability/tool descriptions/param docs. The full v1 catalog
+lives in the private Build Bible; the
 implemented set in `packages/core/src/checks/index.ts` is the public source of truth.
 
 **Token counting — honesty rule.** The char-based estimate is NOT ±5% accurate (skill markdown

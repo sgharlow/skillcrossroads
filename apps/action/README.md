@@ -42,9 +42,15 @@ That's it. Open a PR touching a skill and Skill Crossroads posts a scorecard com
 
 ## What it does
 
-1. **Report** — grades your skills, writes the Markdown scorecard to the job summary, and (on PRs)
-   posts it as a comment that updates in place on re-runs (no spam).
-2. **Gate** — if `min-grade` is set, any skill below the threshold exits non-zero and fails the check.
+1. **Report** — grades every skill, subagent, slash command, and `.mcp.json` under `path`,
+   writes the Markdown scorecard to the job summary, and (on PRs) posts it as a comment that
+   updates in place on re-runs (no spam).
+2. **Inline annotations** — every warn/fail lands as a `::warning`/`::error` at the exact
+   file:line in the PR diff, with the fix attached.
+3. **Grade delta vs base** — the comment includes a "Changes vs base" section (📈 `B → A−`,
+   🆕 new, 🗑 removed, average movement), compared deterministic-vs-deterministic so LLM
+   coverage differences never produce phantom deltas.
+4. **Gate** — if `min-grade` is set, any artifact below the threshold exits non-zero and fails the check.
 
 Deterministic checks run with no configuration. Provide `anthropic-api-key` to also score triggering
 quality, verification, and constraint coverage.

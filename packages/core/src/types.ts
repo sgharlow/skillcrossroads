@@ -176,4 +176,10 @@ export interface Scorecard {
   readonly partial: boolean;
   /** Checks excluded from this grade by `.skillcrossroads.json` — always rendered, never silent. */
   readonly suppressed?: readonly Suppression[];
+  /**
+   * The graded artifact's kind, attached by audit()/auditAsync(). Renderers use it to keep
+   * kind-specific claims honest (the ecosystem percentile compares against a SKILLS sample, so
+   * it only renders for skills). Absent on hand-constructed cards → treated as "skill".
+   */
+  readonly kind?: ArtifactType;
 }

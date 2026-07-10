@@ -1,4 +1,4 @@
-import type { Artifact, Category, CheckResult, CheckContext } from "../types.js";
+import type { Artifact, ArtifactType, Category, CheckResult, CheckContext } from "../types.js";
 
 export type { CheckContext } from "../types.js";
 
@@ -8,5 +8,7 @@ export interface AsyncCheck {
   readonly category: Category;
   readonly title: string;
   readonly weight: number;
+  /** Artifact kinds this check applies to. Absent = all markdown kinds (never `mcp`). */
+  readonly appliesTo?: readonly ArtifactType[];
   run(artifact: Artifact, ctx: CheckContext): Promise<CheckResult>;
 }

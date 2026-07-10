@@ -5,6 +5,17 @@ function esc(s: string): string {
   return String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 }
 
+/** Honest count line: "21 artifacts (18 skills · 3 agents)" — never blend kinds into "skills". */
+function countLabel(rows: readonly { artifact: { type: string } }[]): string {
+  const counts = new Map<string, number>();
+  for (const r of rows) counts.set(r.artifact.type, (counts.get(r.artifact.type) ?? 0) + 1);
+  if (counts.size === 1 && counts.has("skill")) return `${rows.length} skills`;
+  const label = (t: string): string =>
+    t === "skill" ? "skills" : t === "subagent" ? "agents" : t === "command" ? "commands" : "mcp configs";
+  const parts = [...counts.entries()].map(([t, n]) => `${n} ${label(t)}`);
+  return `${rows.length} artifacts (${parts.join(" · ")})`;
+}
+
 /** A repo-level summary page: every skill in the repo with its grade, linking to each scorecard. */
 export function renderRepoSummaryHtml(scan: RepoScanResult, t: SlugTarget, opts: { homeUrl?: string } = {}): string {
   const rows = [...scan.skills].sort((a, b) => b.scorecard.overall - a.scorecard.overall);
@@ -63,7 +74,7 @@ footer a{color:${PALETTE.fog}}
     opts.homeUrl ? `<a class="brand-link" href="${esc(opts.homeUrl)}"><span class="brand">Skill Crossroads</span></a>` : `<span class="brand">Skill Crossroads</span>`
   }</div>
   <h1>${esc(t.owner)}/${esc(t.repo)}</h1>
-  <p class="meta">${rows.length} skills · average <span class="avg">${avgGrade} (${avg}/100)</span> · ref ${esc(scan.ref)} · deterministic</p>
+  <p class="meta">${countLabel(rows)} · average <span class="avg">${avgGrade} (${avg}/100)</span> · ref ${esc(scan.ref)} · deterministic</p>
   ${rowHtml}
   ${scan.errors.length ? `<p class="meta">${scan.errors.length} skill(s) could not be scanned.</p>` : ""}
   ${

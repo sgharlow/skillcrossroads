@@ -50,8 +50,18 @@ export const CHECKS: readonly Check[] = [
   mcp03,
 ];
 
-/** LLM-assisted checks. Run only when a model client is supplied (BYOK). */
-export const ASYNC_CHECKS: readonly AsyncCheck[] = [trigger01, verify04, clarity05];
+/**
+ * LLM-assisted checks. Run only when a model client is supplied (BYOK). Kind-scoped at
+ * registration like the deterministic catalog: TRIGGER-01 judges invocation descriptions
+ * (skills + subagents; commands are explicitly invoked, matching TRIGGER-02/03); VERIFY-04 and
+ * CLARITY-05 judge markdown instructions (never a JSON `.mcp.json` — a config structurally has
+ * no description/body, and grading it with prose checks turned clean configs into Fs).
+ */
+export const ASYNC_CHECKS: readonly AsyncCheck[] = [
+  { ...trigger01, appliesTo: ["skill", "subagent"] },
+  { ...verify04, appliesTo: ["skill", "subagent", "command"] },
+  { ...clarity05, appliesTo: ["skill", "subagent", "command"] },
+];
 
 export {
   struct01,
@@ -89,6 +99,12 @@ export function applicableChecks(artifact: Artifact): readonly Check[] {
   return CHECKS.filter((c) => !c.appliesTo || c.appliesTo.includes(artifact.type));
 }
 
+/** Same applicability rule for the LLM-assisted set (mcp is whitelist-only there too). */
+export function applicableAsyncChecks(artifact: Artifact): readonly AsyncCheck[] {
+  if (artifact.type === "mcp") return ASYNC_CHECKS.filter((c) => c.appliesTo?.includes("mcp"));
+  return ASYNC_CHECKS.filter((c) => !c.appliesTo || c.appliesTo.includes(artifact.type));
+}
+
 /** Run every applicable deterministic check against an artifact. Sync, no network. `ctx` is optional. */
 export function runChecks(artifact: Artifact, ctx?: CheckContext): CheckResult[] {
   return applicableChecks(artifact).map((check) => check.run(artifact, ctx));
@@ -118,7 +134,7 @@ export async function runChecksAsync(
   if (!enriched.model) return deterministic;
 
   const llm: CheckResult[] = [];
-  for (const check of ASYNC_CHECKS) {
+  for (const check of applicableAsyncChecks(artifact)) {
     try {
       llm.push(await check.run(artifact, enriched));
     } catch (err) {

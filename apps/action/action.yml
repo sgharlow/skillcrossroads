@@ -63,9 +63,13 @@ runs:
         git fetch --depth=1 origin "$BASE_REF" 2>/dev/null || exit 0
         git worktree add --detach "$RUNNER_TEMP/crossroads-base" FETCH_HEAD 2>/dev/null || exit 0
         if [ -e "$RUNNER_TEMP/crossroads-base/$CROSSROADS_PATH" ]; then
+          # Compare deterministic-vs-deterministic: the main scan may be LLM-assisted, and mixing
+          # rubric coverage across the pair produces phantom deltas on unchanged files.
+          npx --yes skillcrossroads@latest "$CROSSROADS_PATH" --no-llm --markdown \
+            --json="$RUNNER_TEMP/crossroads-head-det.json" > /dev/null 2>&1
           npx --yes skillcrossroads@latest "$RUNNER_TEMP/crossroads-base/$CROSSROADS_PATH" --no-llm --markdown \
             --json="$RUNNER_TEMP/crossroads-base.json" > /dev/null 2>&1
-          node "${{ github.action_path }}/delta.mjs" "$RUNNER_TEMP/crossroads-base.json" "$RUNNER_TEMP/crossroads-head.json" \
+          node "${{ github.action_path }}/delta.mjs" "$RUNNER_TEMP/crossroads-base.json" "$RUNNER_TEMP/crossroads-head-det.json" \
             >> "$RUNNER_TEMP/crossroads-report.md"
         fi
         git worktree remove --force "$RUNNER_TEMP/crossroads-base" 2>/dev/null
