@@ -155,6 +155,27 @@ a key). Each check is a ready-made evidence post for the content cadence. 227 te
 > launch produces a user who asks for it — not before. Mass auto-editing a user's repos is also
 > not even desirable; opt-in-per-repo is the right shape, and `init` is the per-repo primitive.
 
+### Sprint A2 — Account self-service · **SHIPPED 2026-07-10** (`live-proven`)
+
+> **Completing the live paid path, not new breadth.** The app had auth + live Stripe billing but
+> no account surface — you could subscribe but not cancel, sign in but not sign out, and scans
+> weren't tied to you. Shipping "subscribe" without "cancel" is an *incomplete critical path* on a
+> paid tier (Stripe + consumer-protection rules expect an easy cancel), categorically different
+> from demand-gated features — so this cleared the gate.
+>
+> `live-proven`: **`/api/billing/portal`** opens the Stripe Customer Portal (cancel / resume /
+> update card / invoices) via the stored customer id — no card data ever touches the app; activated
+> once on the live account (`apps/web/scripts/activate-stripe-portal.mjs`). **`/api/auth/logout`**
+> expires both cookies. **`/account`** shows identity, plan (Free/Pro), Manage-billing/Upgrade,
+> Sign out, and **your recent scans** (per-user history: nullable `scans.login` recorded only for
+> signed-in scans — anonymous scans stay anonymous; `ScanHistory.mine`, latest-per-repo; prod DB
+> migrated + verified before deploy). Nav gains Account; `/pro/success` now links `/account` (its
+> portal promise is finally true). 283 tests. **Remaining dogfood:** a real Pro user clicking
+> Manage-billing to confirm the live portal opens (customer path, not covered by synthetic tests).
+>
+> **Still deferred (Tier 3, demand-gated):** self-serve "disconnect GitHub / delete my data".
+> **Not building:** a maintainer revenue/subscriber dashboard — the Stripe dashboard is that.
+
 ### Findings from the badge-loop dogfood (2026-07-10) — noted, not yet actioned
 
 - **Kind-aware "partial" semantics.** Badging real command-only / agent-only repos surfaced that
