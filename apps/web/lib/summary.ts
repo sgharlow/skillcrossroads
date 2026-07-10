@@ -18,7 +18,11 @@ export function renderRepoSummaryHtml(scan: RepoScanResult, t: SlugTarget, opts:
       return `<a class="row" href="${esc(href)}">
         <span class="g" style="color:${color};border-color:${color}">${esc(s.scorecard.grade)}</span>
         <span class="sc">${s.scorecard.overall}</span>
-        <span class="nm">${esc(s.name)}</span>
+        <span class="nm">${esc(s.name)}${
+          s.artifact.type !== "skill"
+            ? ` <span class="kind">[${s.artifact.type === "subagent" ? "agent" : esc(s.artifact.type)}]</span>`
+            : ""
+        }</span>
         <span class="pt">${esc(s.repoPath)}</span>
       </a>`;
     })
@@ -44,6 +48,7 @@ h1{font-size:20px;margin:14px 0 2px;font-weight:700}
 .g{font-weight:700;text-align:center;border:1px solid;border-radius:16px;padding:2px 0;font-size:13px}
 .sc{font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
 .nm{font-weight:600}
+.kind{color:${PALETTE.fog};font-size:11px;font-weight:500}
 .pt{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:${PALETTE.fog}}
 .cta-wrap{display:flex;flex-wrap:wrap;gap:12px;align-items:center;justify-content:space-between;margin-top:22px;padding-top:20px;border-top:1px solid ${PALETTE.ink3}}
 .cta-blurb{color:${PALETTE.fog};font-size:13.5px;max-width:52ch}

@@ -19,6 +19,7 @@ import { cmd01 } from "./cmd-01-arguments.js";
 import { trigger02 } from "./trigger-02-desc-quality.js";
 import { trigger03 } from "./trigger-03-cues.js";
 import { verify01 } from "./verify-01-evals.js";
+import { mcp01, mcp02, mcp03 } from "./mcp-config.js";
 
 /**
  * The deterministic check catalog. Adding a check = adding one entry here.
@@ -34,7 +35,8 @@ export const CHECKS: readonly Check[] = [
   { ...token02, appliesTo: ["skill"] },
   token03,
   clarity03,
-  safety01,
+  // The secret scan also covers .mcp.json (inline keys in `env` blocks are the classic leak).
+  { ...safety01, appliesTo: ["skill", "subagent", "command", "mcp"] },
   safety02,
   safety03,
   safety04,
@@ -43,6 +45,9 @@ export const CHECKS: readonly Check[] = [
   trigger02,
   trigger03,
   verify01,
+  mcp01,
+  mcp02,
+  mcp03,
 ];
 
 /** LLM-assisted checks. Run only when a model client is supplied (BYOK). */
@@ -68,11 +73,19 @@ export {
   trigger02,
   trigger03,
   verify01,
+  mcp01,
+  mcp02,
+  mcp03,
 };
 export type { AsyncCheck, CheckContext } from "./async.js";
 
-/** Checks applicable to an artifact's kind (absent `appliesTo` = applies to all kinds). */
+/**
+ * Checks applicable to an artifact's kind. Markdown-artifact checks default to all markdown
+ * kinds; `mcp` (a JSON config, no frontmatter/body) is WHITELIST-only — a check must name it
+ * explicitly, so frontmatter/prose checks can never mis-fire on a config file.
+ */
 export function applicableChecks(artifact: Artifact): readonly Check[] {
+  if (artifact.type === "mcp") return CHECKS.filter((c) => c.appliesTo?.includes("mcp"));
   return CHECKS.filter((c) => !c.appliesTo || c.appliesTo.includes(artifact.type));
 }
 

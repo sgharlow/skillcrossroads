@@ -59,7 +59,21 @@ fails), agents are checked for typo'd `model:` values (AGENT-01) and for the
 inherits-every-tool trap when no `tools:` list is declared (SAFETY-02), and commands for
 `$ARGUMENTS`/`argument-hint` agreement (CMD-01). Skill-only structure checks (supporting-file
 refs, progressive disclosure) are skipped for single-file artifacts, disclosed as unscored.
-*(Hosted web scanning of agents/commands is on the roadmap — CLI + GitHub Action today.)*
+Hosted scans (`/s/owner/repo` and badges) include agents and commands too.
+
+### MCP configs (`.mcp.json`)
+
+Phase A of MCP support grades your **MCP configuration** — deterministic, evidence-cited:
+
+```bash
+skillcrossroads .mcp.json          # auto-detected (or --kind=mcp)
+```
+
+Checks: valid config shape (MCP-01), **version-pinned `npx` server packages** — an unpinned
+server ships whatever is latest straight into your session (MCP-02), **TLS on remote
+transports** (MCP-03), and the standard secret scan on inline `env` values (SAFETY-01). The
+four unscorable rubric categories are honestly marked unscored. Grading a *server's* tool
+descriptions (Phase B, `--mcp-live`) is on the roadmap.
 
 ### Scan a whole GitHub repo (no clone)
 

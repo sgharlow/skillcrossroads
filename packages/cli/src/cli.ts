@@ -50,8 +50,8 @@ ${pc.bold("Options:")}
                      to <f> — cat it in a CI step to get inline PR annotations.
   --min-grade=<G>    Exit non-zero if any scanned skill grades below <G> (CI gate), e.g. B or C-.
   --no-llm           Deterministic checks only; skip LLM-assisted triggering analysis.
-  --kind=<k>         Artifact kind for a bare .md file: skill | agent | command
-                     (auto-detected from agents/ and commands/ paths when omitted).
+  --kind=<k>         Artifact kind for a bare file: skill | agent | command | mcp
+                     (auto-detected from agents//commands/ paths and .mcp.json when omitted).
   --max=<n>          Cap the number of skills scanned from a repo.
   --no-color         Disable ANSI colors.
   -h, --help         Show this help.
@@ -154,7 +154,7 @@ function today(): string {
 }
 
 /** CLI version — keep in sync with packages/cli/package.json on every `npm version` bump. */
-const VERSION = "0.5.0";
+const VERSION = "0.6.0";
 
 /** The site whose scorecards/badges the CLI points at (override for self-hosting). */
 const SITE_URL = process.env["BEACON_SITE_URL"] ?? "https://skillcrossroads.com";
@@ -332,12 +332,14 @@ async function main(): Promise<void> {
               ? "subagent"
               : args.kind === "command"
                 ? "command"
-                : args.kind === "skill"
-                  ? "skill"
-                  : (() => {
-                      process.stderr.write(pc.red(`Unknown --kind: ${args.kind} (use skill | agent | command)\n`));
-                      process.exit(2);
-                    })();
+                : args.kind === "mcp"
+                  ? "mcp"
+                  : args.kind === "skill"
+                    ? "skill"
+                    : (() => {
+                        process.stderr.write(pc.red(`Unknown --kind: ${args.kind} (use skill | agent | command | mcp)\n`));
+                        process.exit(2);
+                      })();
         const kind = flagKind ?? detectKind(abs) ?? "skill";
         const res = await auditAsync(abs, ctx, kind);
         skills = [{ ...res, repoPath: "." }];

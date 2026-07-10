@@ -118,6 +118,30 @@ export function findSkillDirs(entries: readonly TreeEntry[], subpath?: string): 
   return [...dirs].sort();
 }
 
+/**
+ * Single-file artifacts in the tree: subagents (`…/agents/*.md`), slash commands
+ * (`…/commands/*.md`, README excluded), and MCP configs (`.mcp.json` at any level). Honors
+ * `subpath` (a containing dir OR the exact file path, so deep links to one artifact work).
+ */
+export function findArtifactFiles(
+  entries: readonly TreeEntry[],
+  subpath?: string,
+): { agents: string[]; commands: string[]; mcp: string[] } {
+  const norm = subpath ? subpath.replace(/^\/+|\/+$/g, "") : undefined;
+  const inScope = (p: string): boolean => !norm || p === norm || p.startsWith(`${norm}/`);
+  const agents: string[] = [];
+  const commands: string[] = [];
+  const mcp: string[] = [];
+  for (const e of entries) {
+    if (e.type !== "blob" || !inScope(e.path)) continue;
+    const base = posix.basename(e.path);
+    if (/(^|\/)agents\/[^/]+\.md$/i.test(e.path) && !/^readme\.md$/i.test(base)) agents.push(e.path);
+    else if (/(^|\/)commands\/[^/]+\.md$/i.test(e.path) && !/^readme\.md$/i.test(base)) commands.push(e.path);
+    else if (base === ".mcp.json") mcp.push(e.path);
+  }
+  return { agents: agents.sort(), commands: commands.sort(), mcp: mcp.sort() };
+}
+
 async function fetchRaw(
   target: GitHubTarget,
   ref: string,
@@ -134,6 +158,16 @@ async function fetchRaw(
   const res = await doFetch(url, { headers });
   if (!res.ok) throw new GitHubError(`raw fetch ${res.status} for ${path}`);
   return res.text();
+}
+
+/** Fetch one single-file artifact's raw content (agents/commands/.mcp.json hosted scans). */
+export async function fetchArtifactFile(
+  target: GitHubTarget,
+  ref: string,
+  path: string,
+  opts: GitHubFetchOptions = {},
+): Promise<string> {
+  return fetchRaw(target, ref, path, opts);
 }
 
 export interface MaterializeOptions extends GitHubFetchOptions {

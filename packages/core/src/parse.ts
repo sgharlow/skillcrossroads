@@ -132,6 +132,7 @@ export function detectKind(inputPath: string): ArtifactType | null {
   const abs = resolve(inputPath);
   const posix = toPosix(abs).toLowerCase();
   if (posix.endsWith("/skill.md")) return "skill";
+  if (posix.endsWith(".mcp.json")) return "mcp"; // `.mcp.json` or `<name>.mcp.json`
   if (existsSync(abs) && statSync(abs).isDirectory()) {
     const entries = readdirSync(abs);
     if (entries.some((e) => e.toLowerCase() === ENTRY_FILENAME.toLowerCase())) return "skill";
@@ -152,6 +153,26 @@ export function detectKind(inputPath: string): ArtifactType | null {
  *    single-file artifacts have no supporting-file list — sibling agents are NOT this artifact's files.
  */
 export function parse(inputPath: string, type: ArtifactType = "skill"): Artifact {
+  // MCP Phase A: the artifact is a `.mcp.json` config file — raw JSON, no frontmatter/body.
+  if (type === "mcp") {
+    const abs = resolve(inputPath);
+    if (!existsSync(abs)) throw new ParseError(`Path does not exist: ${inputPath}`);
+    if (!statSync(abs).isFile() || !toPosix(abs).toLowerCase().endsWith(".json")) {
+      throw new ParseError(`An mcp artifact is a .mcp.json file — got: ${inputPath}`);
+    }
+    const raw = readFileSync(abs, "utf8");
+    return {
+      type,
+      root: resolve(abs, ".."),
+      entryPath: abs,
+      raw,
+      frontmatter: null,
+      frontmatterError: null,
+      body: "",
+      bodyStartLine: 1,
+      files: [],
+    };
+  }
   if (type === "subagent" || type === "command") {
     const abs = resolve(inputPath);
     if (!existsSync(abs)) throw new ParseError(`Path does not exist: ${inputPath}`);

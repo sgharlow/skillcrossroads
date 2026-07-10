@@ -100,6 +100,19 @@ a key). Each check is a ready-made evidence post for the content cadence. 227 te
 - **Decision:** tagline keeps "MCP servers" with Phase A+B committed to the backlog; if Phase B
   is not built by the next quarterly review, drop the tagline claim (honesty over aspiration).
 
+### Sprint 5 — Tagline completion · **SHIPPED 2026-07-10** (owner-directed)
+
+> Closes every in-flight commitment, `live-proven` in `skillcrossroads@0.6.0` + deploy:
+> **Hosted agents/commands** (Sprint-2 item 6 leftover) — `scanGitHubRepo` now discovers and
+> grades `agents/*.md`, `commands/*.md`, and `.mcp.json` in any public repo, so `/s/owner/repo`
+> summaries, deep links, and badges cover them (kind-labeled rows). **MCP Phase A** — `.mcp.json`
+> config grading: MCP-01 (valid shape), MCP-02 (version-pinned npx servers — supply-chain),
+> MCP-03 (TLS on remote transports, localhost exempt) + the secret scan on inline `env` values;
+> `mcp` is a whitelist-only kind so frontmatter/prose checks can never mis-fire on a config.
+> 232 tests. Remaining honest gaps: the "State of Agents" report edition (content run needing a
+> curated repo list — do alongside the launch), MCP Phase B `--mcp-live`, and SAFETY-01
+> JSON-assignment secret patterns (`"DB_PASSWORD": "…"`) — noted as a check improvement.
+
 ### Deferred (build only on explicit demand evidence)
 - **MCP server grading (full)** — pending the Sprint-4 spike gate
 - **`--suggest`** LLM fix-generation (rewrite the failing description, BYOK) — after suppression

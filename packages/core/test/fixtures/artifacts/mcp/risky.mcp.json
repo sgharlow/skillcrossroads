@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "drifty": { "command": "npx", "args": ["-y", "some-mcp-server"] },
+    "plaintext": { "url": "http://mcp.example.com/sse" },
+    "leaky": { "command": "npx", "args": ["-y", "db-server@1.0.0"], "env": { "AWS_ACCESS_KEY_ID": "AKIAIOSFODNN7EXAMPLE" } }
+  }
+}

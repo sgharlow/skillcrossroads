@@ -40,7 +40,7 @@ export {
 } from "./suppress.js";
 
 import { basename, join, resolve, relative, sep } from "node:path";
-import { mkdtempSync, rmSync, existsSync, readdirSync, statSync } from "node:fs";
+import { mkdtempSync, rmSync, existsSync, readdirSync, statSync, writeFileSync, mkdirSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { parse } from "./parse.js";
 import { runChecks, runChecksAsync } from "./checks/index.js";
@@ -51,7 +51,9 @@ import {
   parseGitHubUrl,
   fetchRepoTree,
   findSkillDirs,
+  findArtifactFiles,
   materializeSkill,
+  fetchArtifactFile,
   type GitHubFetchOptions,
 } from "./github.js";
 
@@ -69,6 +71,7 @@ function displayName(artifact: Artifact): string {
   if (artifact.type === "subagent" || artifact.type === "command") {
     return basename(artifact.entryPath).replace(/\.md$/i, "");
   }
+  if (artifact.type === "mcp") return basename(artifact.entryPath);
   return basename(artifact.root);
 }
 
@@ -200,6 +203,9 @@ export async function scanLocalDir(root: string, ctx: CheckContext = {}): Promis
   for (const dir of dirs) await scanOne(dir, "skill");
   for (const f of agents) await scanOne(f, "subagent");
   for (const f of commands) await scanOne(f, "command");
+  // MCP Phase A: a project-level .mcp.json at the scan root.
+  const mcpConfig = join(abs, ".mcp.json");
+  if (existsSync(mcpConfig)) await scanOne(mcpConfig, "mcp");
   return { skills, errors };
 }
 
@@ -226,7 +232,9 @@ export async function scanGitHubRepo(
 ): Promise<RepoScanResult> {
   const target = parseGitHubUrl(url);
   const tree = await fetchRepoTree(target, opts);
-  const dirs = findSkillDirs(tree.entries, opts.subpath ?? target.subpath);
+  const subpath = opts.subpath ?? target.subpath;
+  const dirs = findSkillDirs(tree.entries, subpath);
+  const files = findArtifactFiles(tree.entries, subpath);
   const limited = opts.max ? dirs.slice(0, opts.max) : dirs;
 
   const dest = mkdtempSync(join(tmpdir(), "beacon-gh-"));
@@ -245,6 +253,27 @@ export async function scanGitHubRepo(
         skills.push({ ...res, repoPath });
       } catch (err) {
         errors.push({ repoPath, message: err instanceof Error ? err.message : String(err) });
+      }
+    }
+    // Single-file artifacts (subagents, commands, .mcp.json): one raw fetch each, graded through
+    // the same pipeline. The `max` cap applies across everything scanned, skills first.
+    const singles: Array<{ path: string; kind: ArtifactType }> = [
+      ...files.agents.map((p) => ({ path: p, kind: "subagent" as ArtifactType })),
+      ...files.commands.map((p) => ({ path: p, kind: "command" as ArtifactType })),
+      ...files.mcp.map((p) => ({ path: p, kind: "mcp" as ArtifactType })),
+    ];
+    const budget = opts.max ? Math.max(0, opts.max - skills.length) : singles.length;
+    for (const { path, kind } of singles.slice(0, budget)) {
+      try {
+        const content = await fetchArtifactFile(target, tree.ref, path, opts);
+        // Preserve the directory shape so filename-derived names (commands) stay correct.
+        const localFile = join(dest, "singles", path);
+        mkdirSync(join(localFile, ".."), { recursive: true });
+        writeFileSync(localFile, content, "utf8");
+        const res = await auditAsync(localFile, ctx, kind);
+        skills.push({ ...res, repoPath: path });
+      } catch (err) {
+        errors.push({ repoPath: path, message: err instanceof Error ? err.message : String(err) });
       }
     }
   } finally {

@@ -1,0 +1,7 @@
+{
+  "mcpServers": {
+    "github": { "command": "npx", "args": ["-y", "@modelcontextprotocol/server-github@1.2.3"] },
+    "local-api": { "url": "http://localhost:3111/mcp" },
+    "remote": { "url": "https://mcp.example.com/sse" }
+  }
+}
