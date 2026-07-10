@@ -68,12 +68,14 @@ demand amplifiers. No horizontal breadth.*
 > agents/commands now (it wraps the CLI). **Item 6 remaining:** hosted web scanning of
 > agents/commands + the "State of Claude Code Agents" report edition — next session.
 
-### Sprint 3 — Funnel + CI depth · ~4 dev-days · 1 week · **gated on G0 sustained**
+### Sprint 3 — Funnel + CI depth · **SHIPPED 2026-07-10** (owner override of the G0 gate)
 
-| # | Item | Why | Est. |
-|---|------|-----|------|
-| 7 | **Paste-to-scan** on the web — paste a `SKILL.md` (or drop a folder) → instant scorecard, no GitHub required | Today the web funnel dies for anyone whose skill isn't in a public repo — most skills mid-authoring | 2d |
-| 8 | **PR annotations + grade delta** — Action emits `::warning file=…,line=…` inline annotations and "this PR: B → A−" base-vs-head delta in the comment | Findings in the diff where devs live; the delta makes quality visible per-change | 2d |
+> Both items `live-proven` in `skillcrossroads@0.4.0` + same-day deploy: **/paste** paste-to-scan
+> (zero-JS form → instant scorecard for skills/agents/commands; deterministic-only, 200 KB cap,
+> hostile input escape live-verified; linked from the hero, in the sitemap) and **CI depth** —
+> CLI `--annotations=<file>` (::warning/::error, file:line-anchored) + `--json=<file>` sidecar;
+> the Action emits inline PR annotations and a best-effort "Changes vs base" grade-delta section
+> (base-ref worktree scan + dependency-free delta.mjs, silent on base failure). 227 tests.
 
 ### Sprint 4 — Moat cadence + MCP decision · ~3.5 dev-days · 1 week · **gated on G1**
 **Gate G1 (before this sprint):** ≥50 external scans/month OR ≥3 badges embedded in external
