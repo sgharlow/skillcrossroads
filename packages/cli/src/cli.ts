@@ -138,8 +138,8 @@ function today(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-/** CLI version — single source (keep in sync with packages/cli/package.json). */
-const VERSION = "0.1.0";
+/** CLI version — keep in sync with packages/cli/package.json on every `npm version` bump. */
+const VERSION = "0.2.0";
 
 /** The site whose scorecards/badges the CLI points at (override for self-hosting). */
 const SITE_URL = process.env["BEACON_SITE_URL"] ?? "https://skillcrossroads.com";
