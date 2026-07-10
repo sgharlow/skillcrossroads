@@ -1,0 +1,14 @@
+name: Skill Crossroads
+on: pull_request
+permissions:
+  contents: read
+  pull-requests: write   # needed to post the scorecard comment
+jobs:
+  crossroads:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: sgharlow/skillcrossroads/apps/action@v1
+        with:
+          path: packages/core/test/fixtures/skills/good-skill
+          min-grade: B
