@@ -24,10 +24,12 @@ NEVER hosted: spawning configured commands server-side is RCE by design). Keyles
 score all six categories. Surfaces: terminal, HTML, badge, Markdown, JSON (`--json[=file]`),
 GitHub annotations (`--annotations`), paste-to-scan (`/paste`), hosted repo scans incl.
 single-file artifacts, `.skillcrossroads.json` config/suppression (SAFETY-* unsuppressible),
-ecosystem percentile (full-rubric SKILL cards only), and `skillcrossroads init` (inserts the
+ecosystem percentile (full-rubric SKILL cards only), `skillcrossroads init` (inserts the
 hosted badge into a repo's README — badge URL/markdown contract centralized in
-`core/badge-embed.ts`, never re-expressed). Hosted app + GitHub Action (`v1`) + Stripe
-Pro all live and owner-dogfooded. `scripts/state-of-skills.mjs` regenerates the data report.
+`core/badge-embed.ts`, never re-expressed), and **account self-service** (`/account`: identity +
+plan + per-user scan history; `/api/billing/portal` Stripe Customer Portal for cancel/manage;
+`/api/auth/logout`). Hosted app + GitHub Action (`v1`) + Stripe Pro all live and owner-dogfooded.
+`scripts/state-of-skills.mjs` regenerates the data report.
 
 **Not yet built** (roadmap — do not add speculatively): plugin scoring, more checks from the
 v1 catalog, org/team features. Everything further is demand-gated (see ROADMAP.md).
@@ -115,9 +117,11 @@ Six weighted categories (weights defined in `packages/core/src/types.ts`): corre
 token 15%, safety 15%, verifiability 10%. The rubric is **versioned** (`RUBRIC_VERSION`) — a
 rubric bump is a content/announcement event, so never change weights silently.
 
-v0.1 only has checks in 4 of the 6 categories. Overall is computed over **evaluated categories
-only, with weights renormalized**, and unevaluated categories are shown as "not yet scored".
-This is deliberate honesty, not a bug — do not fake scores for categories without checks.
+Under **rubric v1.1, keyless SKILL scans score all six categories** (Triggering via TRIGGER-02/03,
+Verifiability via VERIFY-01); agents/commands/mcp stay honestly partial where a category doesn't
+apply to that kind. Overall is computed over **evaluated categories only, with weights
+renormalized**, and any unevaluated category is shown as "not yet scored". This is deliberate
+honesty, not a bug — do not fake scores for categories without checks.
 
 ### GitHub scanning (`github.ts`, `scanGitHubRepo`)
 
@@ -154,8 +158,11 @@ production; in-memory fallback for keyless local dev). Pro unlocks
 `BEACON_MANAGED_ANTHROPIC_KEY`, so TRIGGER-01 + exact tokens run without the user's key) via
 `resolveScanOptions`. **The free tier must never depend on any of this** — every paid path is env-
 gated and returns a clean 501 unconfigured; public deterministic scans always work. Stripe (live),
-the DB, and the managed key are configured in production; a real customer Pro purchase has not yet
-happened (checkout is `wired`, not customer-proven).
+the DB, and the managed key are configured in production; the money path is **owner-`dogfooded`** —
+a live checkout webhook has flipped the Postgres entitlement (verified: one subscription row with a
+Stripe customer id) — but **no arms-length customer purchase has happened yet (not customer-proven)**.
+Cancellation/management is self-serve via the Stripe Customer Portal (`/api/billing/portal`, opened
+from `/account`); sign-out is `/api/auth/logout`.
 
 ### Public gallery (Sprint 10)
 
@@ -171,7 +178,10 @@ before real use.
 ### Score history & trend dashboard (Sprint 11)
 
 Every scorecard scan is recorded (`lib/record.ts`, fire-and-forget) into the `scans` table via the
-`scanHistory` store (`lib/scans.ts`: `record` / `history` / `recent` / `stats`; memory + Postgres).
+`scanHistory` store (`lib/scans.ts`: `record` / `history` / `recent` / `mine` / `stats`; memory +
+Postgres). A scan run **while signed in** is attributed to that user via a nullable `scans.login`
+column (anonymous scans stay anonymous, `login = null`); `mine(login)` powers the per-user "your
+recent scans" list on `/account`. Recording happens on the `/s/[...slug]` and gallery-opt-in paths.
 `/trends/[...slug]` renders a **self-contained inline SVG** trend chart (`lib/chart.ts` — no chart
 library, grade-colored dots) of a skill's overall score over time; `/dashboard` is the metrics view
 (totals, per-skill latest-grade distribution, recent scans). Built and live-proven against the real

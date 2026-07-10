@@ -10,6 +10,6 @@ export async function POST(req: Request): Promise<Response> {
   const secure = new URL(req.url).protocol === "https:" ? "; Secure" : "";
   const headers = new Headers({ location: "/" });
   headers.append("set-cookie", `beacon_gh=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0${secure}`);
-  headers.append("set-cookie", `beacon_user=; Path=/; SameSite=Lax; Max-Age=0${secure}`);
+  headers.append("set-cookie", `beacon_user=; HttpOnly; Path=/; SameSite=Lax; Max-Age=0${secure}`);
   return new Response(null, { status: 303, headers });
 }

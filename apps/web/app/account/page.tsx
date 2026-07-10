@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { cookies } from "next/headers";
 import { gradeHex } from "@beacon/core";
-import { readSessionFromCookieHeader } from "@/lib/session";
+import { readSessionFromCookieHeader, trustLogin } from "@/lib/session";
 import { entitlements } from "@/lib/entitlements";
 import { scanHistory } from "@/lib/scans";
 
@@ -19,7 +19,9 @@ export default async function Account() {
     .map((c) => `${c.name}=${c.value}`)
     .join("; ");
   const session = readSessionFromCookieHeader(header);
-  const login = session.login;
+  // Only trust the identity to show a plan + private scan history when it's unforgeable (or nothing
+  // is at stake). In production BEACON_SESSION_SECRET is set, so this is the normal signed-in path.
+  const login = trustLogin(session.login, Boolean(process.env.STRIPE_SECRET_KEY) || Boolean(process.env.DATABASE_URL));
   const [pro, myScans] = login
     ? await Promise.all([entitlements.isPro(login), scanHistory.mine(login, 15)])
     : [false, []];

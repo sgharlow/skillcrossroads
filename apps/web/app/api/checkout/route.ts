@@ -1,5 +1,5 @@
 import { getStripe, proPriceId } from "@/lib/stripe";
-import { readSession } from "@/lib/session";
+import { readSession, trustLogin } from "@/lib/session";
 
 export const runtime = "nodejs";
 
@@ -21,10 +21,11 @@ export async function POST(req: Request): Promise<Response> {
     );
   }
 
-  const session = readSession(req);
   // Require a verified GitHub identity: the webhook flips Pro on client_reference_id, so a signed-out
-  // checkout would charge the card (after the trial) and never grant Pro. Fail before creating it.
-  if (!session.login) {
+  // (or forgeable) checkout would charge the card (after the trial) and never grant Pro — or attribute
+  // it to the wrong login. Fail before creating it. Billing = privilege at stake.
+  const login = trustLogin(readSession(req).login, true);
+  if (!login) {
     return Response.json(
       { error: "Sign in with GitHub before subscribing.", signIn: "/api/auth/github" },
       { status: 401 },
@@ -36,7 +37,7 @@ export async function POST(req: Request): Promise<Response> {
   const checkout = await stripe.checkout.sessions.create({
     mode: "subscription",
     line_items: [{ price, quantity: 1 }],
-    client_reference_id: session.login, // links the GitHub user for the webhook
+    client_reference_id: login, // links the GitHub user for the webhook
     subscription_data: { trial_period_days: 14 },
     allow_promotion_codes: true,
     success_url: `${origin}/pro/success?session_id={CHECKOUT_SESSION_ID}`,

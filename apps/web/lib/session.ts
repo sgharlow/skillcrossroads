@@ -50,6 +50,20 @@ export function readSession(req: Request): Session {
 }
 
 /**
+ * Gate a login for a privileged action. The `beacon_user` cookie is only unforgeable when
+ * BEACON_SESSION_SECRET signs it; when something of value is at stake (Stripe billing, managed-LLM
+ * spend, a real entitlements/history DB) but no secret is configured, a forged plaintext cookie
+ * must NOT be trusted. Returns the login only when it is safe to act on it, else null. This is the
+ * ONE place that decision lives — billing, checkout, Pro scans, and /account all go through it
+ * (structural safety, not a per-caller convention).
+ */
+export function trustLogin(login: string | undefined, privilegeAtStake: boolean): string | null {
+  if (!login) return null;
+  if (privilegeAtStake && !process.env.BEACON_SESSION_SECRET) return null;
+  return login;
+}
+
+/**
  * Same as readSession but from a raw Cookie header string — for server components, which read
  * cookies via `next/headers` rather than a Request. The identity cookie is signature-verified.
  */

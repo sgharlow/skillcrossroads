@@ -57,7 +57,9 @@ export async function GET(req: Request): Promise<Response> {
   );
   if (user.login) {
     // Signed (see signUserValue) so the identity that drives Pro entitlement can't be forged.
-    headers.append("set-cookie", `beacon_user=${signUserValue(user.login)}; Path=/; SameSite=Lax; Max-Age=604800${secure}`);
+    // HttpOnly: no client JS needs to read it — server components/routes read it — so keep it out of
+    // reach of any XSS. (The token cookie beacon_gh is already HttpOnly.)
+    headers.append("set-cookie", `beacon_user=${signUserValue(user.login)}; HttpOnly; Path=/; SameSite=Lax; Max-Age=604800${secure}`);
   }
   // Clear the one-time state cookie.
   headers.append("set-cookie", `beacon_oauth_state=; Path=/; Max-Age=0${secure}`);

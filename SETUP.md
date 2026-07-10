@@ -26,8 +26,11 @@
 - **Stripe (live)** — live Pro price + webhook endpoint `https://skillcrossroads.com/api/stripe/webhook`
   (events: `checkout.session.completed`, `customer.subscription.updated`, `customer.subscription.deleted`);
   `STRIPE_SECRET_KEY` (restricted key), `STRIPE_PRICE_ID`, `STRIPE_WEBHOOK_SECRET` in Vercel.
-  Checkout is live-verified to the Stripe-hosted page; **no real customer purchase yet** — the
-  webhook has not fired for a live subscription (claim ladder: `wired`, not customer-proven).
+  Checkout is live-verified and the webhook **has fired for a live (owner) subscription** — the
+  entitlement flipped in Postgres (one subscription row with a Stripe customer id). **No arms-length
+  customer purchase yet** (claim ladder: `dogfooded`, not customer-proven). Cancel/manage is
+  self-serve via the Stripe Customer Portal (`/api/billing/portal`, linked from `/account`); it
+  requires a one-time portal activation on the live account (`apps/web/scripts/activate-stripe-portal.mjs`).
 - **Managed LLM (Pro)** — `BEACON_MANAGED_ANTHROPIC_KEY` set; only used for signed-in Pro users
   (`BEACON_SESSION_SECRET` is set, which the fail-closed guard requires before any Pro grant).
 - **npm** — the CLI is published as [`skillcrossroads`](https://www.npmjs.com/package/skillcrossroads)

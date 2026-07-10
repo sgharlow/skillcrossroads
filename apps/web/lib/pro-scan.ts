@@ -1,5 +1,5 @@
 import { createAnthropicClient, createAnthropicTokenCounter, type CheckContext } from "@beacon/core";
-import { readSession } from "./session";
+import { readSession, trustLogin } from "./session";
 import { entitlements } from "./entitlements";
 import type { ScanOptions } from "./scan";
 
@@ -13,22 +13,19 @@ let warnedMisconfig = false;
  */
 export async function resolveScanOptions(req: Request): Promise<ScanOptions & { pro: boolean }> {
   const session = readSession(req);
-  // Fail CLOSED: the identity cookie is only unforgeable when BEACON_SESSION_SECRET signs it. If the
-  // deploy has privilege at stake (managed-LLM key, or a real entitlements DB) but no secret is set,
-  // do NOT trust the login for Pro — otherwise a forged `beacon_user` cookie buys managed-LLM spend
-  // on the server key. (Structural safety, not a documentation convention.)
-  const identityVerifiable = Boolean(process.env.BEACON_SESSION_SECRET);
+  // Fail CLOSED via the shared identity guard: the `beacon_user` cookie is only unforgeable when
+  // BEACON_SESSION_SECRET signs it. With managed-LLM spend or a real entitlements DB at stake but no
+  // secret, a forged cookie must not buy Pro. `trustLogin` centralizes that decision (also used by
+  // billing/checkout/account); we still warn once so the misconfiguration is visible in logs.
   const privilegeAtStake = Boolean(process.env.BEACON_MANAGED_ANTHROPIC_KEY) || Boolean(process.env.DATABASE_URL);
-  if (privilegeAtStake && !identityVerifiable) {
-    if (!warnedMisconfig) {
-      warnedMisconfig = true;
-      console.warn(
-        "[beacon] Pro is disabled: BEACON_SESSION_SECRET is unset but a managed key / DATABASE_URL is configured. Set BEACON_SESSION_SECRET to enable Pro securely.",
-      );
-    }
-    return { pro: false };
+  if (privilegeAtStake && !process.env.BEACON_SESSION_SECRET && !warnedMisconfig) {
+    warnedMisconfig = true;
+    console.warn(
+      "[beacon] Pro is disabled: BEACON_SESSION_SECRET is unset but a managed key / DATABASE_URL is configured. Set BEACON_SESSION_SECRET to enable Pro securely.",
+    );
   }
-  const pro = session.login ? await entitlements.isPro(session.login) : false;
+  const login = trustLogin(session.login, privilegeAtStake);
+  const pro = login ? await entitlements.isPro(login) : false;
   if (!pro) return { pro: false };
 
   const opts: ScanOptions & { pro: boolean } = { pro: true };

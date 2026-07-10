@@ -1,5 +1,5 @@
 import { getStripe } from "@/lib/stripe";
-import { readSession } from "@/lib/session";
+import { readSession, trustLogin } from "@/lib/session";
 import { entitlements } from "@/lib/entitlements";
 
 export const runtime = "nodejs";
@@ -21,13 +21,14 @@ export async function POST(req: Request): Promise<Response> {
     );
   }
 
-  const session = readSession(req);
-  if (!session.login) {
+  // Billing is privilege at stake: only act on an unforgeable identity (Stripe is configured here).
+  const login = trustLogin(readSession(req).login, true);
+  if (!login) {
     return Response.json({ error: "Sign in with GitHub first.", signIn: "/api/auth/github" }, { status: 401 });
   }
 
   const origin = new URL(req.url).origin;
-  const customer = await entitlements.customerFor(session.login);
+  const customer = await entitlements.customerFor(login);
   if (!customer) {
     // Nothing to manage — this user has never checked out. Point them at the plans.
     return Response.redirect(`${origin}/pricing`, 303);

@@ -18,9 +18,11 @@ export default function ReportPage() {
           <Signpost size={22} />
           <span>Skill Crossroads</span>
         </a>
-        <a className="btn-sm" href="/#scan">
-          Scan a skill
-        </a>
+        <nav className="rlinks">
+          <a className="rlink" href="/gallery">Gallery</a>
+          <a className="rlink" href="/account">Account</a>
+          <a className="btn-sm" href="/#scan">Scan a skill</a>
+        </nav>
       </header>
 
       <article className="report" dangerouslySetInnerHTML={{ __html: markdownToHtml(REPORT_MD) }} />
@@ -37,6 +39,9 @@ export default function ReportPage() {
         .nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}
         .brand{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:17px;text-decoration:none;color:var(--fg)}
         .btn-sm{display:inline-block;background:var(--accent);color:var(--accent-ink);font-weight:600;border-radius:9px;padding:8px 14px;text-decoration:none;font-size:14px}
+        .rlinks{display:flex;gap:14px;align-items:center}
+        .rlink{color:var(--fog);font-size:13.5px;text-decoration:none}
+        .rlink:hover{color:var(--foam)}
         .report h1{font-size:clamp(28px,5vw,40px);letter-spacing:-.02em;font-weight:800;margin-bottom:14px}
         .report h2{font-size:clamp(20px,3vw,26px);letter-spacing:-.015em;font-weight:750;margin:34px 0 12px}
         .report h3{font-size:17px;font-weight:650;margin:24px 0 10px}

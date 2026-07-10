@@ -2,6 +2,7 @@ import { describe, it, expect, afterEach } from "vitest";
 import { POST as logout } from "../app/api/auth/logout/route";
 import { POST as portal } from "../app/api/billing/portal/route";
 import { entitlements } from "../lib/entitlements";
+import { signUserValue } from "../lib/session";
 
 function req(cookie = ""): Request {
   return new Request("https://skillcrossroads.com/api/x", { method: "POST", headers: cookie ? { cookie } : {} });
@@ -44,21 +45,35 @@ describe("POST /api/billing/portal", () => {
     expect((await res.json()).signIn).toBe("/api/auth/github");
   });
 
-  it("redirects a never-subscribed user to /pricing (no Stripe call)", async () => {
+  it("rejects a forged (unsigned) identity when a secret is configured — no IDOR", async () => {
     process.env.STRIPE_SECRET_KEY = "sk_test_fake";
-    delete process.env.BEACON_SESSION_SECRET; // unsigned cookie is accepted with no secret set
-    // A login with no entitlement record has no Stripe customer id → nothing to manage.
-    const res = await portal(req("beacon_user=never-subscribed-user"));
+    process.env.BEACON_SESSION_SECRET = "test-secret";
+    // An unsigned beacon_user is a forgery attempt when a secret is set → 401, never someone's portal.
+    const res = await portal(req("beacon_user=victim-login"));
+    expect(res.status).toBe(401);
+  });
+
+  it("fails closed on a plaintext identity for billing when NO secret is set", async () => {
+    process.env.STRIPE_SECRET_KEY = "sk_test_fake";
+    delete process.env.BEACON_SESSION_SECRET;
+    // Billing is privilege-at-stake: with no signing secret, a plaintext cookie can't be trusted → 401.
+    const res = await portal(req("beacon_user=anyone"));
+    expect(res.status).toBe(401);
+  });
+
+  it("redirects a signed-in, never-subscribed user to /pricing (no Stripe call)", async () => {
+    process.env.STRIPE_SECRET_KEY = "sk_test_fake";
+    process.env.BEACON_SESSION_SECRET = "test-secret";
+    const res = await portal(req(`beacon_user=${signUserValue("never-subscribed-user")}`));
     expect(res.status).toBe(303);
     expect(res.headers.get("location")).toBe("https://skillcrossroads.com/pricing");
   });
 
-  it("does not leak the portal path to a user whose customer id is unknown even if Pro flag is set", async () => {
+  it("redirects a Pro user with no customer id to /pricing (can't open a portal without a customer)", async () => {
     process.env.STRIPE_SECRET_KEY = "sk_test_fake";
-    delete process.env.BEACON_SESSION_SECRET;
-    // Pro=true but NO customer id recorded → still redirect to pricing (can't open a portal without a customer).
-    await entitlements.setPro("pro-but-no-customer", true);
-    const res = await portal(req("beacon_user=pro-but-no-customer"));
+    process.env.BEACON_SESSION_SECRET = "test-secret";
+    await entitlements.setPro("pro-no-customer-signed", true);
+    const res = await portal(req(`beacon_user=${signUserValue("pro-no-customer-signed")}`));
     expect(res.status).toBe(303);
     expect(res.headers.get("location")).toBe("https://skillcrossroads.com/pricing");
   });

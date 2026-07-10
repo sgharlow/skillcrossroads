@@ -1,5 +1,8 @@
+import { after } from "next/server";
 import { parseSlug, scanTarget } from "@/lib/scan";
 import { gallery } from "@/lib/gallery";
+import { readSession, trustLogin } from "@/lib/session";
+import { recordScans } from "@/lib/record";
 
 export const runtime = "nodejs";
 
@@ -48,6 +51,11 @@ export async function POST(req: Request): Promise<Response> {
       }),
     );
   }
+
+  // Also record to score-history so gallery opt-ins feed /trends, /dashboard, and (when signed in)
+  // /account — matching the /s/ scan path. Best-effort; attributed only to a verified identity.
+  const viewer = trustLogin(readSession(req).login, Boolean(process.env.DATABASE_URL)) ?? undefined;
+  after(() => recordScans(target.owner, target.repo, scan.skills, viewer));
 
   return Response.json({ added: entries.length, entries });
 }

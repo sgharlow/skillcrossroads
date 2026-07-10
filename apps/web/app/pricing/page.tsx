@@ -32,6 +32,11 @@ export default function Pricing() {
           <span className="lamp" aria-hidden />
           Skill Crossroads
         </a>
+        <nav className="rlinks">
+          <a className="rlink" href="/#scan">Scan a skill</a>
+          <a className="rlink" href="/gallery">Gallery</a>
+          <a className="rlink" href="/account">Account</a>
+        </nav>
       </header>
 
       <section className="head">
@@ -49,7 +54,10 @@ export default function Pricing() {
 
       <style>{`
         .wrap{max-width:960px;margin:0 auto;padding:26px 20px 60px}
-        .nav{margin-bottom:8px}
+        .nav{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:8px}
+        .rlinks{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
+        .rlink{color:var(--fog);font-size:13.5px;text-decoration:none}
+        .rlink:hover{color:var(--foam)}
         .brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:15px;text-decoration:none}
         .lamp{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 50% 40%,var(--beam),#b9791f);box-shadow:0 0 14px #ffc24b99}
         .head{text-align:center;padding:40px 0 30px}

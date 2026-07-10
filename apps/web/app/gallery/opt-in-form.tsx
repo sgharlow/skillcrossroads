@@ -28,9 +28,10 @@ export default function OptInForm() {
       });
       const data = (await res.json()) as { added?: number; error?: string };
       if (data.added) {
-        setRepo("");
         setState("idle");
-        router.refresh();
+        // Land the user on their scorecard — that's where the badge-embed snippet + "scan your own"
+        // CTA live (the viral primitive). Refreshing the list would hide the badge behind a lookup.
+        router.push(`/s/${value}`);
       } else {
         setState("error");
         setMsg(data.error ?? "Could not add.");

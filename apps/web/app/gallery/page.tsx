@@ -48,9 +48,11 @@ export default async function GalleryPage({
           <span className="lamp" aria-hidden />
           Skill Crossroads
         </a>
-        <a className="plink" href="/pricing">
-          Pricing
-        </a>
+        <nav className="rlinks">
+          <a className="plink" href="/#scan">Scan a skill</a>
+          <a className="plink" href="/pricing">Pricing</a>
+          <a className="plink" href="/account">Account</a>
+        </nav>
       </header>
 
       <section className="head">
@@ -115,6 +117,8 @@ export default async function GalleryPage({
         .brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:15px;text-decoration:none}
         .lamp{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 50% 40%,var(--beam),#b9791f);box-shadow:0 0 14px #ffc24b99}
         .plink{color:var(--fog);font-size:13.5px;text-decoration:none}
+        .plink:hover{color:var(--foam)}
+        .rlinks{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
         .head{padding:34px 0 18px}
         .head h1{font-size:clamp(28px,5vw,42px);font-weight:800;letter-spacing:-.02em}
         .head p{color:var(--fog);margin:6px 0 18px;max-width:560px}

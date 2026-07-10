@@ -31,7 +31,7 @@ those **before you publish**, with file-and-line receipts — not vibes.
 ## Install & use
 
 ```bash
-# from source (v0.1 — see Status below)
+# from source (see Status below)
 git clone <this-repo> && cd skillcrossroads
 npm install && npm run build
 node packages/cli/dist/cli.js ./path-to-a-skill
@@ -152,14 +152,14 @@ a clearly-labeled rough estimate (skill markdown tokenizes denser than prose, so
 ```
 ┌───────────────────────────────────────────────────────────────┐
 │  CROSSROADS SCORECARD                      recipe-001          │
-│  Overall: C+  (78/100)          rubric v1.1 · deterministic    │
+│  Overall: B−  (83/100)          rubric v1.1 · deterministic    │
 ├───────────────────────────────────────────────────────────────┤
 │  Correctness & Structure   ████████████████░░░░  82   ⚠ 1      │
 │  Clarity & Instructions    ██████████████████░░  90   ✓        │
 │  Token & Context Cost      ████████████████████  95   ✓        │
 │  Safety & Security         ████████████████░░░░  80   ⚠ 1      │
-│  Triggering & Discovery         not yet scored (v0.1)          │
-│  Verifiability & Maint.         not yet scored (v0.1)          │
+│  Triggering & Discovery    ███████████████░░░░░  76   ✓        │
+│  Verifiability & Maint.    ██████████████░░░░░░  70   ✓        │
 └───────────────────────────────────────────────────────────────┘
 
 TOP FIXES (ranked by score impact)
@@ -258,6 +258,10 @@ A Next.js app (in `apps/web`) serves the shareable side of Skill Crossroads — 
   (`/api/checkout` + `/api/stripe/webhook`), Pro entitlements, and Pro-only **private-repo scanning**
   + **managed LLM** (no user key needed). All gated on `STRIPE_*` / `BEACON_MANAGED_ANTHROPIC_KEY`
   env vars — the **free tier is unaffected** when they're unset.
+- **Account self-service** — `/account` shows your GitHub identity, plan (Free/Pro), and your recent
+  scans. **Manage / cancel** your subscription via the Stripe Customer Portal (`/api/billing/portal`
+  — no card data touches the app), and **sign out** (`/api/auth/logout`). The `init` CLI command
+  (`skillcrossroads init`) drops the always-fresh badge into your README.
 - **Public gallery** — `/gallery`, a leaderboard of opted-in scored skills (opt in via
   `/api/gallery/opt-in`), server-rendered and SEO-indexed (`sitemap.xml` + `robots.txt`), with
   sort (score / recent / name) and filter (min-grade / search).
