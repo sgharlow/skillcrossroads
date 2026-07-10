@@ -10,5 +10,5 @@ jobs:
       - uses: actions/checkout@v4
       - uses: sgharlow/skillcrossroads/apps/action@v1
         with:
-          path: packages/core/test/fixtures/good-skill
+          path: packages/core/test/fixtures/skills/good-skill
           min-grade: B
