@@ -147,6 +147,16 @@ export interface CategoryScore {
   readonly failCount: number;
 }
 
+/** The LLM-assisted check ids. Renderers use this to label a scan's mode honestly — since
+ * rubric v1.1 the triggering category ALSO scores deterministically, so "category evaluated"
+ * no longer implies a model ran. */
+export const LLM_CHECK_IDS: readonly string[] = ["TRIGGER-01", "VERIFY-04", "CLARITY-05"];
+
+/** Did any LLM-assisted check actually contribute to this scorecard? */
+export function usedLlm(card: Pick<Scorecard, "results">): boolean {
+  return card.results.some((r) => LLM_CHECK_IDS.includes(r.id));
+}
+
 /** A config-suppressed check, always disclosed on the scorecard (honesty over convenience). */
 export interface Suppression {
   readonly id: string;

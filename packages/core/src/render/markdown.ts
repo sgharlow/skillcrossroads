@@ -1,6 +1,6 @@
 import { percentileLabel } from "../percentile.js";
 import { CONFIG_FILENAME } from "../suppress.js";
-import type { CategoryScore, CheckResult, Scorecard } from "../types.js";
+import { usedLlm, type CategoryScore, type CheckResult, type Scorecard } from "../types.js";
 
 export interface MarkdownOptions {
   name?: string;
@@ -66,7 +66,7 @@ function fixLine(r: CheckResult): string {
 export function renderMarkdown(card: Scorecard, opts: MarkdownOptions = {}): string {
   const name = opts.name ?? "artifact";
   const h = "#".repeat(Math.max(1, Math.min(6, opts.level ?? 3)));
-  const mode = card.categories.find((c) => c.key === "triggering")?.evaluated ? "LLM-assisted" : "deterministic";
+  const mode = usedLlm(card) ? "LLM-assisted" : "deterministic";
 
   const lines: string[] = [];
   lines.push(`${h} ${gradeEmoji(card.grade)} Skill Crossroads: ${card.grade} — \`${mdCode(name)}\``);

@@ -129,11 +129,16 @@ export function findArtifactFiles(
 ): { agents: string[]; commands: string[]; mcp: string[] } {
   const norm = subpath ? subpath.replace(/^\/+|\/+$/g, "") : undefined;
   const inScope = (p: string): boolean => !norm || p === norm || p.startsWith(`${norm}/`);
+  // Test/fixture trees are not shipped artifacts — excluding them keeps a repo's public
+  // scorecard about what it SHIPS. (Skill discovery predates this rule and keeps its
+  // methodology for report reproducibility; single-file discovery is a new surface.)
+  const excluded = /(^|\/)(?:node_modules|\.git|tests?|__tests__|fixtures?)\//i;
   const agents: string[] = [];
   const commands: string[] = [];
   const mcp: string[] = [];
   for (const e of entries) {
     if (e.type !== "blob" || !inScope(e.path)) continue;
+    if (excluded.test(e.path) && !(norm && excluded.test(`${norm}/`))) continue; // explicit deep links into test trees still work
     const base = posix.basename(e.path);
     if (/(^|\/)agents\/[^/]+\.md$/i.test(e.path) && !/^readme\.md$/i.test(base)) agents.push(e.path);
     else if (/(^|\/)commands\/[^/]+\.md$/i.test(e.path) && !/^readme\.md$/i.test(base)) commands.push(e.path);

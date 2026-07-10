@@ -22,6 +22,9 @@ import {
   applySuppressions,
   ConfigError,
   detectKind,
+  introspectMcpConfig,
+  gradeMcpLive,
+  score,
   type ArtifactType,
   type CrossroadsConfig,
   type CheckContext,
@@ -52,6 +55,8 @@ ${pc.bold("Options:")}
   --no-llm           Deterministic checks only; skip LLM-assisted triggering analysis.
   --kind=<k>         Artifact kind for a bare file: skill | agent | command | mcp
                      (auto-detected from agents//commands/ paths and .mcp.json when omitted).
+  --mcp-live         With a .mcp.json: SPAWN each stdio server from YOUR config (explicit
+                     consent), list its tools, and grade tool/param descriptions too.
   --max=<n>          Cap the number of skills scanned from a repo.
   --no-color         Disable ANSI colors.
   -h, --help         Show this help.
@@ -82,6 +87,7 @@ interface Args {
   kind?: string;
   jsonFile?: string;
   annotations?: string;
+  mcpLive: boolean;
   html: OptionalPath;
   badge: OptionalPath;
   noLlm: boolean;
@@ -97,6 +103,7 @@ function parseArgs(argv: readonly string[]): Args {
     html: undefined,
     badge: undefined,
     noLlm: false,
+    mcpLive: false,
     help: false,
     version: false,
   };
@@ -131,6 +138,7 @@ function parseArgs(argv: readonly string[]): Args {
     else if (a === "-h" || a === "--help") args.help = true;
     else if (a === "-v" || a === "--version") args.version = true;
     else if (a === "--no-llm") args.noLlm = true;
+    else if (a === "--mcp-live") args.mcpLive = true;
     else if (a === "--no-color" || a === "--color") continue; // picocolors reads the env
     else if (a === "--html") args.html = true;
     else if (a.startsWith("--html=")) args.html = a.slice("--html=".length);
@@ -154,7 +162,7 @@ function today(): string {
 }
 
 /** CLI version — keep in sync with packages/cli/package.json on every `npm version` bump. */
-const VERSION = "0.6.0";
+const VERSION = "0.7.0";
 
 /** The site whose scorecards/badges the CLI points at (override for self-hosting). */
 const SITE_URL = process.env["BEACON_SITE_URL"] ?? "https://skillcrossroads.com";
@@ -341,7 +349,18 @@ async function main(): Promise<void> {
                         process.exit(2);
                       })();
         const kind = flagKind ?? detectKind(abs) ?? "skill";
-        const res = await auditAsync(abs, ctx, kind);
+        let res = await auditAsync(abs, ctx, kind);
+        // Phase B: opt-in live introspection — spawn the user's own stdio servers, grade tools.
+        if (args.mcpLive && kind === "mcp") {
+          process.stderr.write(pc.dim("  --mcp-live: spawning your configured stdio servers…\n"));
+          const intro = await introspectMcpConfig(res.artifact.raw);
+          for (const s of intro.filter((x) => x.skipped))
+            process.stderr.write(pc.dim(`  skipped "${s.server}" (url transport — stdio only)\n`));
+          const live = gradeMcpLive(".mcp.json", intro);
+          if (live.length > 0) res = { ...res, scorecard: score([...res.scorecard.results, ...live]) };
+        } else if (args.mcpLive) {
+          process.stderr.write(pc.yellow("  --mcp-live ignored: the target is not a .mcp.json\n"));
+        }
         skills = [{ ...res, repoPath: "." }];
       } else {
         const local = await scanLocalDir(args.path, ctx);

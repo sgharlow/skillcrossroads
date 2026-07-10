@@ -65,4 +65,11 @@ describe("renderTerminal", () => {
     const out = renderTerminal(scorecard, { name });
     expect(out).toContain("Clean scan");
   });
+
+  it("labels a deterministic scan honestly (v1.1 regression: triggering scores without a model)", () => {
+    const { scorecard, name } = audit(fixture("good-skill"));
+    const out = renderTerminal(scorecard, { name });
+    expect(out).toContain("deterministic");
+    expect(out).not.toContain("LLM-assisted");
+  });
 });

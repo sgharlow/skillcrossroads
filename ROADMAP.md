@@ -113,6 +113,19 @@ a key). Each check is a ready-made evidence post for the content cadence. 227 te
 > curated repo list — do alongside the launch), MCP Phase B `--mcp-live`, and SAFETY-01
 > JSON-assignment secret patterns (`"DB_PASSWORD": "…"`) — noted as a check improvement.
 
+### Sprint 6 — MCP Phase B + engine polish · **SHIPPED 2026-07-10** (owner-directed)
+
+> `live-proven` in `skillcrossroads@0.7.0`: **`--mcp-live`** — explicit-consent CLI mode that
+> spawns the user's own stdio servers, completes the MCP handshake, captures `tools/list`, and
+> grades it (MCPT-01 reachability, MCPT-02 tool-description triggering floor, MCPT-03 parameter
+> docs) — proven in CI against a real stdio fixture server, timeout-bounded, never reachable from
+> the hosted site (spawning configured commands server-side would be RCE by design). Polish:
+> SAFETY-01 now catches JSON-style `"DB_PASSWORD": "…"` assignments; hosted single-file discovery
+> excludes test/fixture trees (explicit deep links still work); fixed a v1.1 regression where
+> deterministic scans were labeled "LLM-assisted" (mode now keys on actual LLM check results).
+> 239 tests. **The MCP tagline commitment is fully delivered — no quarterly honesty deadline
+> outstanding. Everything below this line is demand-gated: no further build without a G0 signal.**
+
 ### Deferred (build only on explicit demand evidence)
 - **MCP server grading (full)** — pending the Sprint-4 spike gate
 - **`--suggest`** LLM fix-generation (rewrite the failing description, BYOK) — after suppression

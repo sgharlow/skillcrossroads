@@ -1,6 +1,6 @@
 import { percentileLabel } from "../percentile.js";
 import { CONFIG_FILENAME } from "../suppress.js";
-import type { CategoryScore, CheckResult, Evidence, Scorecard } from "../types.js";
+import { usedLlm, type CategoryScore, type CheckResult, type Evidence, type Scorecard } from "../types.js";
 import { PALETTE, gradeHex, statusHex } from "./theme.js";
 
 export interface HtmlOptions {
@@ -194,10 +194,9 @@ footer a{color:${PALETTE.fog}}
 export function renderHtml(card: Scorecard, opts: HtmlOptions = {}): string {
   const name = opts.name ?? "artifact";
   const fixes = rankFixes(card.results);
-  const llmRan = card.categories.find((c) => c.key === "triggering")?.evaluated ?? false;
   const meta = [
     `rubric v${esc(card.rubricVersion)}`,
-    llmRan ? "LLM-assisted" : "deterministic",
+    usedLlm(card) ? "LLM-assisted" : "deterministic",
     opts.scannedAt ? `scanned ${esc(opts.scannedAt)}` : "",
   ]
     .filter(Boolean)

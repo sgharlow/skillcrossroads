@@ -1,7 +1,7 @@
 import pc from "picocolors";
 import { percentileLabel } from "../percentile.js";
 import { CONFIG_FILENAME } from "../suppress.js";
-import type { CategoryScore, CheckResult, Evidence, Scorecard } from "../types.js";
+import { usedLlm, type CategoryScore, type CheckResult, type Evidence, type Scorecard } from "../types.js";
 
 const INNER = 63;
 const LABEL_W = 26;
@@ -113,8 +113,7 @@ export function renderTerminal(card: Scorecard, opts: RenderOptions = {}): strin
   const name = vlen(rawName) > 24 ? `${[...rawName].slice(0, 23).join("")}…` : rawName;
   const gc = gradeColor(card.grade);
 
-  const llmRan = card.categories.find((c) => c.key === "triggering")?.evaluated ?? false;
-  const mode = llmRan ? "LLM-assisted" : "deterministic";
+  const mode = usedLlm(card) ? "LLM-assisted" : "deterministic";
   const titleRow = rightAlign("  SKILL CROSSROADS SCORECARD", name, RIGHT);
   const overallText = `  Overall: ${card.grade}  (${card.overall}/100)`;
   const overallPlain = rightAlign(overallText, `rubric v${card.rubricVersion} · ${mode}`, RIGHT);

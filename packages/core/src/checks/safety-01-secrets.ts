@@ -26,6 +26,12 @@ const PATTERNS: readonly SecretPattern[] = [
     name: "Assigned credential literal",
     re: /\b(?:api[_-]?key|secret|token|password|passwd|pwd|access[_-]?key)\b\s*[:=]\s*["'][^"'\s]{8,}["']/i,
   },
+  {
+    // JSON-style assignments ("DB_PASSWORD": "…") — quoted keys and prefixed names (DB_, STRIPE_)
+    // defeat the \b-anchored pattern above; .mcp.json env blocks are the classic case.
+    name: "JSON credential assignment",
+    re: /["'][A-Za-z0-9_-]*(?:api[_-]?key|secret|token|password|passwd|pwd|access[_-]?key)["']\s*:\s*["'][^"'\s]{8,}["']/i,
+  },
 ];
 
 /** Redact all but the first 4 and last 2 characters of a matched secret. */

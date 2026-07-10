@@ -71,9 +71,19 @@ skillcrossroads .mcp.json          # auto-detected (or --kind=mcp)
 
 Checks: valid config shape (MCP-01), **version-pinned `npx` server packages** — an unpinned
 server ships whatever is latest straight into your session (MCP-02), **TLS on remote
-transports** (MCP-03), and the standard secret scan on inline `env` values (SAFETY-01). The
-four unscorable rubric categories are honestly marked unscored. Grading a *server's* tool
-descriptions (Phase B, `--mcp-live`) is on the roadmap.
+transports** (MCP-03), and the standard secret scan on inline `env` values (SAFETY-01) —
+including JSON-style `"DB_PASSWORD": "…"` assignments.
+
+**Phase B — grade the servers themselves** (explicit opt-in, local only):
+
+```bash
+skillcrossroads .mcp.json --mcp-live
+```
+
+`--mcp-live` spawns each **stdio** server from *your own config*, performs the MCP handshake,
+and grades what comes back: servers answer `tools/list` (MCPT-01), **tool descriptions anchor
+invocation** — the "will the model ever pick this tool?" floor (MCPT-02), and input parameters
+are documented (MCPT-03). URL transports are skipped; the hosted site never spawns servers.
 
 ### Scan a whole GitHub repo (no clone)
 

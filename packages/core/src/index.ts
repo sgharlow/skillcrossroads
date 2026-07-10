@@ -29,6 +29,12 @@ export { renderHtml, type HtmlOptions } from "./render/html.js";
 export { renderBadge, type BadgeOptions } from "./render/badge.js";
 export { PALETTE, gradeHex } from "./render/theme.js";
 export { renderAnnotations, type AnnotatableResult } from "./render/annotations.js";
+export {
+  introspectMcpConfig,
+  gradeMcpLive,
+  type McpTool,
+  type McpServerIntrospection,
+} from "./mcp-live.js";
 export { publicSkillPercentile, percentileLabel, STATE_OF_SKILLS, type PercentileSample } from "./percentile.js";
 export {
   loadConfig,
