@@ -1,0 +1,39 @@
+# Dead-man's-switch uptime monitor. GitHub emails the workflow's maintainer when a scheduled
+# run FAILS, so an unreachable site or dead dependency produces an alert, not silence.
+# NOTE: GitHub pauses scheduled workflows after ~60 days without repo activity — routine commits
+# keep it alive; check Actions if the repo goes quiet for two months.
+name: Uptime
+on:
+  schedule:
+    - cron: "*/15 * * * *" # every 15 minutes (best-effort; GitHub may delay)
+  workflow_dispatch: {}
+
+permissions:
+  contents: read
+
+jobs:
+  probe:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Health endpoint (200 + ok:true, DB reachable)
+        run: |
+          body=$(curl -sS --retry 2 --retry-delay 5 --max-time 20 -w '\n%{http_code}' https://skillcrossroads.com/api/health)
+          code=$(echo "$body" | tail -1)
+          json=$(echo "$body" | head -1)
+          echo "health: $code $json"
+          [ "$code" = "200" ] || { echo "::error::/api/health returned $code — site or DB is down"; exit 1; }
+          echo "$json" | grep -q '"ok":true' || { echo "::error::/api/health ok:false"; exit 1; }
+
+      - name: Badge endpoint (the viral surface serves a real SVG)
+        run: |
+          svg=$(curl -sS --retry 2 --retry-delay 5 --max-time 30 https://skillcrossroads.com/api/badge/anthropics/skills.svg)
+          echo "badge bytes: ${#svg}"
+          echo "$svg" | head -1 | grep -q "<svg" || { echo "::error::badge endpoint did not return an SVG"; exit 1; }
+
+      - name: Apex + www routing intact
+        run: |
+          apex=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 https://skillcrossroads.com/)
+          www=$(curl -sS -o /dev/null -w '%{http_code}' --max-time 20 https://www.skillcrossroads.com/)
+          echo "apex: $apex  www: $www"
+          [ "$apex" = "200" ] || { echo "::error::apex returned $apex"; exit 1; }
+          [ "$www" = "308" ] || { echo "::error::www should 308-redirect to apex, got $www"; exit 1; }
