@@ -19,7 +19,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: sgharlow/beacon/apps/action@v1
+      - uses: sgharlow/skillcrossroads/apps/action@v1
         with:
           path: ./skills      # a skill dir or a folder of skills
           min-grade: B        # fail the check if any skill is below B
@@ -27,9 +27,9 @@ jobs:
 
 That's it. Open a PR touching a skill and Skill Crossroads posts a scorecard comment and gates the build.
 
-> **Note:** the action installs the published CLI `skillcrossroads` (`npx skillcrossroads@latest`) and
-> is referenced as `sgharlow/beacon/apps/action@v1` — the GitHub **repository** still uses the original
-> name; only the npm package and the product brand are "Skill Crossroads".
+> **Note:** the action installs the published CLI `skillcrossroads` (`npx skillcrossroads@latest`) and is
+> referenced as `sgharlow/skillcrossroads/apps/action@v1`. Internal workspace package names (`@beacon/core`)
+> and `BEACON_*` env vars keep the original codename by design.
 
 ## Inputs
 

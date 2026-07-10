@@ -31,7 +31,7 @@ those **before you publish**, with file-and-line receipts — not vibes.
 
 ```bash
 # from source (v0.1 — see Status below)
-git clone <this-repo> && cd beacon
+git clone <this-repo> && cd skillcrossroads
 npm install && npm run build
 node packages/cli/dist/cli.js ./path-to-a-skill
 
@@ -145,7 +145,7 @@ scorecard**, and **fails the build** below a grade you pick (full docs: [`apps/a
 
 ```yaml
 - uses: actions/checkout@v4
-- uses: sgharlow/beacon/apps/action@v1
+- uses: sgharlow/skillcrossroads/apps/action@v1
   with: { path: ./skills, min-grade: B }
 ```
 

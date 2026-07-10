@@ -9,7 +9,7 @@ chat**.
 
 - **DB layer** — Postgres-backed entitlements / gallery / scan-history, live-proven against a local
   Postgres. Schema in `apps/web/db/schema.sql`; apply with `npm run db:migrate` (uses `DATABASE_URL`).
-- **Repo pushed** — `github.com/sgharlow/beacon` (private), branch `main`.
+- **Repo pushed** — `github.com/sgharlow/skillcrossroads` (private), branch `main`.
 - **Build fixed + deployed LIVE to Vercel** — the `beacon` project builds and deploys `READY` in both
   preview and production (canonical prod alias `beacon-gamma-six.vercel.app`). The build config lives
   in the **Vercel project settings** (not a `vercel.json` — that file was removed):
@@ -34,7 +34,7 @@ chat**.
 ## The remaining steps (in order)
 
 ### 1. Push the repo to GitHub — ✅ DONE
-`github.com/sgharlow/beacon` (private, branch `main`). Optionally connect it to the Vercel project
+`github.com/sgharlow/skillcrossroads` (private, branch `main`). Optionally connect it to the Vercel project
 for Git-push auto-deploys + in-dashboard build logs (currently deploys are done via `vercel deploy`
 from the CLI, which works fine).
 
