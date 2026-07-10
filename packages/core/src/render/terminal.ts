@@ -1,4 +1,6 @@
 import pc from "picocolors";
+import { percentileLabel } from "../percentile.js";
+import { CONFIG_FILENAME } from "../suppress.js";
 import type { CategoryScore, CheckResult, Evidence, Scorecard } from "../types.js";
 
 const INNER = 63;
@@ -127,6 +129,9 @@ export function renderTerminal(card: Scorecard, opts: RenderOptions = {}): strin
   for (const cat of card.categories) lines.push(categoryRow(cat));
   lines.push(border("bottom"));
 
+  // Ecosystem context — full-rubric scans only (a partial grade vs the full-rubric sample would overstate).
+  if (!card.partial) lines.push(pc.dim(`  ${percentileLabel(card.overall)}`));
+
   const fixes = rankFixes(card.results);
   if (fixes.length > 0) {
     lines.push("");
@@ -143,6 +148,16 @@ export function renderTerminal(card: Scorecard, opts: RenderOptions = {}): strin
     lines.push(
       pc.dim(
         "Partial grade: some rubric categories have no checks in v0.1 and are excluded from the overall.",
+      ),
+    );
+  }
+
+  if (card.suppressed && card.suppressed.length > 0) {
+    lines.push("");
+    lines.push(
+      pc.yellow(
+        `${card.suppressed.length} check(s) suppressed by ${CONFIG_FILENAME}: ` +
+          card.suppressed.map((s) => `${s.id} (${s.reason})`).join("; "),
       ),
     );
   }

@@ -12,3 +12,9 @@ jobs:
         with:
           path: packages/core/test/fixtures/skills/good-skill
           min-grade: B
+      # Dogfood: the audit-skill Skill we ship must itself grade A− or better on every PR.
+      - uses: sgharlow/skillcrossroads/apps/action@v1
+        with:
+          path: skill
+          min-grade: A-
+          comment: false

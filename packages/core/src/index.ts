@@ -28,6 +28,15 @@ export { renderTerminal, type RenderOptions } from "./render/terminal.js";
 export { renderHtml, type HtmlOptions } from "./render/html.js";
 export { renderBadge, type BadgeOptions } from "./render/badge.js";
 export { PALETTE, gradeHex } from "./render/theme.js";
+export { publicSkillPercentile, percentileLabel, STATE_OF_SKILLS, type PercentileSample } from "./percentile.js";
+export {
+  loadConfig,
+  parseConfig,
+  applySuppressions,
+  ConfigError,
+  CONFIG_FILENAME,
+  type CrossroadsConfig,
+} from "./suppress.js";
 
 import { basename, join, resolve, relative, sep } from "node:path";
 import { mkdtempSync, rmSync, existsSync, readdirSync, statSync } from "node:fs";

@@ -1,3 +1,5 @@
+import { percentileLabel } from "../percentile.js";
+import { CONFIG_FILENAME } from "../suppress.js";
 import type { CategoryScore, CheckResult, Evidence, Scorecard } from "../types.js";
 import { PALETTE, gradeHex, statusHex } from "./theme.js";
 
@@ -211,6 +213,15 @@ export function renderHtml(card: Scorecard, opts: HtmlOptions = {}): string {
   const partialNote = card.partial
     ? `<div class="note">Partial grade — some rubric categories have no checks in this version and are excluded from the overall.</div>`
     : "";
+  // Ecosystem context on full-rubric scans only (a partial grade vs the full-rubric sample would overstate).
+  const contextNote = card.partial ? "" : `<div class="note">★ ${esc(percentileLabel(card.overall))}</div>`;
+  const suppressedNote =
+    card.suppressed && card.suppressed.length > 0
+      ? `<div class="note">⚠ ${card.suppressed.length} check(s) suppressed via ${CONFIG_FILENAME}: ${card.suppressed
+          .map((s) => `${esc(s.id)} (${esc(s.reason)})`)
+          .join("; ")}</div>`
+      : "";
+  const notes = [contextNote, partialNote, suppressedNote].filter(Boolean).join("");
 
   const brand = opts.homeUrl
     ? `<a class="brand-link" href="${esc(opts.homeUrl)}"><span class="brand">Skill Crossroads</span></a>`
@@ -260,7 +271,7 @@ export function renderHtml(card: Scorecard, opts: HtmlOptions = {}): string {
       </div>
     </section>
     ${fixesSection}
-    ${partialNote ? `<div class="fixes" style="border-top:none;padding-top:0">${partialNote}</div>` : ""}
+    ${notes ? `<div class="fixes" style="border-top:none;padding-top:0">${notes}</div>` : ""}
     ${embedSection}
     ${ctaSection}
   </div>

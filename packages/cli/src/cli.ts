@@ -1,5 +1,5 @@
-import { writeFileSync, existsSync } from "node:fs";
-import { resolve } from "node:path";
+import { writeFileSync, existsSync, statSync } from "node:fs";
+import { resolve, dirname } from "node:path";
 import pc from "picocolors";
 import {
   auditAsync,
@@ -17,6 +17,10 @@ import {
   createAnthropicClient,
   createAnthropicTokenCounter,
   createFileCache,
+  loadConfig,
+  applySuppressions,
+  ConfigError,
+  type CrossroadsConfig,
   type CheckContext,
   type AuditResult,
   type ScannedSkill,
@@ -266,6 +270,24 @@ async function main(): Promise<void> {
   const ctx = buildContext(args.noLlm, warnings);
   const remote = isGitHubUrl(args.path) && !existsSync(args.path);
 
+  // Project config (.skillcrossroads.json): local/CI scans only — hosted or remote scans never
+  // apply a repo's own config (a public grade must reflect the unsuppressed rubric). Invalid
+  // config is a usage error (exit 2), never silently ignored.
+  let config: CrossroadsConfig | null = null;
+  if (!remote) {
+    try {
+      const abs = resolve(args.path);
+      const rootDir = existsSync(abs) && statSync(abs).isFile() ? dirname(abs) : abs;
+      config = loadConfig(rootDir);
+    } catch (err) {
+      if (err instanceof ConfigError) {
+        process.stderr.write(pc.red(`✗ ${err.message}\n`));
+        process.exit(2);
+      }
+      throw err;
+    }
+  }
+
   let skills: ScannedSkill[] = [];
   let errors: ScanErr[] = [];
   let meta: BatchMeta = {};
@@ -303,6 +325,9 @@ async function main(): Promise<void> {
     process.exit(1);
   }
 
+  // Apply config suppressions before any rendering/gating, so every surface shows the same card.
+  if (config) skills = skills.map((s) => ({ ...s, scorecard: applySuppressions(s.scorecard, config) }));
+
   // Render
   if (args.json) {
     const body =
@@ -316,19 +341,20 @@ async function main(): Promise<void> {
     emitBatch(skills, errors, args.path, args, meta);
   }
 
-  // Gate
+  // Gate — the flag wins; otherwise the config's minGrade is the default CI gate.
+  const minGrade = args.minGrade ?? config?.minGrade;
   let gateFailed = false;
-  if (args.minGrade) {
-    const failing = skills.filter((s) => !meetsMinGrade(s.scorecard.grade, args.minGrade as string));
+  if (minGrade) {
+    const failing = skills.filter((s) => !meetsMinGrade(s.scorecard.grade, minGrade));
     gateFailed = failing.length > 0;
     // Only in the human terminal mode — never pollute a `--markdown`/`--json` report (which is piped
     // to a PR comment / file). The exit code below still fires so CI gates regardless of mode.
     if (!args.json && !args.markdown) {
       if (gateFailed) {
-        process.stdout.write(pc.red(`\n✗ Gate: ${failing.length}/${skills.length} skill(s) below ${args.minGrade}:\n`));
+        process.stdout.write(pc.red(`\n✗ Gate: ${failing.length}/${skills.length} skill(s) below ${minGrade}:\n`));
         for (const s of failing) process.stdout.write(pc.red(`    ${s.scorecard.grade.padEnd(2)}  ${s.repoPath}  ${s.name}\n`));
       } else {
-        process.stdout.write(pc.green(`\n✓ Gate: all ${skills.length} skill(s) meet ${args.minGrade}.\n`));
+        process.stdout.write(pc.green(`\n✓ Gate: all ${skills.length} skill(s) meet ${minGrade}.\n`));
       }
     }
   }

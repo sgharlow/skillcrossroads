@@ -140,6 +140,13 @@ export interface CategoryScore {
   readonly failCount: number;
 }
 
+/** A config-suppressed check, always disclosed on the scorecard (honesty over convenience). */
+export interface Suppression {
+  readonly id: string;
+  /** The config's stated reason — required, so a suppression is never an unexplained hole. */
+  readonly reason: string;
+}
+
 /** The final graded scorecard. */
 export interface Scorecard {
   readonly rubricVersion: string;
@@ -150,4 +157,6 @@ export interface Scorecard {
   readonly results: readonly CheckResult[];
   /** True if at least one category had no checks (overall is a partial grade). */
   readonly partial: boolean;
+  /** Checks excluded from this grade by `.skillcrossroads.json` — always rendered, never silent. */
+  readonly suppressed?: readonly Suppression[];
 }

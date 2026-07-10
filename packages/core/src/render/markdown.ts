@@ -1,3 +1,5 @@
+import { percentileLabel } from "../percentile.js";
+import { CONFIG_FILENAME } from "../suppress.js";
 import type { CategoryScore, CheckResult, Scorecard } from "../types.js";
 
 export interface MarkdownOptions {
@@ -70,6 +72,8 @@ export function renderMarkdown(card: Scorecard, opts: MarkdownOptions = {}): str
   lines.push(`${h} ${gradeEmoji(card.grade)} Skill Crossroads: ${card.grade} — \`${mdCode(name)}\``);
   lines.push("");
   lines.push(`**Overall ${card.overall}/100** · rubric v${card.rubricVersion} · ${mode}`);
+  // Full-rubric scans only — a partial grade vs the full-rubric sample would overstate.
+  if (!card.partial) lines.push(`_${percentileLabel(card.overall)}_`);
   lines.push("");
   lines.push("| Category | Score | |");
   lines.push("|---|---:|---|");
@@ -85,6 +89,14 @@ export function renderMarkdown(card: Scorecard, opts: MarkdownOptions = {}): str
     for (const r of fixes) lines.push(fixLine(r));
   } else {
     lines.push("✓ **Clean scan** — no warnings or failures.");
+  }
+  if (card.suppressed && card.suppressed.length > 0) {
+    lines.push("");
+    lines.push(
+      `⚠ _${card.suppressed.length} check(s) suppressed via \`${CONFIG_FILENAME}\`: ` +
+        card.suppressed.map((s) => `**${s.id}** (${mdText(s.reason)})`).join("; ") +
+        `_`,
+    );
   }
   return lines.join("\n");
 }

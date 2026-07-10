@@ -140,6 +140,32 @@ The rubric is **versioned** (`RUBRIC_VERSION` in `@beacon/core`); the implemente
 is [`packages/core/src/checks/index.ts`](./packages/core/src/checks/index.ts), with more checks
 on the roadmap.
 
+## Configuration (`.skillcrossroads.json`)
+
+Place a `.skillcrossroads.json` in the scanned directory (or the directory you run from) to
+tune CI/local scans — **every suppression requires a reason, is always disclosed on the
+scorecard, and `SAFETY-*` checks can never be suppressed**:
+
+```json
+{
+  "ignore": [{ "id": "TOKEN-02", "reason": "single-file skill by design" }],
+  "minGrade": "B"
+}
+```
+
+`minGrade` sets the default CI gate when `--min-grade` isn't passed. Hosted scans on
+skillcrossroads.com never apply a repo's config — a public grade always reflects the full rubric.
+
+Full-rubric scorecards also show an ecosystem percentile — *"scores higher than ≈N% of 214
+public skills"* — derived from the published [State of Skills](https://skillcrossroads.com/report)
+grade distribution (an interpolated estimate, hence the ≈; partial/keyless grades don't show it).
+
+## Use it from inside Claude Code
+
+This repo ships an [`audit-skill`](./skill/SKILL.md) Skill: install it and say *"audit my
+skill"* — Claude runs the CLI, walks the ranked fix list, applies fixes, and re-grades until the
+score stops improving. (It grades A on its own rubric, and CI enforces that on every PR.)
+
 ## Continuous integration (GitHub Action)
 
 Gate skill quality on every PR in three lines — the Action grades your skills, **comments a
