@@ -22,9 +22,10 @@ export default async function Dashboard() {
           <span className="lamp" aria-hidden />
           Skill Crossroads
         </a>
-        <a className="link" href="/gallery">
-          Gallery →
-        </a>
+        <nav className="rlinks">
+          <a className="link" href="/gallery">Gallery</a>
+          <a className="link" href="/account">Account</a>
+        </nav>
       </header>
 
       <h1>Metrics</h1>
@@ -90,6 +91,7 @@ export default async function Dashboard() {
         .brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:15px;text-decoration:none}
         .lamp{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 50% 40%,var(--beam),#b9791f);box-shadow:0 0 14px #ffc24b99}
         .link{color:var(--aqua);font-size:13.5px;text-decoration:none}
+        .rlinks{display:flex;gap:16px;align-items:center}
         h1{font-size:clamp(26px,5vw,38px);font-weight:800;margin:24px 0 18px}
         h2{font-size:14px;color:var(--fog);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px}
         .tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:24px}
