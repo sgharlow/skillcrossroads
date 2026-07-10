@@ -11,6 +11,7 @@ import {
   renderHtml,
   renderBadge,
   renderMarkdown,
+  renderAnnotations,
   mdCell,
   meetsMinGrade,
   ParseError,
@@ -42,8 +43,11 @@ ${pc.bold("Arguments:")}
 ${pc.bold("Options:")}
   --html[=<file>]    Also write a self-contained HTML scorecard (default: <name>.beacon.html).
   --badge[=<file>]   Also write an SVG grade badge (default: <name>.beacon.svg).
-  --json             Emit the scorecard as JSON instead of the terminal report.
+  --json[=<file>]    Emit the scorecard as JSON (bare: to stdout, replacing the report;
+                     with =<file>: written alongside whatever report mode is active).
   --markdown         Emit a Markdown report (for CI / PR comments).
+  --annotations=<f>  Write GitHub ::warning/::error annotation lines (file:line-anchored)
+                     to <f> — cat it in a CI step to get inline PR annotations.
   --min-grade=<G>    Exit non-zero if any scanned skill grades below <G> (CI gate), e.g. B or C-.
   --no-llm           Deterministic checks only; skip LLM-assisted triggering analysis.
   --kind=<k>         Artifact kind for a bare .md file: skill | agent | command
@@ -76,6 +80,8 @@ interface Args {
   markdown: boolean;
   minGrade?: string;
   kind?: string;
+  jsonFile?: string;
+  annotations?: string;
   html: OptionalPath;
   badge: OptionalPath;
   noLlm: boolean;
@@ -116,6 +122,8 @@ function parseArgs(argv: readonly string[]): Args {
       return undefined;
     };
     if (a === "--json") args.json = true;
+    else if (a.startsWith("--json=")) args.jsonFile = a.slice("--json=".length);
+    else if (a === "--annotations" || a.startsWith("--annotations=")) args.annotations = takesValue("--annotations");
     else if (a === "--markdown" || a === "--md") args.markdown = true;
     else if (a === "--min-grade" || a.startsWith("--min-grade=")) args.minGrade = takesValue("--min-grade");
     else if (a === "--kind" || a.startsWith("--kind=")) args.kind = takesValue("--kind");
@@ -146,7 +154,7 @@ function today(): string {
 }
 
 /** CLI version — keep in sync with packages/cli/package.json on every `npm version` bump. */
-const VERSION = "0.3.0";
+const VERSION = "0.4.0";
 
 /** The site whose scorecards/badges the CLI points at (override for self-hosting). */
 const SITE_URL = process.env["BEACON_SITE_URL"] ?? "https://skillcrossroads.com";
@@ -359,6 +367,20 @@ async function main(): Promise<void> {
 
   // Apply config suppressions before any rendering/gating, so every surface shows the same card.
   if (config) skills = skills.map((s) => ({ ...s, scorecard: applySuppressions(s.scorecard, config) }));
+
+  // Sidecar outputs (CI): a machine-readable JSON file and/or GitHub annotation lines — written
+  // alongside whatever report mode is active, never replacing it.
+  if (args.jsonFile) {
+    const body = { target: args.path, ...meta, skills: skills.map((s) => ({ repoPath: s.repoPath, name: s.name, ...s.scorecard })), errors };
+    writeFileSync(resolve(args.jsonFile), `${JSON.stringify(body, null, 2)}\n`, "utf8");
+    process.stderr.write(pc.dim(`  wrote JSON → ${resolve(args.jsonFile)}\n`));
+  }
+  if (args.annotations && !remote) {
+    const prefix = args.path === "." ? "" : args.path;
+    const lines = renderAnnotations(skills, prefix);
+    writeFileSync(resolve(args.annotations), lines.length ? `${lines.join("\n")}\n` : "", "utf8");
+    process.stderr.write(pc.dim(`  wrote ${lines.length} annotation(s) → ${resolve(args.annotations)}\n`));
+  }
 
   // Render
   if (args.json) {

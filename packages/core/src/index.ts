@@ -28,6 +28,7 @@ export { renderTerminal, type RenderOptions } from "./render/terminal.js";
 export { renderHtml, type HtmlOptions } from "./render/html.js";
 export { renderBadge, type BadgeOptions } from "./render/badge.js";
 export { PALETTE, gradeHex } from "./render/theme.js";
+export { renderAnnotations, type AnnotatableResult } from "./render/annotations.js";
 export { publicSkillPercentile, percentileLabel, STATE_OF_SKILLS, type PercentileSample } from "./percentile.js";
 export {
   loadConfig,

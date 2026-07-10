@@ -40,7 +40,7 @@ export default function Home(): ReactElement {
             </a>
           </div>
           <p className="hint">
-            Or scan a local folder or your CI:{" "}
+            Not on GitHub? <a href="/paste">Paste a SKILL.md</a> — or scan locally:{" "}
             <code className="mono">npx skillcrossroads ./my-skill</code>
           </p>
         </div>

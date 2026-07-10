@@ -44,11 +44,38 @@ runs:
         GITHUB_TOKEN: ${{ github.token }}
       run: |
         set +e
-        args=("$CROSSROADS_PATH" --markdown)
+        args=("$CROSSROADS_PATH" --markdown --json="$RUNNER_TEMP/crossroads-head.json" --annotations="$RUNNER_TEMP/crossroads-annotations.txt")
         if [ -n "$CROSSROADS_MIN_GRADE" ]; then args+=("--min-grade=$CROSSROADS_MIN_GRADE"); fi
         npx --yes skillcrossroads@latest "${args[@]}" > "$RUNNER_TEMP/crossroads-report.md"
         echo "exit=$?" >> "$GITHUB_OUTPUT"
         cat "$RUNNER_TEMP/crossroads-report.md" >> "$GITHUB_STEP_SUMMARY"
+
+    # Best-effort grade delta vs the PR base: scan the base ref (deterministic-only, cheap) and
+    # append a "Changes vs base" section. `set +e` throughout — a broken base must never fail CI.
+    - name: Grade delta vs base
+      if: ${{ github.event_name == 'pull_request' }}
+      shell: bash
+      env:
+        CROSSROADS_PATH: ${{ inputs.path }}
+        BASE_REF: ${{ github.base_ref }}
+      run: |
+        set +e
+        git fetch --depth=1 origin "$BASE_REF" 2>/dev/null || exit 0
+        git worktree add --detach "$RUNNER_TEMP/crossroads-base" FETCH_HEAD 2>/dev/null || exit 0
+        if [ -e "$RUNNER_TEMP/crossroads-base/$CROSSROADS_PATH" ]; then
+          npx --yes skillcrossroads@latest "$RUNNER_TEMP/crossroads-base/$CROSSROADS_PATH" --no-llm --markdown \
+            --json="$RUNNER_TEMP/crossroads-base.json" > /dev/null 2>&1
+          node "${{ github.action_path }}/delta.mjs" "$RUNNER_TEMP/crossroads-base.json" "$RUNNER_TEMP/crossroads-head.json" \
+            >> "$RUNNER_TEMP/crossroads-report.md"
+        fi
+        git worktree remove --force "$RUNNER_TEMP/crossroads-base" 2>/dev/null
+        exit 0
+
+    # Emitting the annotation lines to stdout makes the runner render them inline in the PR diff.
+    - name: Inline annotations
+      shell: bash
+      run: |
+        if [ -s "$RUNNER_TEMP/crossroads-annotations.txt" ]; then cat "$RUNNER_TEMP/crossroads-annotations.txt"; fi
 
     - name: Comment on PR
       if: ${{ inputs.comment == 'true' && github.event_name == 'pull_request' }}
