@@ -126,6 +126,18 @@ a key). Each check is a ready-made evidence post for the content cadence. 227 te
 > 239 tests. **The MCP tagline commitment is fully delivered — no quarterly honesty deadline
 > outstanding. Everything below this line is demand-gated: no further build without a G0 signal.**
 
+### Findings from the badge-loop dogfood (2026-07-10) — noted, not yet actioned
+
+- **Kind-aware "partial" semantics.** Badging real command-only / agent-only repos surfaced that
+  they always show `A*` (partial): Triggering structurally doesn't apply to an explicitly-invoked
+  slash command, and eval-based Verifiability is skills-only — so those categories can *never*
+  score for that kind, yet the badge marks the grade "incomplete." Consider distinguishing "no
+  check *can* apply to this kind" (→ full grade over applicable categories, no asterisk) from "a
+  check could run but didn't, e.g. keyless LLM" (→ genuine partial). Same family as the
+  MCP/percentile partial nuance. Small, honest-improving; demand-gated with everything else.
+- **Repo scan finds `.claude/` artifacts accurately** (7/39 public repos, zero false positives);
+  ~2/7 artifact-repos had no README (badge loop can't seed without one).
+
 ### Deferred (build only on explicit demand evidence)
 - **MCP server grading (full)** — pending the Sprint-4 spike gate
 - **`--suggest`** LLM fix-generation (rewrite the failing description, BYOK) — after suppression
