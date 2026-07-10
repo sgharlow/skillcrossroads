@@ -31,6 +31,11 @@ CREATE TABLE IF NOT EXISTS scans (
   overall         NUMERIC NOT NULL,
   rubric_version  TEXT NOT NULL,
   category_scores JSONB,
+  login           TEXT,            -- the signed-in user who ran the scan; NULL for anonymous scans
   scanned_at      TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+-- Idempotent add for databases created before per-user history (Sprint A2).
+ALTER TABLE scans ADD COLUMN IF NOT EXISTS login TEXT;
 CREATE INDEX IF NOT EXISTS scans_slug_time_idx ON scans (slug, scanned_at DESC);
+-- "Your scans" on /account: most-recent scans for one login.
+CREATE INDEX IF NOT EXISTS scans_login_time_idx ON scans (login, scanned_at DESC);

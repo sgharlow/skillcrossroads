@@ -4,6 +4,7 @@ import { parseSlug, scanTarget } from "@/lib/scan";
 import { resolveScanOptions } from "@/lib/pro-scan";
 import { renderRepoSummaryHtml } from "@/lib/summary";
 import { recordScans } from "@/lib/record";
+import { readSession } from "@/lib/session";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -40,8 +41,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
 
   // Record each scored skill for score-history / trends. `after()` runs it post-response but keeps
   // the serverless function alive until the writes persist (a bare fire-and-forget is dropped on
-  // termination). Best-effort — never fails the scan.
-  after(() => recordScans(target.owner, target.repo, scan.skills));
+  // termination). Best-effort — never fails the scan. When the viewer is signed in, the scan is
+  // attributed to them for /account ("your scans"); anonymous scans stay anonymous (login = null).
+  const viewer = readSession(req).login;
+  after(() => recordScans(target.owner, target.repo, scan.skills, viewer));
 
   const origin = new URL(req.url).origin;
   const body =

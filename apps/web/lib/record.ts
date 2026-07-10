@@ -13,7 +13,12 @@ export function slugFor(owner: string, repo: string, repoPath: string): string {
  * to keep the serverless function alive until the writes persist (otherwise they're dropped on
  * termination). Errors are swallowed per-write.
  */
-export function recordScans(owner: string, repo: string, skills: readonly ScannedSkill[]): Promise<void> {
+export function recordScans(
+  owner: string,
+  repo: string,
+  skills: readonly ScannedSkill[],
+  login?: string,
+): Promise<void> {
   return Promise.all(
     skills.map((s) => {
       const categoryScores: Record<string, number | null> = {};
@@ -26,6 +31,7 @@ export function recordScans(owner: string, repo: string, skills: readonly Scanne
           overall: s.scorecard.overall,
           rubricVersion: s.scorecard.rubricVersion,
           categoryScores,
+          ...(login ? { login } : {}),
         })
         .catch(() => {
           /* recording is best-effort */
