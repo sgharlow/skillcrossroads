@@ -8,7 +8,9 @@
  *
  * Comparability rule: the sample is full-rubric (all six categories scored), so callers must only
  * show a percentile for full (non-partial) scorecards — a deterministic-only partial grade
- * against a full-rubric sample would overstate. Renderers enforce this.
+ * against a full-rubric sample would overstate. Renderers enforce this. Note: the pinned sample
+ * was graded under rubric v1.0 (LLM edition); v1.1 grades are compared against it as an estimate
+ * (the ≈) until the next report edition regenerates the distribution.
  */
 
 export interface PercentileSample {

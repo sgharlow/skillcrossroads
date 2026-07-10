@@ -58,7 +58,7 @@ function categoryRow(cat: CategoryScore): string {
   if (!cat.evaluated) {
     return `<div class="cat cat--na">
       <span class="cat-label">${esc(cat.label)}</span>
-      <span class="cat-na">not yet scored (v0.1)</span>
+      <span class="cat-na">not yet scored</span>
     </div>`;
   }
   const score = Math.round(cat.score as number);

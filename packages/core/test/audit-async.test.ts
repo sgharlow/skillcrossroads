@@ -21,7 +21,8 @@ describe("auditAsync", () => {
     });
     const triggering = scorecard.categories.find((c) => c.key === "triggering");
     expect(triggering?.evaluated).toBe(true);
-    expect(triggering?.score).toBe(86);
+    // v1.1: TRIGGER-01 (86, w1) blends with deterministic TRIGGER-02/03 (100, w0.5 each) → 93.
+    expect(triggering?.score).toBe(93);
     expect(scorecard.results.some((r) => r.id === "TRIGGER-01")).toBe(true);
   });
 
@@ -29,7 +30,8 @@ describe("auditAsync", () => {
     const asyncCard = (await auditAsync(fixture("good-skill"), {})).scorecard;
     const syncCard = audit(fixture("good-skill")).scorecard;
     expect(asyncCard.overall).toBe(syncCard.overall);
-    expect(asyncCard.categories.find((c) => c.key === "triggering")?.evaluated).toBe(false);
+    // v1.1: triggering scores deterministically (TRIGGER-02/03) even without a model.
+    expect(asyncCard.categories.find((c) => c.key === "triggering")?.evaluated).toBe(true);
   });
 
   it("drops the async check and reports via onError when the model fails", async () => {
@@ -45,9 +47,10 @@ describe("auditAsync", () => {
     expect(errors).toContain("TRIGGER-01");
     expect(errors).toContain("VERIFY-04");
     expect(errors).toContain("CLARITY-05");
-    // their categories stay unevaluated rather than tanking the grade
-    expect(scorecard.categories.find((c) => c.key === "triggering")?.evaluated).toBe(false);
-    expect(scorecard.categories.find((c) => c.key === "verifiability")?.evaluated).toBe(false);
+    // v1.1: the dropped LLM checks leave the deterministic checks scoring both categories,
+    // so the grade equals a plain deterministic audit — errors still never tank the grade.
+    expect(scorecard.categories.find((c) => c.key === "triggering")?.evaluated).toBe(true);
+    expect(scorecard.categories.find((c) => c.key === "verifiability")?.evaluated).toBe(true);
     expect(scorecard.overall).toBe(audit(fixture("good-skill")).scorecard.overall);
   });
 

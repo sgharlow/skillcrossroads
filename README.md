@@ -3,7 +3,7 @@
 **Know before you ship.** The signpost for Claude Code skills, agents, and MCP servers —
 live at [skillcrossroads.com](https://skillcrossroads.com).
 
-[![Skill Crossroads — live scorecard](https://img.shields.io/badge/skill%20crossroads-live%20scorecard-2ea043)](https://skillcrossroads.com/s/anthropics/skills) &nbsp; ![rubric v1.0](https://img.shields.io/badge/rubric-v1.0-555)
+[![Skill Crossroads — live scorecard](https://img.shields.io/badge/skill%20crossroads-live%20scorecard-2ea043)](https://skillcrossroads.com/s/anthropics/skills) &nbsp; ![rubric v1.1](https://img.shields.io/badge/rubric-v1.1-555)
 
 Every skill hits a crossroads before you ship it. Skill Crossroads reads a Claude Code artifact — a
 **Skill**, subagent, MCP server, or plugin — against an evidence-based rubric and points you one of
@@ -117,7 +117,7 @@ a clearly-labeled rough estimate (skill markdown tokenizes denser than prose, so
 ```
 ┌───────────────────────────────────────────────────────────────┐
 │  CROSSROADS SCORECARD                      recipe-001          │
-│  Overall: C+  (78/100)          rubric v1.0 · deterministic    │
+│  Overall: C+  (78/100)          rubric v1.1 · deterministic    │
 ├───────────────────────────────────────────────────────────────┤
 │  Correctness & Structure   ████████████████░░░░  82   ⚠ 1      │
 │  Clarity & Instructions    ██████████████████░░  90   ✓        │
@@ -140,7 +140,12 @@ TOP FIXES (ranked by score impact)
 
 The voice is the product: **evidence-cited, "claimed vs. verified," no false confidence.**
 
-## The scoring rubric (v1.0)
+## The scoring rubric (v1.1)
+
+> **v1.1 (2026-07):** deterministic Triggering (TRIGGER-02/03 description heuristics) and
+> Verifiability (VERIFY-01 evals-present) checks — **keyless skill scans now score all six
+> categories** (no more partial asterisk for skills). A key still upgrades Triggering to the
+> LLM verdict and adds VERIFY-04/CLARITY-05.
 
 Six weighted categories. Each runs individual **checks**; each check emits pass / warn / fail
 plus evidence. Category scores roll up to an overall 0–100 and a letter grade.
@@ -232,7 +237,7 @@ Run locally: `cd apps/web && npm run dev`. Set `GITHUB_TOKEN` for higher GitHub 
 **Live in production** — the hosted app (public scorecards, always-fresh badges, gallery, trends,
 and the published [State of Claude Code Skills report](https://skillcrossroads.com/report)) is
 `live-proven` at [skillcrossroads.com](https://skillcrossroads.com), and the CLI is published on
-npm as [`skillcrossroads`](https://www.npmjs.com/package/skillcrossroads). Eleven deterministic
+npm as [`skillcrossroads`](https://www.npmjs.com/package/skillcrossroads). Sixteen deterministic
 checks (structure, a three-check **Token & Context Cost** pack, clarity, and a four-check
 **Safety & Security** pack: secrets, `allowed-tools` over-permissioning, destructive
 auto-invocation, `!`-block shell injection) run on a local Skill directory or **any public GitHub

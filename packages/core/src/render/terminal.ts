@@ -50,9 +50,9 @@ function categorySummary(cat: CategoryScore): string {
 
 function categoryRow(cat: CategoryScore): string {
   if (!cat.evaluated) {
-    const content = `  ${padTo(cat.label, LABEL_W)}      ${pc.dim("not yet scored (v0.1)")}`;
+    const content = `  ${padTo(cat.label, LABEL_W)}      ${pc.dim("not yet scored")}`;
     // pad using plain (uncolored) length
-    const plain = `  ${padTo(cat.label, LABEL_W)}      not yet scored (v0.1)`;
+    const plain = `  ${padTo(cat.label, LABEL_W)}      not yet scored`;
     return `│${content}${" ".repeat(Math.max(0, INNER - vlen(plain)))}│`;
   }
   const s = cat.score as number;

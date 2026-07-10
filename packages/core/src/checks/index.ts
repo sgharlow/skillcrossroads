@@ -16,6 +16,9 @@ import { verify04 } from "./verify-04-verification.js";
 import { clarity05 } from "./clarity-05-constraints.js";
 import { agent01 } from "./agent-01-model.js";
 import { cmd01 } from "./cmd-01-arguments.js";
+import { trigger02 } from "./trigger-02-desc-quality.js";
+import { trigger03 } from "./trigger-03-cues.js";
+import { verify01 } from "./verify-01-evals.js";
 
 /**
  * The deterministic check catalog. Adding a check = adding one entry here.
@@ -37,6 +40,9 @@ export const CHECKS: readonly Check[] = [
   safety04,
   agent01,
   cmd01,
+  trigger02,
+  trigger03,
+  verify01,
 ];
 
 /** LLM-assisted checks. Run only when a model client is supplied (BYOK). */
@@ -59,6 +65,9 @@ export {
   clarity05,
   agent01,
   cmd01,
+  trigger02,
+  trigger03,
+  verify01,
 };
 export type { AsyncCheck, CheckContext } from "./async.js";
 

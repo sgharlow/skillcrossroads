@@ -10,8 +10,8 @@ describe("audit — end to end on fixtures", () => {
     expect(scorecard.grade).toBe("A+");
     expect(scorecard.overall).toBe(100);
     expect(scorecard.results.every((r) => r.status === "pass")).toBe(true);
-    // Two categories have no v0.1 checks → partial grade.
-    expect(scorecard.partial).toBe(true);
+    // Rubric v1.1: deterministic checks cover all six categories for skills → full grade.
+    expect(scorecard.partial).toBe(false);
   });
 
   it("catches a dangling supporting-file reference", () => {
@@ -21,7 +21,8 @@ describe("audit — end to end on fixtures", () => {
     expect(struct05?.evidence.length).toBe(2); // converter.md + style.md
     const correctness = scorecard.categories.find((c) => c.key === "correctness");
     expect(correctness?.failCount).toBe(1);
-    expect(scorecard.grade).toBe("A−");
+    // v1.1: triggering + verifiability now score deterministically, lifting the overall.
+    expect(scorecard.grade).toBe("A");
   });
 
   it("catches hardcoded secrets in the skill and its supporting files", () => {
@@ -54,7 +55,7 @@ describe("renderTerminal", () => {
     expect(out).toContain("SKILL CROSSROADS SCORECARD");
     expect(out).toContain("Overall:");
     expect(out).toContain("Correctness & Structure");
-    expect(out).toContain("not yet scored (v0.1)");
+    expect(out).not.toContain("not yet scored"); // v1.1: skills score all six categories keyless
     expect(out).toContain("TOP FIXES");
     expect(out).toContain("STRUCT-05");
   });

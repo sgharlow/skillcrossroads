@@ -36,8 +36,13 @@ export const CATEGORIES: readonly CategoryMeta[] = [
   { key: "verifiability", label: "Verifiability & Maintainability", weight: 0.1 },
 ] as const;
 
-/** The versioned rubric identifier. A bump is a content/announcement event — never silent. */
-export const RUBRIC_VERSION = "1.0";
+/**
+ * The versioned rubric identifier. A bump is a content/announcement event — never silent.
+ * v1.1 (2026-07): deterministic Triggering (TRIGGER-02/03) and Verifiability (VERIFY-01) checks —
+ * keyless SKILL scans now score all six categories (no longer partial); agents/commands still
+ * partial without a key.
+ */
+export const RUBRIC_VERSION = "1.1";
 
 /** A parsed artifact — the input to every check. */
 export interface Artifact {

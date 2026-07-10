@@ -60,7 +60,7 @@ describe("findSkillDirs", () => {
 describe("scanGitHubRepo (mock fetch)", () => {
   const SKILL_MD = `---
 name: mock-skill
-description: A mock skill for testing the scanner end to end. Use when the user says "test the scanner".
+description: A mock skill for testing the repo scanner end to end against the live pipeline. Use when the user says "test the scanner" or "run the mock scan fixture".
 ---
 # Mock skill
 See [the reference](./references/x.md).
@@ -80,6 +80,7 @@ See [the reference](./references/x.md).
             tree: [
               { path: "skills/foo/SKILL.md", type: "blob" },
               { path: "skills/foo/references/x.md", type: "blob" },
+              { path: "skills/foo/evals/check.md", type: "blob" }, // v1.1: VERIFY-01 needs evals
             ],
           }),
         ),
@@ -87,6 +88,7 @@ See [the reference](./references/x.md).
     }
     if (u.endsWith("/skills/foo/SKILL.md")) return Promise.resolve(new Response(SKILL_MD));
     if (u.endsWith("/skills/foo/references/x.md")) return Promise.resolve(new Response("# ref\n"));
+    if (u.endsWith("/skills/foo/evals/check.md")) return Promise.resolve(new Response("# eval\n"));
     return Promise.resolve(new Response("not found", { status: 404 }));
   }
 

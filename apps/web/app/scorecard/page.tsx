@@ -65,7 +65,7 @@ export default function Scorecard(): ReactElement {
               <p className="sc-kicker">Skill Crossroads scorecard</p>
               <h1 className="sc-title mono">recipe-001</h1>
               <p className="sc-meta">
-                overall <strong>C+</strong> (78/100) · rubric v1.0
+                overall <strong>C+</strong> (78/100) · rubric v1.1
               </p>
             </div>
             <div className="sc-badge">

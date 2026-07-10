@@ -77,14 +77,28 @@ demand amplifiers. No horizontal breadth.*
 > the Action emits inline PR annotations and a best-effort "Changes vs base" grade-delta section
 > (base-ref worktree scan + dependency-free delta.mjs, silent on base failure). 227 tests.
 
-### Sprint 4 — Moat cadence + MCP decision · ~3.5 dev-days · 1 week · **gated on G1**
-**Gate G1 (before this sprint):** ≥50 external scans/month OR ≥3 badges embedded in external
-repos OR 1 paying Pro customer. Owner: Steve reviews numbers; date: at Sprint 3 close.
+### Sprint 4 — Moat cadence + MCP decision · **SHIPPED 2026-07-10** (owner override of the G1 gate)
 
-| # | Item | Why | Est. |
-|---|------|-----|------|
-| 9 | Check batch #1: 3 deterministic checks from the v1 catalog (deterministic triggering heuristics TRIGGER-02/03, evals-present VERIFY-01) — each shipped with a short evidence post | The "one new check = one content post" cadence is the compounding moat | 2d |
-| 10 | **MCP-support spike** with a written PASS/FAIL gate: can static manifest/tool-description checks produce evidence-cited findings comparable to skill checks? PASS → schedule MCP sprint; FAIL → drop "MCP servers" from the tagline (honesty over aspiration) | Third tagline claim; spike-before-build on the riskiest scope | 1.5d |
+**Item 9 — `live-proven` in `skillcrossroads@0.5.0` as RUBRIC v1.1** (versioned bump, announced
+here + README, never silent): TRIGGER-02 (description length bands — the deterministic floor
+under the LLM check, weighted 0.5 so TRIGGER-01 dominates when keyed), TRIGGER-03 (explicit
+invocation cues: "use when…", quoted user phrases), VERIFY-01 (evals/tests present, skills only —
+eval files > prose "## Verify" > nothing). **Consequence: keyless SKILL scans now score all six
+categories — no more partial asterisk for skills** (agents/commands stay honestly partial without
+a key). Each check is a ready-made evidence post for the content cadence. 227 tests.
+
+**Item 10 — MCP spike verdict: PASS, scoped two-phase.**
+- *Statically gradeable today (Phase A, small):* `.mcp.json` config hygiene — inline secrets in
+  `env` blocks, unpinned `npx -y` server packages (supply-chain drift), non-TLS `http://` remote
+  transports, over-broad filesystem/shell server roots. All deterministic, file:line-citable —
+  comparable to skill checks. **PASS.**
+- *NOT statically gradeable:* the server's actual craftsmanship (tool descriptions/triggering,
+  schema quality) lives behind a runtime `tools/list` — static-only full grading **FAILS**.
+  Feasible path (Phase B, one sprint): a consent-gated `--mcp-live` CLI mode that spawns the
+  user's configured stdio server, performs the MCP handshake, lists tools, and grades each tool
+  description with the existing triggering heuristics + LLM checks.
+- **Decision:** tagline keeps "MCP servers" with Phase A+B committed to the backlog; if Phase B
+  is not built by the next quarterly review, drop the tagline claim (honesty over aspiration).
 
 ### Deferred (build only on explicit demand evidence)
 - **MCP server grading (full)** — pending the Sprint-4 spike gate

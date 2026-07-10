@@ -13,7 +13,7 @@ describe("renderHtml", () => {
     expect(html).toContain("<title>Skill Crossroads — meeting-notes</title>");
     expect(html).toContain(scorecard.grade);
     expect(html).toContain("Correctness &amp; Structure");
-    expect(html).toContain("not yet scored (v0.1)"); // partial categories
+    expect(html).not.toContain("not yet scored"); // v1.1: all six categories score for skills
     expect(html).toContain("scanned 2026-07-08");
   });
 
