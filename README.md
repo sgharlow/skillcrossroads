@@ -118,6 +118,17 @@ can click through and scan their own skill:
 [![Skill Crossroads](https://skillcrossroads.com/api/badge/OWNER/REPO.svg)](https://skillcrossroads.com/s/OWNER/REPO)
 ```
 
+Or skip the copy-paste entirely — `init` puts the hosted badge in for you:
+
+```bash
+skillcrossroads init            # in your repo: adds the badge under your README's H1
+skillcrossroads init --dry-run  # preview the change first
+```
+
+It reads your repo's `owner/repo` from the git remote (override with `--repo owner/name`),
+confirms there are gradeable artifacts, and inserts the always-fresh linked badge — creating a
+minimal README if you don't have one. It never commits; review the diff and commit yourself.
+
 ### LLM-assisted triggering check (BYOK)
 
 The highest-value check — *"will this skill actually fire?"* — uses a model. Bring your own

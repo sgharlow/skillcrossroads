@@ -35,6 +35,17 @@ badge that re-scans on its own:
 [![Skill Crossroads](https://skillcrossroads.com/api/badge/OWNER/REPO.svg)](https://skillcrossroads.com/s/OWNER/REPO)
 ```
 
+Or let the CLI add it for you:
+
+```bash
+npx skillcrossroads init            # inserts the badge under your README's H1
+npx skillcrossroads init --dry-run  # preview first
+```
+
+Reads `owner/repo` from your git remote (or `--repo owner/name`), confirms there are gradeable
+artifacts, and inserts the linked badge — creating a minimal README if you have none. Never
+commits; you review and commit.
+
 ## More
 
 - **Hosted scorecards, gallery, and the data report:** [skillcrossroads.com](https://skillcrossroads.com) ·

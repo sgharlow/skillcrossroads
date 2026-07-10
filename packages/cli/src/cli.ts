@@ -31,11 +31,13 @@ import {
   type AuditResult,
   type ScannedSkill,
 } from "@beacon/core";
+import { runInit } from "./init.js";
 
 const USAGE = `${pc.bold("skillcrossroads")} — Skill Crossroads, the signpost for Claude Code artifacts
 
 ${pc.bold("Usage:")}
   skillcrossroads <path-to-skill | github-url> [options]
+  skillcrossroads init [path] [options]        Add the quality badge to a repo's README.
 
 ${pc.bold("Arguments:")}
   <path-to-skill>    A skill directory (containing SKILL.md), a subagent/command .md file
@@ -73,6 +75,7 @@ ${pc.bold("Examples:")}
   skillcrossroads ./skills --markdown --min-grade=B      # CI: report + gate
   skillcrossroads https://github.com/anthropics/skills
   skillcrossroads anthropics/skills --max=10
+  skillcrossroads init                                   # badge this repo's README
   ANTHROPIC_API_KEY=sk-... skillcrossroads ./my-skill
 `;
 
@@ -162,7 +165,7 @@ function today(): string {
 }
 
 /** CLI version — keep in sync with packages/cli/package.json on every `npm version` bump. */
-const VERSION = "0.7.1";
+const VERSION = "0.8.0";
 
 /** The site whose scorecards/badges the CLI points at (override for self-hosting). */
 const SITE_URL = process.env["BEACON_SITE_URL"] ?? "https://skillcrossroads.com";
@@ -284,7 +287,16 @@ function emitBatch(
 }
 
 async function main(): Promise<void> {
-  const args = parseArgs(process.argv.slice(2));
+  const rawArgv = process.argv.slice(2);
+
+  // Subcommand: `init` adds the badge to a repo's README. Routed before the scan arg parser
+  // so its own flags (--repo, --dry-run, --no-create) don't collide with scan options.
+  if (rawArgv[0] === "init") {
+    process.exitCode = await runInit(rawArgv.slice(1), SITE_URL);
+    return;
+  }
+
+  const args = parseArgs(rawArgv);
 
   if (args.version) {
     process.stdout.write(`skillcrossroads ${VERSION}\n`);

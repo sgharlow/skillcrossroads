@@ -126,6 +126,35 @@ a key). Each check is a ready-made evidence post for the content cadence. 227 te
 > 239 tests. **The MCP tagline commitment is fully delivered — no quarterly honesty deadline
 > outstanding. Everything below this line is demand-gated: no further build without a G0 signal.**
 
+### Sprint A1 — Badge-in-README (`skillcrossroads init`) · **SHIPPED 2026-07-10** (`live-proven`)
+
+> **The one adoption ergonomic worth building pre-launch.** The badge loop depends on authors
+> getting the badge *into* their README; until now that was manual copy-paste (fine for one repo)
+> or, for scale, out-of-band API scripting (what the maintainer did by hand across the account —
+> not a user-facing capability). `init` closes exactly that gap without new infrastructure: a
+> local, no-OAuth, no-backend CLI command in the `npx tailwindcss init` idiom. This is **UX polish
+> on the existing badge feature, not new horizontal breadth** — so it clears the demand gate that
+> everything below this line does not.
+>
+> `live-proven` in `skillcrossroads@0.8.0`: **`skillcrossroads init [path]`** scans the repo
+> (confirms there are gradeable artifacts + shows the grade), resolves the GitHub `owner/repo` from
+> `git remote get-url origin` (or `--repo owner/name`), and inserts an always-fresh linked badge
+> under the README's first H1 — or creates a minimal README if there is none (`--no-create` opts
+> out; `--dry-run` previews). **It never commits** — the user reviews the diff and commits, so the
+> tool stays read-only toward the repo except the one README it writes. The badge URL + markdown
+> contract now lives in exactly one place (`@beacon/core` `badge-embed.ts`: `badgeUrls`,
+> `badgeMarkdown`, `parseGitHubSlug`, `insertBadge`) consumed by the CLI — no third copy of the
+> `/api/badge/OWNER/REPO.svg` shape. 273 tests (+34). Live-proven: real remote resolution on this
+> repo (10 artifacts, existing badge correctly detected → idempotent no-op) + a real create in a
+> temp repo.
+>
+> **Explicitly NOT built (still demand-gated — see "the typical developer" analysis):** the
+> account-wide "connect your GitHub" GitHub App with one-click badge PRs (Tier 3). That is the
+> Codecov-style adoption engine and the honest answer to "do all my repos at once," but it is real
+> horizontal infrastructure (App, write scopes, repo-picker UI, PR automation). Build it when the
+> launch produces a user who asks for it — not before. Mass auto-editing a user's repos is also
+> not even desirable; opt-in-per-repo is the right shape, and `init` is the per-repo primitive.
+
 ### Findings from the badge-loop dogfood (2026-07-10) — noted, not yet actioned
 
 - **Kind-aware "partial" semantics.** Badging real command-only / agent-only repos surfaced that
@@ -136,7 +165,8 @@ a key). Each check is a ready-made evidence post for the content cadence. 227 te
   check could run but didn't, e.g. keyless LLM" (→ genuine partial). Same family as the
   MCP/percentile partial nuance. Small, honest-improving; demand-gated with everything else.
 - **Repo scan finds `.claude/` artifacts accurately** (7/39 public repos, zero false positives);
-  ~2/7 artifact-repos had no README (badge loop can't seed without one).
+  ~2/7 artifact-repos had no README — **addressed by `init` (Sprint A1)**, which creates a minimal
+  README when one is missing so the badge loop can seed there too.
 
 ### Deferred (build only on explicit demand evidence)
 - **MCP server grading (full)** — pending the Sprint-4 spike gate

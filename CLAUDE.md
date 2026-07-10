@@ -24,7 +24,9 @@ NEVER hosted: spawning configured commands server-side is RCE by design). Keyles
 score all six categories. Surfaces: terminal, HTML, badge, Markdown, JSON (`--json[=file]`),
 GitHub annotations (`--annotations`), paste-to-scan (`/paste`), hosted repo scans incl.
 single-file artifacts, `.skillcrossroads.json` config/suppression (SAFETY-* unsuppressible),
-ecosystem percentile (full-rubric SKILL cards only). Hosted app + GitHub Action (`v1`) + Stripe
+ecosystem percentile (full-rubric SKILL cards only), and `skillcrossroads init` (inserts the
+hosted badge into a repo's README — badge URL/markdown contract centralized in
+`core/badge-embed.ts`, never re-expressed). Hosted app + GitHub Action (`v1`) + Stripe
 Pro all live and owner-dogfooded. `scripts/state-of-skills.mjs` regenerates the data report.
 
 **Not yet built** (roadmap — do not add speculatively): plugin scoring, more checks from the

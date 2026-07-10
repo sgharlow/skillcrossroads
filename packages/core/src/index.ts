@@ -37,6 +37,15 @@ export {
 } from "./mcp-live.js";
 export { publicSkillPercentile, percentileLabel, STATE_OF_SKILLS, type PercentileSample } from "./percentile.js";
 export {
+  badgeUrls,
+  badgeMarkdown,
+  parseGitHubSlug,
+  insertBadge,
+  newReadme,
+  type BadgeMarkdownOptions,
+  type InsertBadgeResult,
+} from "./badge-embed.js";
+export {
   loadConfig,
   parseConfig,
   applySuppressions,
