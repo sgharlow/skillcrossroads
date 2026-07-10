@@ -269,7 +269,7 @@ if (offenders.length > 0) {
   lines.push("");
   for (const o of offenders.slice(0, 10)) lines.push(`- ${o}`);
   lines.push("");
-  lines.push("Each is catchable **before** publishing, with `npx @sgharlow/beacon ./your-skill` — and each is exactly the kind of thing that makes a good skill look broken in someone else's session.");
+  lines.push("Each is catchable **before** publishing, with `npx skillcrossroads ./your-skill` — and each is exactly the kind of thing that makes a good skill look broken in someone else's session.");
 }
 lines.push("");
 

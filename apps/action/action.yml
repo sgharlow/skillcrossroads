@@ -46,7 +46,7 @@ runs:
         set +e
         args=("$CROSSROADS_PATH" --markdown)
         if [ -n "$CROSSROADS_MIN_GRADE" ]; then args+=("--min-grade=$CROSSROADS_MIN_GRADE"); fi
-        npx --yes @sgharlow/beacon@latest "${args[@]}" > "$RUNNER_TEMP/crossroads-report.md"
+        npx --yes skillcrossroads@latest "${args[@]}" > "$RUNNER_TEMP/crossroads-report.md"
         echo "exit=$?" >> "$GITHUB_OUTPUT"
         cat "$RUNNER_TEMP/crossroads-report.md" >> "$GITHUB_STEP_SUMMARY"
 

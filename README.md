@@ -17,9 +17,9 @@ every finding cited to a file and line.
 > Skill Crossroads grades *craftsmanship and safety* (is it well-built, discoverable, and safe to ship?).
 > They complement each other. No one else owns the graded-scorecard-plus-badge lane.
 
-> **Note:** the CLI is published today as `@sgharlow/beacon` (`npx @sgharlow/beacon ./my-skill`); the
-> `skillcrossroads` package name is part of an in-progress rename. Internal package names (`@beacon/core`)
-> and env vars still use the old name until that migration lands.
+> **Note:** the CLI is published on npm as `skillcrossroads` (`npx skillcrossroads ./my-skill`).
+> Internal workspace package names (`@beacon/core`) and `BEACON_*` env vars keep the original
+> codename by design — only the published CLI and the product brand are "Skill Crossroads".
 
 ## Why
 
@@ -38,8 +38,8 @@ node packages/cli/dist/cli.js ./path-to-a-skill
 # also write a shareable HTML scorecard and an SVG badge:
 node packages/cli/dist/cli.js ./path-to-a-skill --html --badge
 
-# once published to npm (installed command is still `beacon`):
-npx @sgharlow/beacon ./path-to-a-skill
+# from npm (installed command is `skillcrossroads`):
+npx skillcrossroads ./path-to-a-skill
 ```
 
 ### Scan a whole GitHub repo (no clone)
@@ -48,9 +48,9 @@ Point Skill Crossroads at a public repo and it grades every skill it finds — f
 nothing cloned on your side:
 
 ```bash
-beacon https://github.com/anthropics/skills        # batch table of every skill
-beacon anthropics/skills --max=10                  # cap how many
-beacon anthropics/skills --json                    # machine-readable, with the pinned tree sha
+skillcrossroads https://github.com/anthropics/skills        # batch table of every skill
+skillcrossroads anthropics/skills --max=10                  # cap how many
+skillcrossroads anthropics/skills --json                    # machine-readable, with the pinned tree sha
 ```
 
 Set `GITHUB_TOKEN` for higher rate limits on large repos.
@@ -58,7 +58,7 @@ Set `GITHUB_TOKEN` for higher rate limits on large repos.
 ### Share the result
 
 ```bash
-beacon ./my-skill --html --badge
+skillcrossroads ./my-skill --html --badge
 #   wrote HTML → my-skill.beacon.html     ← self-contained, open or share it
 #   wrote SVG  → my-skill.beacon.svg      ← drop it in your README
 ```
@@ -82,8 +82,8 @@ Anthropic key; deterministic checks always run without one.
 
 ```bash
 export ANTHROPIC_API_KEY=sk-ant-...      # your key; nothing is sent without it
-beacon ./my-skill                        # now also scores Triggering & Discoverability
-BEACON_MODEL=claude-haiku-4-5 beacon ./my-skill   # cheaper model
+skillcrossroads ./my-skill                        # now also scores Triggering & Discoverability
+BEACON_MODEL=claude-haiku-4-5 skillcrossroads ./my-skill   # cheaper model
 ```
 
 Verdicts are cached by content hash in `.beacon-cache/`, so re-scanning an unchanged skill is
@@ -152,8 +152,8 @@ scorecard**, and **fails the build** below a grade you pick (full docs: [`apps/a
 The CLI is CI-native on its own, too:
 
 ```bash
-beacon ./skills --markdown          # a Markdown report (job summary / PR comment)
-beacon ./skills --min-grade B       # exit non-zero if any skill is below B (the gate)
+skillcrossroads ./skills --markdown          # a Markdown report (job summary / PR comment)
+skillcrossroads ./skills --min-grade B       # exit non-zero if any skill is below B (the gate)
 ```
 
 A local path may be a single skill or a **folder of skills** — every `SKILL.md` under it is scanned.

@@ -74,7 +74,7 @@ The most common defects across the sample:
 - no ASCII-art / persona filler (CLARITY-03): 10 of 214
 - valid YAML frontmatter (STRUCT-01): 6 of 214
 
-Each is catchable **before** publishing, with `npx @sgharlow/beacon ./your-skill` — and each is exactly the kind of thing that makes a good skill look broken in someone else's session.
+Each is catchable **before** publishing, with `npx skillcrossroads ./your-skill` — and each is exactly the kind of thing that makes a good skill look broken in someone else's session.
 
 ## Methodology & reproducibility
 

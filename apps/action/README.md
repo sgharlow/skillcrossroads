@@ -27,9 +27,9 @@ jobs:
 
 That's it. Open a PR touching a skill and Skill Crossroads posts a scorecard comment and gates the build.
 
-> **Note:** the action is referenced today as `sgharlow/beacon/apps/action@v1` and installs the CLI as
-> `@sgharlow/beacon` — the repository and package rename to `skillcrossroads` is in progress. The scorecard
-> it posts is already Skill Crossroads-branded.
+> **Note:** the action installs the published CLI `skillcrossroads` (`npx skillcrossroads@latest`) and
+> is referenced as `sgharlow/beacon/apps/action@v1` — the GitHub **repository** still uses the original
+> name; only the npm package and the product brand are "Skill Crossroads".
 
 ## Inputs
 
@@ -51,6 +51,6 @@ quality, verification, and constraint coverage.
 
 ## Notes
 
-- The action installs the published CLI (`@sgharlow/beacon@latest`), so it tracks the latest release.
+- The action installs the published CLI (`skillcrossroads@latest`), so it tracks the latest release.
 - Commenting needs `pull-requests: write`. On fork PRs the token is read-only; the action logs and
   continues rather than failing.

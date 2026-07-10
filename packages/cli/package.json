@@ -1,5 +1,5 @@
 {
-  "name": "@sgharlow/beacon",
+  "name": "skillcrossroads",
   "version": "0.1.0",
   "publishConfig": {
     "access": "public"
@@ -7,7 +7,7 @@
   "description": "Skill Crossroads CLI — the signpost for Claude Code artifacts. Audit a Skill and get an evidence-based quality scorecard with a letter grade: ship, fix, or rethink.",
   "type": "module",
   "bin": {
-    "beacon": "./dist/cli.js"
+    "skillcrossroads": "./dist/cli.js"
   },
   "files": [
     "dist"
@@ -18,7 +18,7 @@
     "prepublishOnly": "npm run bundle",
     "clean": "rimraf dist"
   },
-  "comment": "@beacon/core is a private workspace package (never published). It is BUNDLED into dist/cli.js at publish time (prepublishOnly → esbuild), so the published package is self-contained and has zero runtime deps — that is what makes `npx @sgharlow/beacon` and the GitHub Action work.",
+  "comment": "@beacon/core is a private workspace package (never published). It is BUNDLED into dist/cli.js at publish time (prepublishOnly → esbuild), so the published package is self-contained and has zero runtime deps — that is what makes `npx skillcrossroads` and the GitHub Action work.",
   "devDependencies": {
     "@beacon/core": "*",
     "esbuild": "^0.24.0",

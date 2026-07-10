@@ -180,7 +180,7 @@ The CLI is CI-native: a local path may be a **single skill or a folder of skills
 (`renderMarkdown`, core); `--min-grade <G>` sets `process.exitCode = 1` when any skill grades below
 `<G>` (`meetsMinGrade` / `gradeRank` in `score.ts`) — the CI gate. `apps/action` is a **composite**
 GitHub Action (`action.yml` + `comment.mjs`, a dependency-free PR-comment poster that updates one
-marker comment in place). The action runs `npx @sgharlow/beacon@latest`, so the "comments on a real PR" proof
+marker comment in place). The action runs `npx skillcrossroads@latest`, so the "comments on a real PR" proof
 is batched with the npm publish; the gate + markdown + local batch are live-proven via the CLI.
 
 ## Running locally

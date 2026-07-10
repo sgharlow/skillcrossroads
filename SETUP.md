@@ -77,24 +77,24 @@ trial** with the `4242` card — card entry is yours, by policy.)
 `customer.subscription.deleted`), and set `STRIPE_SECRET_KEY` / `STRIPE_PRICE_ID` /
 `STRIPE_WEBHOOK_SECRET` in Vercel.
 
-### 6. npm publish — name chosen: `@sgharlow/beacon`
+### 6. npm publish — name chosen: `skillcrossroads`
 `beacon` (unscoped) is taken on npm (someone else's v0.4.9), so the CLI package is renamed to
-**`@sgharlow/beacon`** (the installed command is still `beacon` via `bin`). Already updated:
+**`skillcrossroads`** (the installed command is `skillcrossroads` via `bin`). Already updated:
 `packages/cli/package.json` (name + `publishConfig.access: public`), `apps/action/action.yml`
-(`npx --yes @sgharlow/beacon@latest`), and the `npx` examples in the READMEs / CLAUDE.md.
+(`npx --yes skillcrossroads@latest`), and the `npx` examples in the READMEs / CLAUDE.md.
 
-**✅ PUBLISHED + LIVE (2026-07-09).** `@sgharlow/beacon@0.1.0` is on npm, **public**, verified end-to-end:
-`npx @sgharlow/beacon@latest` runs standalone from a clean dir (core is bundled in via
+**✅ PUBLISHED + LIVE (2026-07-09).** `skillcrossroads@0.1.0` is on npm, **public**, verified end-to-end:
+`npx skillcrossroads@latest` runs standalone from a clean dir (core is bundled in via
 `prepublishOnly` → esbuild; zero runtime deps). The Action, the landing-page command, and the README
 `npx` instructions all work.
 
 **⚠️ For future version bumps — always pass `--access public`:**
 ```bash
-npm version patch -w @sgharlow/beacon      # bump
-npm publish -w @sgharlow/beacon --access public
+npm version patch -w skillcrossroads      # bump
+npm publish -w skillcrossroads --access public
 ```
 The `-w` workspace flag does NOT honor the package's `publishConfig.access`, so the first publish
-went out **restricted** and had to be flipped with `npm access set status=public @sgharlow/beacon`.
+went out **restricted** and had to be flipped with `npm access set status=public skillcrossroads`.
 Passing `--access public` explicitly avoids that.
 
 ### 7. (Optional) managed LLM for Pro → `BEACON_MANAGED_ANTHROPIC_KEY`

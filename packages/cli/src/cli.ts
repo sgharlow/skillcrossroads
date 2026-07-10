@@ -22,10 +22,10 @@ import {
   type ScannedSkill,
 } from "@beacon/core";
 
-const USAGE = `${pc.bold("beacon")} — Skill Crossroads, the signpost for Claude Code artifacts
+const USAGE = `${pc.bold("skillcrossroads")} — Skill Crossroads, the signpost for Claude Code artifacts
 
 ${pc.bold("Usage:")}
-  beacon <path-to-skill | github-url> [options]
+  skillcrossroads <path-to-skill | github-url> [options]
 
 ${pc.bold("Arguments:")}
   <path-to-skill>    Local skill directory (containing SKILL.md) or the SKILL.md file.
@@ -51,11 +51,11 @@ ${pc.bold("LLM-assisted checks (BYOK):")}
   Override the model with BEACON_MODEL. Verdicts are cached in .beacon-cache/.
 
 ${pc.bold("Examples:")}
-  beacon ./my-skill
-  beacon ./skills --markdown --min-grade=B      # CI: report + gate
-  beacon https://github.com/anthropics/skills
-  beacon anthropics/skills --max=10
-  ANTHROPIC_API_KEY=sk-... beacon ./my-skill
+  skillcrossroads ./my-skill
+  skillcrossroads ./skills --markdown --min-grade=B      # CI: report + gate
+  skillcrossroads https://github.com/anthropics/skills
+  skillcrossroads anthropics/skills --max=10
+  ANTHROPIC_API_KEY=sk-... skillcrossroads ./my-skill
 `;
 
 /** A flag that takes an optional `=value`: undefined = absent, true = present (default path), string = explicit. */
@@ -253,7 +253,7 @@ async function main(): Promise<void> {
   const args = parseArgs(process.argv.slice(2));
 
   if (args.version) {
-    process.stdout.write(`beacon ${VERSION}\n`);
+    process.stdout.write(`skillcrossroads ${VERSION}\n`);
     return;
   }
   if (args.help || args.path === undefined) {
@@ -345,6 +345,6 @@ async function main(): Promise<void> {
 }
 
 main().catch((err) => {
-  process.stderr.write(pc.red(`beacon: ${err instanceof Error ? err.stack ?? err.message : String(err)}\n`));
+  process.stderr.write(pc.red(`skillcrossroads: ${err instanceof Error ? err.stack ?? err.message : String(err)}\n`));
   process.exit(1);
 });
