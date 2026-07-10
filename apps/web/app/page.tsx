@@ -15,6 +15,7 @@ export default function Home(): ReactElement {
           <a href="/scorecard">Sample scorecard</a>
           <a href="/gallery">Gallery</a>
           <a href="/pricing">Pricing</a>
+          <a href="/account">Account</a>
           <a href="https://github.com/sgharlow/skillcrossroads">GitHub</a>
           <a className="btn btn-sm" href="#scan">
             Scan a skill

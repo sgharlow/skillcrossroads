@@ -46,7 +46,14 @@ function verifyUser(value: string): string | null {
 
 /** Parse Beacon's auth cookies from a request's Cookie header. The identity cookie is signature-verified. */
 export function readSession(req: Request): Session {
-  const raw = req.headers.get("cookie") ?? "";
+  return readSessionFromCookieHeader(req.headers.get("cookie") ?? "");
+}
+
+/**
+ * Same as readSession but from a raw Cookie header string — for server components, which read
+ * cookies via `next/headers` rather than a Request. The identity cookie is signature-verified.
+ */
+export function readSessionFromCookieHeader(raw: string): Session {
   const map: Record<string, string> = {};
   for (const part of raw.split(/;\s*/)) {
     if (!part) continue;

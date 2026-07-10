@@ -14,7 +14,7 @@ export default function ProSuccess() {
         <h1>Welcome to Skill Crossroads Pro.</h1>
         <p>
           Your 14-day trial is live. Private-repo scanning and managed checks are enabled — no API key needed. Manage
-          your subscription anytime from the Stripe customer portal.
+          or cancel your subscription anytime from <a href="/account">your account</a>.
         </p>
         <a className="cta" href="/">
           Scan a skill →
@@ -26,6 +26,7 @@ export default function ProSuccess() {
         .lamp{display:inline-block;width:34px;height:34px;border-radius:50%;background:radial-gradient(circle at 50% 40%,var(--beam),#b9791f);box-shadow:0 0 22px #ffc24b99;margin-bottom:18px}
         h1{font-size:26px;font-weight:800;margin-bottom:12px}
         p{color:var(--fog);margin-bottom:24px}
+        p a{color:var(--beam);text-decoration:underline}
         .cta{display:inline-block;background:var(--beam);color:#0b1220;font-weight:700;border-radius:10px;padding:12px 22px;text-decoration:none}
       `}</style>
     </main>
