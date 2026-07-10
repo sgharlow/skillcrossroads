@@ -1,27 +1,33 @@
-# Beacon — Codebase Guide (CLAUDE.md)
+# Skill Crossroads — Codebase Guide (CLAUDE.md)
 
-> **Lighthouse for Claude Code artifacts.** Beacon audits a Claude Code artifact (Skill,
-> subagent, MCP server, or plugin) and returns an evidence-cited quality scorecard with a
-> letter grade, plus an embeddable badge. The full product spec lives in
-> [`Skill-Crossroads-Build-Bible.md`](./Skill-Crossroads-Build-Bible.md) — read it before making product decisions.
+> **The signpost for Claude Code artifacts** — live at [skillcrossroads.com](https://skillcrossroads.com).
+> Skill Crossroads audits a Claude Code artifact (Skill, subagent, MCP server, or plugin) and
+> returns an evidence-cited quality scorecard with a letter grade, plus an embeddable badge.
+> "Beacon" is the original internal codename — it survives in workspace package names
+> (`@beacon/*`), `BEACON_*` env vars, and cookie names by design; the product, domain, npm
+> package (`skillcrossroads`), and all user-facing copy are Skill Crossroads. The full product
+> spec (the "Build Bible") lives in the maintainer's private docs repo — it is not committed
+> here; the rubric, check catalog, and conventions below are the public source of truth.
 
 ## What this repo is (and is not)
 
-Beacon is **open-core**: the CLI and public audits are free (that is the marketing / badge
-loop); money is the hosted tier (private-repo scanning, CI gating, dashboards — not built yet).
-This repo currently implements **Sprint 1 / v0.1** only.
+Skill Crossroads is **open-core**: the CLI and public audits are free (that is the marketing /
+badge loop); money is the hosted Pro tier (private-repo scanning, managed LLM checks, CI gating,
+dashboards).
 
-**v0.1 scope (what exists now):** the `@beacon/core` engine + the `beacon` CLI, running
-**deterministic** checks on a **local Skill** directory **or any public GitHub repo by URL**
-(`scanGitHubRepo`, batch), plus **one LLM-assisted check** (TRIGGER-01, BYOK — off unless
-`ANTHROPIC_API_KEY` is set). Three output surfaces: a terminal scorecard, a **self-contained HTML
-report** (`renderHtml`), and an **embeddable SVG badge** (`renderBadge`) — all with an overall
-0–100 score and letter grade. `scripts/state-of-skills.mjs` batch-scans repos into a reproducible
-"State of Claude Code Skills" markdown report (the data-report growth loop).
+**Current scope (Sprints 1–11 shipped):** the `@beacon/core` engine + the `skillcrossroads` CLI
+(published on npm), running **11 deterministic checks** on a local Skill directory or any public
+GitHub repo by URL (`scanGitHubRepo`, batch), plus **three LLM-assisted checks** (TRIGGER-01,
+VERIFY-04, CLARITY-05 — BYOK, off unless `ANTHROPIC_API_KEY` is set; with a key all six rubric
+categories score). Output surfaces: terminal scorecard, self-contained HTML report, embeddable
+SVG badge, Markdown (CI/PR), and JSON. The hosted web app (scorecards, always-fresh badges,
+gallery, trends, the published data report at `/report`) is **live in production** at
+skillcrossroads.com; the GitHub Action (`apps/action`, tag `v1`) and Stripe Pro tier are built
+and configured. `scripts/state-of-skills.mjs` batch-scans repos into the reproducible
+"State of Claude Code Skills" report (the data-report growth loop).
 
-**Explicitly NOT in v0.1** (later sprints, each a shippable win — do not add speculatively):
-more LLM-assisted checks, hosted backend / always-fresh badge endpoint, auth, billing,
-agents/MCP/plugin scoring, GitHub Action / CI, the public gallery.
+**Not yet built** (roadmap — do not add speculatively): agent/MCP/plugin scoring (skills only
+today), more checks from the v1 catalog, org/team features.
 
 ### LLM-assisted checks (BYOK) — the async path
 
@@ -43,10 +49,13 @@ inlined — and must **escape** every dynamic value (a scanned skill is untruste
 
 ## The claim ladder (honest status, always)
 
-Never write "DONE" bare. This repo's status: **v0.1 is `built` (code + tests green)**; the
-**TRIGGER-01 LLM check is `live-proven`** (ran against the real Anthropic API, 92.9% label
-agreement). The product as a whole is NOT `dogfooded` end-to-end (no public users, not on npm).
-When you finish work, state the ladder level. See the Build Bible §"claim ladder".
+Never write "DONE" bare. The ladder: idea → built → wired → live-proven → dogfooded →
+customer-used → revenue-proven. This repo's status: the **engine, CLI, and hosted web app are
+`live-proven`** (production at skillcrossroads.com; `skillcrossroads` on npm, npx-verified;
+TRIGGER-01 ran against the real Anthropic API at 92.9% label agreement). **Stripe Pro and GitHub
+OAuth are `wired` + configured but NOT customer-dogfooded** (no real Pro purchase or full OAuth
+round-trip by a stranger yet); the **Action is `built`, never proven on a real external PR**.
+When you finish work, state the ladder level.
 
 ## Architecture
 
@@ -86,7 +95,8 @@ no ASCII-art/persona filler · `SAFETY-01` no hardcoded secrets · `SAFETY-02` a
 least-privilege · `SAFETY-03` no destructive auto-invocation · `SAFETY-04` no shell-injection in
 `!` blocks. **LLM-assisted (BYOK)** — `TRIGGER-01` description triggers reliably · `VERIFY-04`
 verification step present · `CLARITY-05` constraints & failure modes stated. (With a key, all six
-rubric categories score.) Full ~24-check catalog is Appendix C of the Build Bible.
+rubric categories score.) The full ~24-check v1 catalog lives in the private Build Bible; the
+implemented set in `packages/core/src/checks/index.ts` is the public source of truth.
 
 **Token counting — honesty rule.** The char-based estimate is NOT ±5% accurate (skill markdown
 tokenizes denser than prose; `npm run eval:tokens` shows ~10–25% error, worst on code-heavy
@@ -96,7 +106,7 @@ TOKEN-01 via `CheckContext.accurateTokens`. TOKEN-01 labels the number `exact` v
 
 ### Rubric & scoring
 
-Six weighted categories (Build Bible §3.4): correctness 20%, triggering 22%, clarity 18%,
+Six weighted categories (weights defined in `packages/core/src/types.ts`): correctness 20%, triggering 22%, clarity 18%,
 token 15%, safety 15%, verifiability 10%. The rubric is **versioned** (`RUBRIC_VERSION`) — a
 rubric bump is a content/announcement event, so never change weights silently.
 
@@ -121,9 +131,9 @@ The web app (Sprint 7) reuses `@beacon/core` — it does NOT reimplement scoring
 (`app/s/[...slug]`, `app/api/badge`, `app/api/scan`) run on the **Node runtime** (`export const
 runtime = "nodejs"`) because core uses `fs`/temp dirs; scans go through `scanGitHubRepo` and render
 via the same `renderHtml`/`renderBadge`. Badge/scorecard responses use `s-maxage` for
-always-fresh-with-short-TTL. GitHub OAuth (`app/api/auth/github`) is built but gated on
-`GITHUB_CLIENT_ID`/`SECRET` (returns 501 until set). Deploy target is Vercel (project + `skillcrossroads.com`
-domain are Steve's to set up — not committed here).
+always-fresh-with-short-TTL. GitHub OAuth (`app/api/auth/github`) is env-gated on
+`GITHUB_CLIENT_ID`/`SECRET` (returns 501 unset) and configured in production. Deployed on Vercel
+with `skillcrossroads.com` attached (apex canonical; `www` 308-redirects to apex).
 
 **Gotcha:** the web app uses `moduleResolution: "bundler"`, so relative imports inside `apps/web`
 take **no `.js` extension** (`./scan`, not `./scan.js`) — the opposite of core's NodeNext. Imports
@@ -133,12 +143,14 @@ from `@beacon/core` are fine (package resolution).
 
 Stripe subscription checkout (`/api/checkout`, `mode:"subscription"`, **never** pass
 `payment_method_types`) + webhook (`/api/stripe/webhook`, signature-verified) flip a **Pro
-entitlement** (`lib/entitlements.ts` — in-memory now, **Postgres in production**). Pro unlocks
+entitlement** (`lib/entitlements.ts` — Postgres-backed when `DATABASE_URL` is set, as in
+production; in-memory fallback for keyless local dev). Pro unlocks
 **private-repo scanning** (the user's OAuth token) and **managed LLM** (server
 `BEACON_MANAGED_ANTHROPIC_KEY`, so TRIGGER-01 + exact tokens run without the user's key) via
 `resolveScanOptions`. **The free tier must never depend on any of this** — every paid path is env-
-gated and returns a clean 501 unconfigured; public deterministic scans always work. Stripe keys, the
-DB, and the managed key are Steve-court (batched account setup).
+gated and returns a clean 501 unconfigured; public deterministic scans always work. Stripe (live),
+the DB, and the managed key are configured in production; a real customer Pro purchase has not yet
+happened (checkout is `wired`, not customer-proven).
 
 ### Public gallery (Sprint 10)
 
@@ -171,7 +183,8 @@ Postgres.
 - **No secrets, ever**, in code or fixtures — SAFETY-01 would (correctly) flag them, and this
   repo is meant to go public. Use obviously-fake placeholder patterns in security fixtures.
 - **Commits:** do NOT add a `Co-Authored-By: Claude` / "Generated with Claude" trailer (public
-  repo; portfolio policy). Keep the Build Bible tracked and committed.
+  repo; portfolio policy). The private strategy docs (Build Bible, v2 considerations) are
+  gitignored here and tracked in the maintainer's private docs repo — never commit them.
 
 ## CI / GitHub Action (Sprint 9)
 
@@ -180,8 +193,9 @@ The CLI is CI-native: a local path may be a **single skill or a folder of skills
 (`renderMarkdown`, core); `--min-grade <G>` sets `process.exitCode = 1` when any skill grades below
 `<G>` (`meetsMinGrade` / `gradeRank` in `score.ts`) — the CI gate. `apps/action` is a **composite**
 GitHub Action (`action.yml` + `comment.mjs`, a dependency-free PR-comment poster that updates one
-marker comment in place). The action runs `npx skillcrossroads@latest`, so the "comments on a real PR" proof
-is batched with the npm publish; the gate + markdown + local batch are live-proven via the CLI.
+marker comment in place). The action runs `npx skillcrossroads@latest` (published) and is tagged
+`v1`; the gate + markdown + local batch are live-proven via the CLI, but the Action itself has not
+yet commented on a real external PR — that proof is still outstanding.
 
 ## Running locally
 

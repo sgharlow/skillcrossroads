@@ -1,6 +1,7 @@
 # Skill Crossroads
 
-**Know before you ship.** The signpost for Claude Code skills, agents, and MCP servers.
+**Know before you ship.** The signpost for Claude Code skills, agents, and MCP servers —
+live at [skillcrossroads.com](https://skillcrossroads.com).
 
 [![Skill Crossroads — live scorecard](https://img.shields.io/badge/skill%20crossroads-live%20scorecard-2ea043)](https://skillcrossroads.com/s/anthropics/skills) &nbsp; ![rubric v1.0](https://img.shields.io/badge/rubric-v1.0-555)
 
@@ -135,8 +136,9 @@ plus evidence. Category scores roll up to an overall 0–100 and a letter grade.
 | Safety & Security | 15% | no hardcoded secrets, `allowed-tools` least-privilege, no destructive auto-invocation, no `!`-block shell injection |
 | Verifiability & Maintainability | 10% | verification step present *(LLM-assisted, BYOK)* |
 
-The rubric is **versioned** — see [`Skill-Crossroads-Build-Bible.md`](./Skill-Crossroads-Build-Bible.md) for the full
-~24-check catalog and roadmap.
+The rubric is **versioned** (`RUBRIC_VERSION` in `@beacon/core`); the implemented check catalog
+is [`packages/core/src/checks/index.ts`](./packages/core/src/checks/index.ts), with more checks
+on the roadmap.
 
 ## Continuous integration (GitHub Action)
 
@@ -183,20 +185,21 @@ Run locally: `cd apps/web && npm run dev`. Set `GITHUB_TOKEN` for higher GitHub 
 
 ## Status
 
-**v0.1 — `built`; CLI, repo-scanning, exact token counts, local multi-skill scanning, Markdown
-reports, and score-gating `live-proven` locally; the hosted web app `live-proven` locally; the
-Stripe paywall, Pro features, PR-comment bot, and the public gallery `wired` (opt-in flow, sort,
-filter, and SEO live-proven locally; persistence/cross-instance sharing needs the batched DB).** Eleven deterministic checks (structure, a three-check **Token & Context Cost**
-pack, clarity, and a four-check **Safety & Security** pack: secrets, `allowed-tools`
-over-permissioning, destructive auto-invocation, `!`-block shell injection) on a local Skill
-directory or **any public GitHub repo by URL** (batch); three output surfaces
-(terminal scorecard, self-contained HTML report, embeddable SVG badge); plus three LLM-assisted
-checks (BYOK) — **TRIGGER-01** (triggering; verdicts matched a hand-labeled 14-skill set at **92.9%**
-against the live API, run `npm run eval:triggering`), **VERIFY-04** (verification step present), and
-**CLARITY-05** (constraints & failure modes) — so **all six rubric categories score with a key**. A batch
-["State of Claude Code Skills" report](./reports/state-of-claude-code-skills.md) is generated from
-live scans (`npm run report:skills`). Hosted reports with always-fresh badges, CI, and
-agent/MCP/plugin scoring are on the roadmap (Build Bible, Part 5).
+**Live in production** — the hosted app (public scorecards, always-fresh badges, gallery, trends,
+and the published [State of Claude Code Skills report](https://skillcrossroads.com/report)) is
+`live-proven` at [skillcrossroads.com](https://skillcrossroads.com), and the CLI is published on
+npm as [`skillcrossroads`](https://www.npmjs.com/package/skillcrossroads). Eleven deterministic
+checks (structure, a three-check **Token & Context Cost** pack, clarity, and a four-check
+**Safety & Security** pack: secrets, `allowed-tools` over-permissioning, destructive
+auto-invocation, `!`-block shell injection) run on a local Skill directory or **any public GitHub
+repo by URL** (batch); five output surfaces (terminal, self-contained HTML, SVG badge, Markdown,
+JSON); plus three LLM-assisted checks (BYOK) — **TRIGGER-01** (triggering; verdicts matched a
+hand-labeled 14-skill set at **92.9%** against the live API, run `npm run eval:triggering`),
+**VERIFY-04** (verification step present), and **CLARITY-05** (constraints & failure modes) — so
+**all six rubric categories score with a key**. The source report is generated from live scans
+(`npm run report:skills`). Honest remainder: the Stripe Pro tier and GitHub sign-in are `wired`
+and configured but not yet customer-proven, the GitHub Action has not yet commented on a real
+external PR, and agent/MCP/plugin scoring (skills only today) is on the roadmap.
 
 ## License
 
