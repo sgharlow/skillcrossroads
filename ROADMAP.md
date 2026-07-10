@@ -43,7 +43,12 @@ Ranking = (developer value × demand-loop leverage) ÷ effort. Estimates are foc
 Claude-assisted dev-days including tests + deploy + live verification (repo discipline), with a
 suggested calendar week per sprint at evenings/weekends pace.
 
-### Sprint 1 — Adoption floor (launch-safe) · ~3.5 dev-days · 1 week
+### Sprint 1 — Adoption floor (launch-safe) · **SHIPPED 2026-07-10** (`live-proven`)
+
+> All three items shipped in `skillcrossroads@0.2.0` + the same-day site deploy: config/suppression
+> (CLI+Action; SAFETY-* unsuppressible; disclosure on every surface), the ecosystem percentile
+> (full-rubric cards only, ≈-labeled, capped at 99%), and the `audit-skill` Skill (grades A 94.3/100
+> on the full rubric; CI gates it at A− per PR). 208 tests. Actual effort: well under estimate.
 *These three de-risk the launch itself: the first blockers real users hit, and the two cheapest
 demand amplifiers. No horizontal breadth.*
 
