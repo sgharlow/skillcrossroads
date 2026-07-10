@@ -1,5 +1,5 @@
 /*
- * Crossroads design tokens. Wayfinding developer-tool aesthetic: restrained neutrals, generous
+ * Skill Crossroads design tokens. Wayfinding developer-tool aesthetic: restrained neutrals, generous
  * whitespace, and the three "directions" as the only saturated colors —
  *   ship = green, fix = amber, rethink = red (a route from green through amber to red).
  * Full light + dark, driven by the OS preference (no toggle, no localStorage).
@@ -53,7 +53,7 @@
 }
 
 /* Legacy aliases — the existing product pages (gallery, dashboard, pricing, trends) still use these
-   var names. Mapped onto the new theme-aware tokens so those pages inherit the Crossroads palette and
+   var names. Mapped onto the new theme-aware tokens so those pages inherit the Skill Crossroads palette and
    work in light + dark without a rewrite. */
 :root {
   --ink: var(--bg);

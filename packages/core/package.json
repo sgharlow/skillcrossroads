@@ -1,7 +1,7 @@
 {
   "name": "@beacon/core",
   "version": "0.1.0",
-  "description": "Crossroads' rule engine: parse ▸ run checks ▸ score ▸ render. Model-agnostic, deterministic core shared by the CLI, web app, and CI Action.",
+  "description": "Skill Crossroads' rule engine: parse ▸ run checks ▸ score ▸ render. Model-agnostic, deterministic core shared by the CLI, web app, and CI Action.",
   "type": "module",
   "main": "./dist/index.js",
   "types": "./dist/index.d.ts",

@@ -4,7 +4,7 @@
   "publishConfig": {
     "access": "public"
   },
-  "description": "Crossroads CLI — the signpost for Claude Code artifacts. Audit a Skill and get an evidence-based quality scorecard with a letter grade: ship, fix, or rethink.",
+  "description": "Skill Crossroads CLI — the signpost for Claude Code artifacts. Audit a Skill and get an evidence-based quality scorecard with a letter grade: ship, fix, or rethink.",
   "type": "module",
   "bin": {
     "beacon": "./dist/cli.js"

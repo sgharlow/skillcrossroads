@@ -6,7 +6,7 @@ import OptInForm from "./opt-in-form";
 export const metadata: Metadata = {
   title: "Gallery — top-scored Claude Code skills",
   description:
-    "A leaderboard of publicly graded Claude Code skills, ranked by Crossroads' evidence-cited quality score.",
+    "A leaderboard of publicly graded Claude Code skills, ranked by Skill Crossroads' evidence-cited quality score.",
   alternates: { canonical: "/gallery" },
 };
 
@@ -46,7 +46,7 @@ export default async function GalleryPage({
       <header className="nav">
         <a className="brand" href="/">
           <span className="lamp" aria-hidden />
-          Crossroads
+          Skill Crossroads
         </a>
         <a className="plink" href="/pricing">
           Pricing
@@ -55,7 +55,7 @@ export default async function GalleryPage({
 
       <section className="head">
         <h1>Gallery</h1>
-        <p>Publicly graded Claude Code skills, ranked by Crossroads&apos; evidence-cited quality score.</p>
+        <p>Publicly graded Claude Code skills, ranked by Skill Crossroads&apos; evidence-cited quality score.</p>
         <div className="optwrap">
           <OptInForm />
         </div>

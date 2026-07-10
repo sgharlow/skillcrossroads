@@ -20,7 +20,7 @@ export default async function Dashboard() {
       <header className="nav">
         <a className="brand" href="/">
           <span className="lamp" aria-hidden />
-          Crossroads
+          Skill Crossroads
         </a>
         <a className="link" href="/gallery">
           Gallery →

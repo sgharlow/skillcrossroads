@@ -65,7 +65,7 @@ console.log(`\nHeuristic (divisor ${CHARS_PER_TOKEN}): mean error ${shippedMean.
 const allExact = truth.every((s) => Number.isInteger(s.actual) && s.actual > 0);
 console.log(`\nExact path (count_tokens = /context's tokenizer): ${truth.length}/${truth.length} skills counted; error vs /context = 0% by construction.`);
 if (allExact) {
-  console.log("PASS — the exact token counter is wired and returns valid counts; Beacon reports it within ±5% of /context (BYOK).");
+  console.log("PASS — the exact token counter is wired and returns valid counts; Skill Crossroads reports it within ±5% of /context (BYOK).");
   process.exit(0);
 } else {
   console.log("FAIL — count_tokens did not return valid counts. Check the API wiring.");

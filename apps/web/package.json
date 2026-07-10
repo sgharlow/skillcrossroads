@@ -2,7 +2,7 @@
   "name": "@beacon/web",
   "version": "0.1.0",
   "private": true,
-  "description": "Crossroads hosted web app — public scorecard pages, always-fresh badge endpoint, GitHub OAuth.",
+  "description": "Skill Crossroads hosted web app — public scorecard pages, always-fresh badge endpoint, GitHub OAuth.",
   "type": "module",
   "scripts": {
     "dev": "next dev",

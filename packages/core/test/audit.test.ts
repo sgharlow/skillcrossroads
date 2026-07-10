@@ -51,7 +51,7 @@ describe("renderTerminal", () => {
   it("renders the scorecard box, categories, and top fixes", () => {
     const { scorecard, name } = audit(fixture("dangling-ref"));
     const out = renderTerminal(scorecard, { name });
-    expect(out).toContain("CROSSROADS SCORECARD");
+    expect(out).toContain("SKILL CROSSROADS SCORECARD");
     expect(out).toContain("Overall:");
     expect(out).toContain("Correctness & Structure");
     expect(out).toContain("not yet scored (v0.1)");

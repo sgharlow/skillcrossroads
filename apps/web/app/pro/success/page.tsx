@@ -1,4 +1,4 @@
-export const metadata = { title: "Crossroads Pro — welcome" };
+export const metadata = { title: "Skill Crossroads Pro — welcome" };
 // Rendered on-demand (not statically prerendered). A purely-static leaf under the
 // page-less `/pro` segment trips Vercel's @vercel/next route→output mapping
 // ("Unable to find lambda for route: /pro/success"); rendering it dynamically
@@ -11,7 +11,7 @@ export default function ProSuccess() {
     <main className="wrap">
       <div className="card">
         <span className="lamp" aria-hidden />
-        <h1>Welcome to Crossroads Pro.</h1>
+        <h1>Welcome to Skill Crossroads Pro.</h1>
         <p>
           Your 14-day trial is live. Private-repo scanning and managed checks are enabled — no API key needed. Manage
           your subscription anytime from the Stripe customer portal.

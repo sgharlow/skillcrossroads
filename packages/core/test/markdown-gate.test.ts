@@ -9,7 +9,7 @@ describe("renderMarkdown", () => {
   it("renders a grade header, category table, and top fixes", () => {
     const { scorecard, name } = audit(fixture("dangling-ref"));
     const md = renderMarkdown(scorecard, { name });
-    expect(md).toMatch(/^### .*Crossroads: A−/m);
+    expect(md).toMatch(/^### .*Skill Crossroads: A−/m);
     expect(md).toContain("| Category | Score | |");
     expect(md).toContain("**Top fixes**");
     expect(md).toContain("**STRUCT-05**");

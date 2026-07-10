@@ -67,7 +67,7 @@ export function renderMarkdown(card: Scorecard, opts: MarkdownOptions = {}): str
   const mode = card.categories.find((c) => c.key === "triggering")?.evaluated ? "LLM-assisted" : "deterministic";
 
   const lines: string[] = [];
-  lines.push(`${h} ${gradeEmoji(card.grade)} Crossroads: ${card.grade} — \`${mdCode(name)}\``);
+  lines.push(`${h} ${gradeEmoji(card.grade)} Skill Crossroads: ${card.grade} — \`${mdCode(name)}\``);
   lines.push("");
   lines.push(`**Overall ${card.overall}/100** · rubric v${card.rubricVersion} · ${mode}`);
   lines.push("");

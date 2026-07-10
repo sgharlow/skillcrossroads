@@ -3,9 +3,9 @@ import type { Metadata } from "next";
 import { CrossroadsBadge, Signpost } from "@/components/CrossroadsBadge";
 
 export const metadata: Metadata = {
-  title: "Crossroads scorecard — recipe-001 (B−, FIX)",
+  title: "Skill Crossroads scorecard — recipe-001 (B−, FIX)",
   description:
-    "A sample Crossroads scorecard: recipe-001 grades B− (78/100), direction FIX — with evidence-cited fixes ranked by grade impact.",
+    "A sample Skill Crossroads scorecard: recipe-001 grades B− (78/100), direction FIX — with evidence-cited fixes ranked by grade impact.",
 };
 
 const CATEGORIES: { name: string; score: number }[] = [
@@ -49,7 +49,7 @@ export default function Scorecard(): ReactElement {
       <header className="nav wrap">
         <a className="brand" href="/">
           <Signpost size={22} />
-          <span>Crossroads</span>
+          <span>Skill Crossroads</span>
         </a>
         <nav className="nav-links">
           <a className="btn btn-sm" href="/">
@@ -62,7 +62,7 @@ export default function Scorecard(): ReactElement {
         <div className="sc">
           <div className="sc-head">
             <div>
-              <p className="sc-kicker">Crossroads scorecard</p>
+              <p className="sc-kicker">Skill Crossroads scorecard</p>
               <h1 className="sc-title mono">recipe-001</h1>
               <p className="sc-meta">
                 overall <strong>B−</strong> (78/100) · rubric v1.0
@@ -117,7 +117,7 @@ export default function Scorecard(): ReactElement {
         </div>
 
         <div className="sc-cta">
-          <p>This is a sample. Point Crossroads at your own artifact and get your direction.</p>
+          <p>This is a sample. Point Skill Crossroads at your own artifact and get your direction.</p>
           <a className="btn" href="/">
             Scan a skill — free
           </a>

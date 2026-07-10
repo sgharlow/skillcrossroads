@@ -3,7 +3,7 @@
 > **Lighthouse for Claude Code artifacts.** Beacon audits a Claude Code artifact (Skill,
 > subagent, MCP server, or plugin) and returns an evidence-cited quality scorecard with a
 > letter grade, plus an embeddable badge. The full product spec lives in
-> [`Beacon-Build-Bible.md`](./Beacon-Build-Bible.md) — read it before making product decisions.
+> [`Skill-Crossroads-Build-Bible.md`](./Skill-Crossroads-Build-Bible.md) — read it before making product decisions.
 
 ## What this repo is (and is not)
 
@@ -122,7 +122,7 @@ The web app (Sprint 7) reuses `@beacon/core` — it does NOT reimplement scoring
 runtime = "nodejs"`) because core uses `fs`/temp dirs; scans go through `scanGitHubRepo` and render
 via the same `renderHtml`/`renderBadge`. Badge/scorecard responses use `s-maxage` for
 always-fresh-with-short-TTL. GitHub OAuth (`app/api/auth/github`) is built but gated on
-`GITHUB_CLIENT_ID`/`SECRET` (returns 501 until set). Deploy target is Vercel (project + `beacon.dev`
+`GITHUB_CLIENT_ID`/`SECRET` (returns 501 until set). Deploy target is Vercel (project + `skillcrossroads.com`
 domain are Steve's to set up — not committed here).
 
 **Gotcha:** the web app uses `moduleResolution: "bundler"`, so relative imports inside `apps/web`

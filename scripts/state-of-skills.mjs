@@ -2,7 +2,7 @@
 /**
  * "State of Claude Code Skills" data report generator (Build Bible Sprint 4 public artifact).
  *
- * Batch-scans public skill repos with Beacon and writes a markdown report of the aggregate findings.
+ * Batch-scans public skill repos with Skill Crossroads and writes a markdown report of the aggregate findings.
  *
  *   npm run build && node scripts/state-of-skills.mjs [owner/repo ...]
  *
@@ -162,7 +162,7 @@ const lines = [];
 lines.push("# The State of Claude Code Skills");
 lines.push("");
 lines.push(
-  `*An evidence-based audit of ${total} public Claude Code skills across ${scanned.filter((s) => s.scan.skills.length).length} repositories, graded by **Beacon** — the Lighthouse for Claude Code artifacts.${useLlm ? " Includes the LLM-assisted triggering check." : " Deterministic checks only."} Every figure is traceable to the pinned git trees in the methodology.*`,
+  `*An evidence-based audit of ${total} public Claude Code skills across ${scanned.filter((s) => s.scan.skills.length).length} repositories, graded by **Skill Crossroads** — the signpost for Claude Code artifacts.${useLlm ? " Includes the LLM-assisted triggering check." : " Deterministic checks only."} Every figure is traceable to the pinned git trees in the methodology.*`,
 );
 lines.push("");
 lines.push(
@@ -179,12 +179,12 @@ if (useLlm && trig && trig.ran > 0) {
   const notReached = total - trig.ran; // skills whose triggering check was dropped (model/network error)
   const coverage = trig.ran / total;
   // Coverage sentence — ALWAYS stated, so the % below can never be mistaken for a whole-sample claim.
-  const covLine = `Beacon scored **${trig.ran} of ${total}** skills for triggering${
+  const covLine = `Skill Crossroads scored **${trig.ran} of ${total}** skills for triggering${
     notReached > 0 ? ` — ${notReached} could not be reached (model/network errors) and are excluded from the triggering figures` : ""
   }.`;
   if (coverage >= 0.7) {
     lines.push(
-      `**Among skills Beacon could score, ${pctOf(wontFire, trig.ran)} have a description that won't reliably trigger** — ${trig.fail} (${pctOf(trig.fail, trig.ran)}) outright unlikely to fire, ${trig.warn} (${pctOf(trig.warn, trig.ran)}) borderline. "My skill never fires" is the #1 real-world skill failure, and it hides in the frontmatter \`description\`.`,
+      `**Among skills Skill Crossroads could score, ${pctOf(wontFire, trig.ran)} have a description that won't reliably trigger** — ${trig.fail} (${pctOf(trig.fail, trig.ran)}) outright unlikely to fire, ${trig.warn} (${pctOf(trig.warn, trig.ran)}) borderline. "My skill never fires" is the #1 real-world skill failure, and it hides in the frontmatter \`description\`.`,
     );
     lines.push("");
     lines.push(covLine);
@@ -195,14 +195,14 @@ if (useLlm && trig && trig.ran > 0) {
     );
   }
   lines.push("");
-  lines.push(`The average Beacon score across all ${total} skills is **${avg.toFixed(1)}/100**.`);
+  lines.push(`The average Skill Crossroads score across all ${total} skills is **${avg.toFixed(1)}/100**.`);
 } else {
   const worst = Object.entries(checkStats)
     .map(([id, c]) => ({ id, notPassing: c.warn + c.fail, ran: c.ran }))
     .filter((x) => x.ran > 0)
     .sort((a, b) => b.notPassing - a.notPassing)[0];
   lines.push(
-    `Across ${total} skills, the average Beacon score is **${avg.toFixed(1)}/100**. The single most common problem is **${CHECK_LABELS[worst.id]}** (${worst.id}): **${pctOf(worst.notPassing, worst.ran)}** of skills don't cleanly pass it.`,
+    `Across ${total} skills, the average Skill Crossroads score is **${avg.toFixed(1)}/100**. The single most common problem is **${CHECK_LABELS[worst.id]}** (${worst.id}): **${pctOf(worst.notPassing, worst.ran)}** of skills don't cleanly pass it.`,
   );
 }
 lines.push("");
@@ -262,7 +262,7 @@ const offenders = Object.entries(checkStats)
 
 lines.push("## What this means");
 lines.push("");
-lines.push(`**${fullyClean} of ${total} skills (${pct(fullyClean)})** pass every check Beacon ran, cleanly.`);
+lines.push(`**${fullyClean} of ${total} skills (${pct(fullyClean)})** pass every check Skill Crossroads ran, cleanly.`);
 lines.push("");
 if (offenders.length > 0) {
   lines.push("The most common defects across the sample:");
@@ -277,8 +277,8 @@ lines.push("## Methodology & reproducibility");
 lines.push("");
 lines.push(
   useLlm
-    ? "Beacon's deterministic checks (no LLM) plus the LLM-assisted triggering check (TRIGGER-01) were run against each repo's git tree at the sha below. Deterministic figures are bit-reproducible from those trees; LLM verdicts are content-hash cached and pinned to the same trees, but model output is not guaranteed bit-identical across runs."
-    : "Beacon's deterministic checks (no LLM) were run against each repo's git tree at the sha below. Deterministic checks are pure, so re-scanning the same tree reproduces these figures exactly. The LLM-assisted triggering check was excluded in this edition for cost and reproducibility.",
+    ? "Skill Crossroads' deterministic checks (no LLM) plus the LLM-assisted triggering check (TRIGGER-01) were run against each repo's git tree at the sha below. Deterministic figures are bit-reproducible from those trees; LLM verdicts are content-hash cached and pinned to the same trees, but model output is not guaranteed bit-identical across runs."
+    : "Skill Crossroads' deterministic checks (no LLM) were run against each repo's git tree at the sha below. Deterministic checks are pure, so re-scanning the same tree reproduces these figures exactly. The LLM-assisted triggering check was excluded in this edition for cost and reproducibility.",
 );
 lines.push("");
 lines.push("| Repo | Ref | Tree sha | Skills | Errors |");

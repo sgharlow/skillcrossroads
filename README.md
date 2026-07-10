@@ -1,10 +1,10 @@
-# Crossroads
+# Skill Crossroads
 
 **Know before you ship.** The signpost for Claude Code skills, agents, and MCP servers.
 
-[![Crossroads — live scorecard](https://img.shields.io/badge/crossroads-live%20scorecard-2ea043)](https://crossroads.app/s/anthropics/skills) &nbsp; ![rubric v1.0](https://img.shields.io/badge/rubric-v1.0-555)
+[![Skill Crossroads — live scorecard](https://img.shields.io/badge/skill%20crossroads-live%20scorecard-2ea043)](https://skillcrossroads.com/s/anthropics/skills) &nbsp; ![rubric v1.0](https://img.shields.io/badge/rubric-v1.0-555)
 
-Every skill hits a crossroads before you ship it. Crossroads reads a Claude Code artifact — a
+Every skill hits a crossroads before you ship it. Skill Crossroads reads a Claude Code artifact — a
 **Skill**, subagent, MCP server, or plugin — against an evidence-based rubric and points you one of
 three ways: **ship, fix, or rethink**. You get a letter grade, an embeddable badge, and a fix list —
 every finding cited to a file and line.
@@ -14,17 +14,17 @@ every finding cited to a file and line.
 - **Rethink** — grade E/F. Fundamental issues (will not trigger, unsafe, untested).
 
 > Anthropic's `skill-creator` measures *effectiveness* (does the skill lift task success?).
-> Crossroads grades *craftsmanship and safety* (is it well-built, discoverable, and safe to ship?).
+> Skill Crossroads grades *craftsmanship and safety* (is it well-built, discoverable, and safe to ship?).
 > They complement each other. No one else owns the graded-scorecard-plus-badge lane.
 
 > **Note:** the CLI is published today as `@sgharlow/beacon` (`npx @sgharlow/beacon ./my-skill`); the
-> `crossroads` package name is part of an in-progress rename. Internal package names (`@beacon/core`)
+> `skillcrossroads` package name is part of an in-progress rename. Internal package names (`@beacon/core`)
 > and env vars still use the old name until that migration lands.
 
 ## Why
 
 The #1 real-world skill failure is *"my skill never fires."* The #2 is *"it works on my
-machine but ships with a hardcoded key / an over-broad tool grant / no tests."* Crossroads catches
+machine but ships with a hardcoded key / an over-broad tool grant / no tests."* Skill Crossroads catches
 those **before you publish**, with file-and-line receipts — not vibes.
 
 ## Install & use
@@ -44,7 +44,7 @@ npx @sgharlow/beacon ./path-to-a-skill
 
 ### Scan a whole GitHub repo (no clone)
 
-Point Crossroads at a public repo and it grades every skill it finds — fetched via the GitHub API,
+Point Skill Crossroads at a public repo and it grades every skill it finds — fetched via the GitHub API,
 nothing cloned on your side:
 
 ```bash
@@ -69,10 +69,10 @@ can click through and scan their own skill:
 
 ```markdown
 <!-- local static badge -->
-![Crossroads](./my-skill.beacon.svg)
+![Skill Crossroads](./my-skill.beacon.svg)
 
 <!-- hosted: re-scans on its own, links to the full scorecard -->
-[![Crossroads](https://crossroads.app/api/badge/OWNER/REPO.svg)](https://crossroads.app/s/OWNER/REPO)
+[![Skill Crossroads](https://skillcrossroads.com/api/badge/OWNER/REPO.svg)](https://skillcrossroads.com/s/OWNER/REPO)
 ```
 
 ### LLM-assisted triggering check (BYOK)
@@ -87,10 +87,10 @@ BEACON_MODEL=claude-haiku-4-5 beacon ./my-skill   # cheaper model
 ```
 
 Verdicts are cached by content hash in `.beacon-cache/`, so re-scanning an unchanged skill is
-free. Without a key, Crossroads runs deterministic-only and marks Triggering as "not yet scored."
+free. Without a key, Skill Crossroads runs deterministic-only and marks Triggering as "not yet scored."
 
 A key also switches the token estimate to an **exact `count_tokens`** figure — the same tokenizer
-Claude Code's `/context` uses, so it's the same number a skill actually costs. Offline, Crossroads shows
+Claude Code's `/context` uses, so it's the same number a skill actually costs. Offline, Skill Crossroads shows
 a clearly-labeled rough estimate (skill markdown tokenizes denser than prose, so it can be ~10–25% off).
 
 ## What a report looks like
@@ -135,7 +135,7 @@ plus evidence. Category scores roll up to an overall 0–100 and a letter grade.
 | Safety & Security | 15% | no hardcoded secrets, `allowed-tools` least-privilege, no destructive auto-invocation, no `!`-block shell injection |
 | Verifiability & Maintainability | 10% | verification step present *(LLM-assisted, BYOK)* |
 
-The rubric is **versioned** — see [`Beacon-Build-Bible.md`](./Beacon-Build-Bible.md) for the full
+The rubric is **versioned** — see [`Skill-Crossroads-Build-Bible.md`](./Skill-Crossroads-Build-Bible.md) for the full
 ~24-check catalog and roadmap.
 
 ## Continuous integration (GitHub Action)
@@ -160,7 +160,7 @@ A local path may be a single skill or a **folder of skills** — every `SKILL.md
 
 ## Hosted web app (`@beacon/web`)
 
-A Next.js app (in `apps/web`) serves the shareable side of Crossroads — it reuses `@beacon/core`:
+A Next.js app (in `apps/web`) serves the shareable side of Skill Crossroads — it reuses `@beacon/core`:
 
 - **Public scorecard pages** — `/s/owner/repo/path/to/skill` renders the scorecard HTML
   scorecard (a repo URL renders a summary of every skill). Mobile-responsive, self-contained.

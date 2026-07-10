@@ -8,7 +8,7 @@ export default function Home(): ReactElement {
       <header className="nav wrap">
         <a className="brand" href="/">
           <Signpost size={22} />
-          <span>Crossroads</span>
+          <span>Skill Crossroads</span>
         </a>
         <nav className="nav-links">
           <a href="/scorecard">Sample scorecard</a>
@@ -27,7 +27,7 @@ export default function Home(): ReactElement {
           <p className="eyebrow">For people who build on Claude Code</p>
           <h1>Every skill hits a crossroads before you ship it.</h1>
           <p className="lede">
-            Crossroads grades your Claude Code skills, agents, and MCP servers against an
+            Skill Crossroads grades your Claude Code skills, agents, and MCP servers against an
             evidence-based rubric — then points you one of three ways: ship, fix, or rethink.
           </p>
           <div className="cta-row">
@@ -40,7 +40,7 @@ export default function Home(): ReactElement {
           </div>
           <p className="hint">
             Point it at a repo, a local folder, or your CI:{" "}
-            <code className="mono">npx crossroads ./my-skill</code>
+            <code className="mono">npx skillcrossroads ./my-skill</code>
           </p>
         </div>
         <div className="hero-visual" aria-label="A signpost pointing three ways: ship, fix, rethink">
@@ -64,7 +64,7 @@ export default function Home(): ReactElement {
           <article className="card dir dir-fix">
             <span className="dir-tag">Fix</span>
             <span className="dir-grade">C / D</span>
-            <p>Close, but Crossroads found specific problems — each with the file and line to change.</p>
+            <p>Close, but Skill Crossroads found specific problems — each with the file and line to change.</p>
           </article>
           <article className="card dir dir-rethink">
             <span className="dir-tag">Rethink</span>
@@ -81,9 +81,9 @@ export default function Home(): ReactElement {
           <li>
             <span className="step-n">1</span>
             <div>
-              <h3>Point Crossroads at your artifact.</h3>
+              <h3>Point Skill Crossroads at your artifact.</h3>
               <p>
-                <code className="mono">npx crossroads ./my-skill</code>, a repo URL, or your CI.
+                <code className="mono">npx skillcrossroads ./my-skill</code>, a repo URL, or your CI.
               </p>
             </div>
           </li>
@@ -109,7 +109,7 @@ export default function Home(): ReactElement {
 
       {/* ── The rubric: six categories ────────────────────────────────────── */}
       <section className="wrap block">
-        <h2 className="section-h">What Crossroads checks</h2>
+        <h2 className="section-h">What Skill Crossroads checks</h2>
         <div className="cards rubric">
           {RUBRIC.map((r) => (
             <article className="card rubric-item" key={r.title}>
@@ -127,7 +127,7 @@ export default function Home(): ReactElement {
             <h2 className="section-h">Receipts, not vibes.</h2>
             <p className="receipts-body">
               Every finding cites the file and line, and shows what your artifact claims versus what
-              Crossroads could verify. No hype, no false confidence — Crossroads will tell you when
+              Skill Crossroads could verify. No hype, no false confidence — Skill Crossroads will tell you when
               your own skill scores a C, and exactly why.
             </p>
           </div>
@@ -150,7 +150,7 @@ export default function Home(): ReactElement {
         <div className="badge-loop">
           <div>
             <p className="badge-body">
-              One line embeds your Crossroads badge. Anyone who sees it can click through to the
+              One line embeds your Skill Crossroads badge. Anyone who sees it can click through to the
               full, evidence-cited scorecard — and run their own. Good work gets shown; the badge
               does the rest.
             </p>
@@ -159,7 +159,7 @@ export default function Home(): ReactElement {
             </div>
           </div>
           <pre className="snippet mono" aria-label="Markdown badge embed snippet">
-            {`[![Crossroads: A−](https://crossroads.app/api/badge/OWNER/REPO.svg)](https://crossroads.app/s/OWNER/REPO)`}
+            {`[![Skill Crossroads: A−](https://skillcrossroads.com/api/badge/OWNER/REPO.svg)](https://skillcrossroads.com/s/OWNER/REPO)`}
           </pre>
         </div>
       </section>
@@ -190,7 +190,7 @@ export default function Home(): ReactElement {
           <div>
             <h2 className="section-h teaser-h">The State of Claude Code Skills.</h2>
             <p>
-              Crossroads publishes evidence-based reports on what actually makes real skills pass or
+              Skill Crossroads publishes evidence-based reports on what actually makes real skills pass or
               fail across the ecosystem.
             </p>
           </div>
@@ -206,7 +206,7 @@ export default function Home(): ReactElement {
         <div className="foot-cta">
           <div className="brand">
             <Signpost size={20} />
-            <span>Crossroads</span>
+            <span>Skill Crossroads</span>
           </div>
           <a className="btn" href="/scorecard">
             Scan a skill — free
@@ -217,7 +217,7 @@ export default function Home(): ReactElement {
           <a href="/scorecard">Docs</a>
           <a href="/scorecard">Sample scorecard</a>
           <a href="/scorecard">GitHub</a>
-          <span className="foot-dom mono">crossroads.app</span>
+          <span className="foot-dom mono">skillcrossroads.com</span>
         </div>
         <p className="foot-line">Know before you ship. The signpost for Claude Code skills, agents, and MCP servers.</p>
       </footer>

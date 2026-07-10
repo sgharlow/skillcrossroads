@@ -4,7 +4,7 @@ import { entitlements } from "../lib/entitlements";
 import { signUserValue } from "../lib/session";
 
 function req(cookie: string): Request {
-  return new Request("https://beacon.dev/", { headers: { cookie } });
+  return new Request("https://skillcrossroads.com/", { headers: { cookie } });
 }
 
 const SNAP = {

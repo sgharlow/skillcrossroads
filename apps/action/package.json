@@ -2,6 +2,6 @@
   "name": "@beacon/action",
   "version": "0.1.0",
   "private": true,
-  "description": "Crossroads GitHub Action — grade Claude Code skills, comment on PRs, and gate the build. Composite action; no build step.",
+  "description": "Skill Crossroads GitHub Action — grade Claude Code skills, comment on PRs, and gate the build. Composite action; no build step.",
   "license": "MIT"
 }

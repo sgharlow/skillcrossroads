@@ -16,7 +16,7 @@ const local = /@(localhost|127\.0\.0\.1)[:/]/.test(url);
 const pool = new pg.Pool({ connectionString: url, ssl: local ? false : { rejectUnauthorized: false } });
 try {
   await pool.query(sql);
-  console.log("Crossroads schema applied.");
+  console.log("Skill Crossroads schema applied.");
 } finally {
   await pool.end();
 }

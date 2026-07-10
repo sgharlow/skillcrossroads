@@ -1,6 +1,6 @@
 /**
  * CrossroadsBadge — the signpost. A self-contained, embeddable inline-SVG pill that reads
- * "crossroads : <grade>", color-banded by direction: A/B green (ship), C/D amber (fix), E/F red
+ * "skill crossroads : <grade>", color-banded by direction: A/B green (ship), C/D amber (fix), E/F red
  * (rethink). Colors are hard-coded (not CSS vars) so the SVG renders identically when embedded via
  * <img> in a README, outside this site's stylesheet.
  */
@@ -36,7 +36,7 @@ function textWidth(s: string): number {
 
 export interface CrossroadsBadgeProps {
   grade: string;
-  /** Left-hand label. Defaults to "crossroads". */
+  /** Left-hand label. Defaults to "skill crossroads". */
   label?: string;
   /** Optional link — the growth loop: a badge that clicks through to the full scorecard. */
   href?: string;
@@ -45,7 +45,7 @@ export interface CrossroadsBadgeProps {
 
 export function CrossroadsBadge({
   grade,
-  label = "crossroads",
+  label = "skill crossroads",
   href,
   height = 22,
 }: CrossroadsBadgeProps): ReactElement {
@@ -60,7 +60,7 @@ export function CrossroadsBadge({
   const fs = 11;
   const labelMid = (MARK + labelW) / 2;
   const valueMid = labelW + valueW / 2;
-  const aria = `Crossroads grade ${grade} — direction: ${dir}`;
+  const aria = `Skill Crossroads grade ${grade} — direction: ${dir}`;
 
   const svg = (
     <svg
@@ -109,7 +109,7 @@ export function CrossroadsBadge({
   return svg;
 }
 
-/** The Crossroads mark — a minimal signpost, for nav/footer. Inherits currentColor. */
+/** The Skill Crossroads mark — a minimal signpost, for nav/footer. Inherits currentColor. */
 export function Signpost({ size = 22 }: { size?: number }): ReactElement {
   return (
     <svg
@@ -117,7 +117,7 @@ export function Signpost({ size = 22 }: { size?: number }): ReactElement {
       height={size}
       viewBox="0 0 24 24"
       role="img"
-      aria-label="Crossroads"
+      aria-label="Skill Crossroads"
       fill="none"
       stroke="currentColor"
       strokeWidth="1.9"

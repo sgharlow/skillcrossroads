@@ -213,8 +213,8 @@ export function renderHtml(card: Scorecard, opts: HtmlOptions = {}): string {
     : "";
 
   const brand = opts.homeUrl
-    ? `<a class="brand-link" href="${esc(opts.homeUrl)}"><span class="brand">Crossroads</span></a>`
-    : `<span class="brand">Crossroads</span>`;
+    ? `<a class="brand-link" href="${esc(opts.homeUrl)}"><span class="brand">Skill Crossroads</span></a>`
+    : `<span class="brand">Skill Crossroads</span>`;
 
   const ctaSection = opts.homeUrl
     ? `<div class="cta-wrap">
@@ -227,10 +227,10 @@ export function renderHtml(card: Scorecard, opts: HtmlOptions = {}): string {
     ? `<section class="embed">
       <h2>Embed this badge</h2>
       <div class="embed-row">
-        <a href="${esc(opts.embed.scorecardUrl)}"><img src="${esc(opts.embed.badgeUrl)}" alt="Crossroads grade ${esc(card.grade)}" height="20"></a>
+        <a href="${esc(opts.embed.scorecardUrl)}"><img src="${esc(opts.embed.badgeUrl)}" alt="Skill Crossroads grade ${esc(card.grade)}" height="20"></a>
         <span class="cta-blurb">Always-fresh — it re-scans and updates on its own.</span>
       </div>
-      <pre class="embed-code">[![Crossroads](${esc(opts.embed.badgeUrl)})](${esc(opts.embed.scorecardUrl)})</pre>
+      <pre class="embed-code">[![Skill Crossroads](${esc(opts.embed.badgeUrl)})](${esc(opts.embed.scorecardUrl)})</pre>
     </section>`
     : "";
 
@@ -239,7 +239,7 @@ export function renderHtml(card: Scorecard, opts: HtmlOptions = {}): string {
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Crossroads — ${esc(name)}</title>
+<title>Skill Crossroads — ${esc(name)}</title>
 <style>${STYLE}</style>
 </head>
 <body>
@@ -265,7 +265,7 @@ export function renderHtml(card: Scorecard, opts: HtmlOptions = {}): string {
     ${ctaSection}
   </div>
   <footer>Graded by ${
-    opts.homeUrl ? `<a href="${esc(opts.homeUrl)}"><strong>Crossroads</strong></a>` : "<strong>Crossroads</strong>"
+    opts.homeUrl ? `<a href="${esc(opts.homeUrl)}"><strong>Skill Crossroads</strong></a>` : "<strong>Skill Crossroads</strong>"
   } — the signpost for Claude Code skills, agents, and MCP servers. Evidence-cited, file-and-line.</footer>
 </main>
 </body>

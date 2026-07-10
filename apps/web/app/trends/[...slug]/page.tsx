@@ -24,7 +24,7 @@ export default async function TrendsPage({ params }: { params: Promise<{ slug: s
       <header className="nav">
         <a className="brand" href="/">
           <span className="lamp" aria-hidden />
-          Crossroads
+          Skill Crossroads
         </a>
         <a className="link" href={`/s/${key}`}>
           View scorecard →

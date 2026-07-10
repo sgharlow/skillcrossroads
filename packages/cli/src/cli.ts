@@ -22,7 +22,7 @@ import {
   type ScannedSkill,
 } from "@beacon/core";
 
-const USAGE = `${pc.bold("beacon")} — Lighthouse for Claude Code artifacts
+const USAGE = `${pc.bold("beacon")} — Skill Crossroads, the signpost for Claude Code artifacts
 
 ${pc.bold("Usage:")}
   beacon <path-to-skill | github-url> [options]
@@ -138,7 +138,7 @@ function today(): string {
 const VERSION = "0.1.0";
 
 /** The site whose scorecards/badges the CLI points at (override for self-hosting). */
-const SITE_URL = process.env["BEACON_SITE_URL"] ?? "https://beacon.dev";
+const SITE_URL = process.env["BEACON_SITE_URL"] ?? "https://skillcrossroads.com";
 
 function writeArtifact(kind: "html" | "svg", opt: OptionalPath, name: string, content: string): string {
   const target = typeof opt === "string" ? opt : `${slug(name)}.beacon.${kind}`;
@@ -180,10 +180,10 @@ function emitSingle(result: AuditResult, args: Args): void {
     // Emit the one copy-paste line an author needs — this is how the badge loop actually spreads.
     // To stderr so it never pollutes a redirected `--markdown`/`--json` report.
     const rel = target.startsWith(".") || target.startsWith("/") ? target : `./${target}`;
-    process.stderr.write(pc.dim(`  embed it:  `) + `![Beacon](${rel})\n`);
+    process.stderr.write(pc.dim(`  embed it:  `) + `![Skill Crossroads](${rel})\n`);
     process.stderr.write(
       pc.dim(`  or an always-fresh, linked badge from ${SITE_URL} once your repo is public:\n`) +
-        pc.dim(`    [![Beacon](${SITE_URL}/api/badge/OWNER/REPO.svg)](${SITE_URL}/s/OWNER/REPO)\n`),
+        pc.dim(`    [![Skill Crossroads](${SITE_URL}/api/badge/OWNER/REPO.svg)](${SITE_URL}/s/OWNER/REPO)\n`),
     );
   }
 }
@@ -215,7 +215,7 @@ function emitBatch(
 
   if (args.markdown) {
     const out: string[] = [];
-    out.push(`### 🔦 Beacon — \`${label}\``);
+    out.push(`### 🔦 Skill Crossroads — \`${label}\``);
     out.push("");
     out.push(`${rows.length} skills · average **${avg.toFixed(1)}/100**${meta.ref ? ` · ref \`${meta.ref}\`` : ""}`);
     out.push("");
@@ -238,7 +238,7 @@ function emitBatch(
     (meta.ref ? ` · ref ${meta.ref}` : "") +
     (meta.treeSha ? ` · tree ${meta.treeSha.slice(0, 10)}` : "") +
     (meta.truncated ? " (truncated)" : "");
-  process.stdout.write(`\n${pc.bold("BEACON — scan")}  ${pc.dim(label)}\n` + pc.dim(`  ${rows.length} skills${refNote}\n\n`));
+  process.stdout.write(`\n${pc.bold("SKILL CROSSROADS — scan")}  ${pc.dim(label)}\n` + pc.dim(`  ${rows.length} skills${refNote}\n\n`));
   for (const s of rows) {
     const g = gradeColor(s.scorecard.grade);
     process.stdout.write(

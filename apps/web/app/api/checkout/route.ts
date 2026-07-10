@@ -4,7 +4,7 @@ import { readSession } from "@/lib/session";
 export const runtime = "nodejs";
 
 /**
- * POST /api/checkout — start a Crossroads Pro subscription checkout.
+ * POST /api/checkout — start a Skill Crossroads Pro subscription checkout.
  * Gated on STRIPE_SECRET_KEY + STRIPE_PRICE_ID; returns 501 (not 500) until configured.
  */
 export async function POST(req: Request): Promise<Response> {

@@ -1,6 +1,6 @@
-name: "Crossroads — Skill Quality Gate"
+name: "Skill Crossroads — Skill Quality Gate"
 description: "Grade your Claude Code skills, comment a scorecard on the PR, and gate the build below a threshold."
-author: "Crossroads"
+author: "Skill Crossroads"
 branding:
   icon: "compass"
   color: "green"
@@ -34,7 +34,7 @@ runs:
     # LLM checks aren't paid for twice. Inputs are passed via env (not `${{ }}` interpolation) to
     # avoid shell injection. `set +e` keeps a below-threshold exit from aborting the step, so the
     # comment still posts; the captured code is re-raised by the Gate step.
-    - name: Crossroads
+    - name: Skill Crossroads
       id: crossroads
       shell: bash
       env:

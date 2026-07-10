@@ -2,7 +2,7 @@ import type { Scorecard } from "../types.js";
 import { gradeHex } from "./theme.js";
 
 export interface BadgeOptions {
-  /** Left-hand label. Default "crossroads". */
+  /** Left-hand label. Default "skill crossroads". */
   label?: string;
   /** Override the right-hand value (defaults to the grade). */
   value?: string;
@@ -35,12 +35,12 @@ function textWidth(s: string): number {
 }
 
 /**
- * Render a self-contained flat SVG badge (`crossroads | A−`), colored by grade. Suitable for a
- * README (`![Crossroads](crossroads.svg)`) or a marketplace listing. This is the signpost — the
+ * Render a self-contained flat SVG badge (`skill crossroads | A−`), colored by grade. Suitable for a
+ * README (`![Skill Crossroads](skill-crossroads.svg)`) or a marketplace listing. This is the signpost — the
  * growth loop's viral primitive.
  */
 export function renderBadge(card: Scorecard, opts: BadgeOptions = {}): string {
-  const label = opts.label ?? "crossroads";
+  const label = opts.label ?? "skill crossroads";
   // A partial grade (some rubric categories unscored — e.g. keyless/deterministic-only, where
   // Triggering & Verifiability don't run) is marked with a trailing "*" so the badge never implies
   // a full assessment. Honesty over vanity: a full grade needs an Anthropic key (or Pro).

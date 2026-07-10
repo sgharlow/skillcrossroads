@@ -30,7 +30,7 @@ export default function Pricing() {
       <header className="nav">
         <a className="brand" href="/">
           <span className="lamp" aria-hidden />
-          Crossroads
+          Skill Crossroads
         </a>
       </header>
 
@@ -42,7 +42,7 @@ export default function Pricing() {
       <section className="grid">
         <Tier name="Free" price="$0" per="" items={FREE} cta={<a className="ghost" href="/">Get started</a>} />
         <Tier name="Pro" price="$19" per="/mo" items={PRO} cta={<SubscribeButton />} />
-        <Tier name="Team" price="$99" per="/mo · 5 seats" items={TEAM} cta={<a className="ghost" href="mailto:hello@crossroads.app?subject=Crossroads%20Team">Contact us</a>} />
+        <Tier name="Team" price="$99" per="/mo · 5 seats" items={TEAM} cta={<a className="ghost" href="mailto:hello@skillcrossroads.com?subject=Skill%20Crossroads%20Team">Contact us</a>} />
       </section>
 
       <p className="foot">14-day free trial on Pro · cancel anytime · secured by Stripe</p>

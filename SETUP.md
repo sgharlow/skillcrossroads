@@ -28,7 +28,7 @@ chat**.
      ("Unable to find lambda for route: /pro/success").
 - **Publicly reachable ✅** — Vercel Deployment Protection was **disabled**, so the site is live and
   public at `https://beacon-gamma-six.vercel.app` (verified `200` on `/`, `/gallery`, `/s/...`).
-  Attach `beacon.dev` when ready for the canonical URL (step 3).
+  Attach `skillcrossroads.com` when ready for the canonical URL (step 3).
 - *(An empty `web` project was created by a first mis-linked attempt — delete it in the dashboard, one click.)*
 
 ## The remaining steps (in order)
@@ -50,19 +50,19 @@ automatically for non-localhost hosts.*
 ### 3. Vercel — project deploys LIVE + PUBLIC; env + domain remain
 The `beacon` project deploys `READY` and Deployment Protection is off (public). Remaining:
 - **`NEXT_PUBLIC_SITE_URL`** — **IMPORTANT for the SEO/badge loop.** Unset, the sitemap, robots.txt,
-  and the hosted badge-embed snippet default to `https://beacon.dev`, which isn't attached yet — so
+  and the hosted badge-embed snippet default to `https://skillcrossroads.com`, which isn't attached yet — so
   every emitted badge/scorecard URL is a dead link and the sitemap points at a dead domain. Set it in
   Vercel (Project → Settings → Environment Variables, Production+Preview) to the **currently live**
-  host `https://beacon-gamma-six.vercel.app` now, then switch to `https://beacon.dev` when the domain
+  host `https://beacon-gamma-six.vercel.app` now, then switch to `https://skillcrossroads.com` when the domain
   is attached. *(I could not set this via the API — the CLI token lacks env-write scope; one field in
   the dashboard.)*
 - **Other env vars**: `DATABASE_URL`, `GITHUB_TOKEN` (PAT for scan rate limits), `BEACON_SESSION_SECRET`
   (required before enabling Pro — see step 7), plus the Stripe / OAuth / managed-key vars below.
-- **Domain**: add `beacon.dev` (Project → Domains) for the canonical URL, then update `NEXT_PUBLIC_SITE_URL`.
+- **Domain**: add `skillcrossroads.com` (Project → Domains) for the canonical URL, then update `NEXT_PUBLIC_SITE_URL`.
 
 ### 4. GitHub OAuth app → `GITHUB_CLIENT_ID` / `GITHUB_CLIENT_SECRET`
-GitHub → Settings → Developer settings → **New OAuth App**. Homepage `https://beacon.dev`, callback
-`https://beacon.dev/api/auth/github/callback`. Add both to Vercel env. (Private-repo scanning needs
+GitHub → Settings → Developer settings → **New OAuth App**. Homepage `https://skillcrossroads.com`, callback
+`https://skillcrossroads.com/api/auth/github/callback`. Add both to Vercel env. (Private-repo scanning needs
 the `repo` scope — the app already requests `read:user`; widen if you want private scans.)
 
 ### 5. Stripe — ✅ DONE (test) locally; production wiring remains
@@ -73,7 +73,7 @@ verified end-to-end — a real `checkout.stripe.com` session renders correctly a
 trial** with the `4242` card — card entry is yours, by policy.)
 
 **Production:** in the Stripe dashboard create a **live** Pro Price, add a webhook endpoint
-`https://beacon.dev/api/stripe/webhook` (events `checkout.session.completed`,
+`https://skillcrossroads.com/api/stripe/webhook` (events `checkout.session.completed`,
 `customer.subscription.deleted`), and set `STRIPE_SECRET_KEY` / `STRIPE_PRICE_ID` /
 `STRIPE_WEBHOOK_SECRET` in Vercel.
 

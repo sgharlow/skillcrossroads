@@ -1,6 +1,6 @@
-# Crossroads — GitHub Action
+# Skill Crossroads — GitHub Action
 
-Add a quality gate to your Claude Code skills in three lines. On every pull request, Crossroads
+Add a quality gate to your Claude Code skills in three lines. On every pull request, Skill Crossroads
 grades the skills in your repo, **comments a scorecard**, and (optionally) **fails the build** if any
 skill drops below a grade you choose.
 
@@ -9,7 +9,7 @@ skill drops below a grade you choose.
 Create `.github/workflows/crossroads.yml`:
 
 ```yaml
-name: Crossroads
+name: Skill Crossroads
 on: pull_request
 permissions:
   contents: read
@@ -25,11 +25,11 @@ jobs:
           min-grade: B        # fail the check if any skill is below B
 ```
 
-That's it. Open a PR touching a skill and Crossroads posts a scorecard comment and gates the build.
+That's it. Open a PR touching a skill and Skill Crossroads posts a scorecard comment and gates the build.
 
 > **Note:** the action is referenced today as `sgharlow/beacon/apps/action@v1` and installs the CLI as
-> `@sgharlow/beacon` — the repository and package rename to `crossroads` is in progress. The scorecard
-> it posts is already Crossroads-branded.
+> `@sgharlow/beacon` — the repository and package rename to `skillcrossroads` is in progress. The scorecard
+> it posts is already Skill Crossroads-branded.
 
 ## Inputs
 
