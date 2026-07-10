@@ -1,6 +1,6 @@
 /**
  * CrossroadsBadge — the signpost. A self-contained, embeddable inline-SVG pill that reads
- * "skill crossroads : <grade>", color-banded by direction: A/B green (ship), C/D amber (fix), E/F red
+ * "skill crossroads : <grade>", color-banded by direction: A/B green (ship), C/D amber (fix), F red
  * (rethink). Colors are hard-coded (not CSS vars) so the SVG renders identically when embedded via
  * <img> in a README, outside this site's stylesheet.
  */

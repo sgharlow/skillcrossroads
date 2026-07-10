@@ -1,5 +1,6 @@
 import type { ReactElement } from "react";
 import { CrossroadsBadge, Signpost } from "@/components/CrossroadsBadge";
+import ScanForm from "./scan-form";
 
 export default function Home(): ReactElement {
   return (
@@ -12,10 +13,10 @@ export default function Home(): ReactElement {
         </a>
         <nav className="nav-links">
           <a href="/scorecard">Sample scorecard</a>
-          {/* TODO: replace placeholder links */}
-          <a href="/scorecard">Docs</a>
-          <a href="/scorecard">GitHub</a>
-          <a className="btn btn-sm" href="/scorecard">
+          <a href="/gallery">Gallery</a>
+          <a href="/pricing">Pricing</a>
+          <a href="https://github.com/sgharlow/skillcrossroads">GitHub</a>
+          <a className="btn btn-sm" href="#scan">
             Scan a skill
           </a>
         </nav>
@@ -30,16 +31,16 @@ export default function Home(): ReactElement {
             Skill Crossroads grades your Claude Code skills, agents, and MCP servers against an
             evidence-based rubric — then points you one of three ways: ship, fix, or rethink.
           </p>
+          <div id="scan">
+            <ScanForm />
+          </div>
           <div className="cta-row">
-            <a className="btn" href="/scorecard">
-              Scan a skill — free
-            </a>
             <a className="btn btn-ghost" href="/scorecard">
               See a sample scorecard
             </a>
           </div>
           <p className="hint">
-            Point it at a repo, a local folder, or your CI:{" "}
+            Or scan a local folder or your CI:{" "}
             <code className="mono">npx skillcrossroads ./my-skill</code>
           </p>
         </div>
@@ -68,7 +69,7 @@ export default function Home(): ReactElement {
           </article>
           <article className="card dir dir-rethink">
             <span className="dir-tag">Rethink</span>
-            <span className="dir-grade">E / F</span>
+            <span className="dir-grade">F</span>
             <p>Deeper issues: it will not trigger, is not safe, or has no way to prove it works.</p>
           </article>
         </div>
@@ -194,8 +195,7 @@ export default function Home(): ReactElement {
               fail across the ecosystem.
             </p>
           </div>
-          {/* TODO: replace placeholder link */}
-          <a className="btn btn-ghost" href="/scorecard">
+          <a className="btn btn-ghost" href="/report">
             Read the report
           </a>
         </div>
@@ -208,15 +208,16 @@ export default function Home(): ReactElement {
             <Signpost size={20} />
             <span>Skill Crossroads</span>
           </div>
-          <a className="btn" href="/scorecard">
+          <a className="btn" href="#scan">
             Scan a skill — free
           </a>
         </div>
         <div className="foot-meta">
-          {/* TODO: replace placeholder links */}
-          <a href="/scorecard">Docs</a>
           <a href="/scorecard">Sample scorecard</a>
-          <a href="/scorecard">GitHub</a>
+          <a href="/gallery">Gallery</a>
+          <a href="/pricing">Pricing</a>
+          <a href="/report">Report</a>
+          <a href="https://github.com/sgharlow/skillcrossroads">GitHub</a>
           <span className="foot-dom mono">skillcrossroads.com</span>
         </div>
         <p className="foot-line">Know before you ship. The signpost for Claude Code skills, agents, and MCP servers.</p>

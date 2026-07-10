@@ -30,7 +30,7 @@ export default function ScanForm() {
       />
       <button type="submit">Scan</button>
       <style>{`
-        .scan{display:flex;gap:10px;max-width:520px;margin:28px auto 0;flex-wrap:wrap}
+        .scan{display:flex;gap:10px;max-width:520px;margin:22px 0 0;flex-wrap:wrap}
         .scan input{flex:1 1 260px;min-width:0;background:var(--ink2);border:1px solid var(--ink3);color:var(--foam);
           border-radius:10px;padding:13px 15px;font-size:15px;font-family:ui-monospace,Menlo,Consolas,monospace}
         .scan input:focus{outline:none;border-color:var(--beam)}

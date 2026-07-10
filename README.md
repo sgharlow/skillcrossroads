@@ -11,7 +11,7 @@ every finding cited to a file and line.
 
 - **Ship** — grade A/B. It is ready. Here is your badge.
 - **Fix** — grade C/D. Specific, evidence-cited problems to correct first.
-- **Rethink** — grade E/F. Fundamental issues (will not trigger, unsafe, untested).
+- **Rethink** — grade F. Fundamental issues (will not trigger, unsafe, untested).
 
 > Anthropic's `skill-creator` measures *effectiveness* (does the skill lift task success?).
 > Skill Crossroads grades *craftsmanship and safety* (is it well-built, discoverable, and safe to ship?).
@@ -98,7 +98,7 @@ a clearly-labeled rough estimate (skill markdown tokenizes denser than prose, so
 ```
 ┌───────────────────────────────────────────────────────────────┐
 │  CROSSROADS SCORECARD                      recipe-001          │
-│  Overall: B−  (78/100)          rubric v1.0 · deterministic    │
+│  Overall: C+  (78/100)          rubric v1.0 · deterministic    │
 ├───────────────────────────────────────────────────────────────┤
 │  Correctness & Structure   ████████████████░░░░  82   ⚠ 1      │
 │  Clarity & Instructions    ██████████████████░░  90   ✓        │
