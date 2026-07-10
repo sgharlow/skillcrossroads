@@ -58,15 +58,15 @@ demand amplifiers. No horizontal breadth.*
 | 2 | **Percentile benchmark** — every scorecard/badge shows "beats N% of the 214 public skills scanned" (computed from the pinned report dataset; regenerated with each report edition) | Turns an opaque number into a shareable comparison; zero new data collection | 1d |
 | 3 | **The `audit-skill` Skill** — a Claude Code skill (in-repo `skill/` + gallery-listed) that runs `npx skillcrossroads` on the user's skill and walks them through the fix list | Distribution inside the ecosystem being audited; must itself grade A (dogfood proof) | 1d |
 
-### Sprint 2 — Tagline integrity: agents & commands · ~4.5 dev-days · 1–1.5 weeks · **gated on G0**
-*The site says "skills, agents, and MCP servers"; the engine grades skills only. Close the gap
-for the two artifact types that reuse the existing pipeline.*
+### Sprint 2 — Tagline integrity: agents & commands · **CORE SHIPPED 2026-07-10** (owner override of the G0 gate)
 
-| # | Item | Why | Est. |
-|---|------|-----|------|
-| 4 | Grade **subagents** (`.claude/agents/*.md`) and **slash commands** — artifact-kind detection, check applicability matrix (most checks apply as-is: triggering description, tool least-privilege, token cost, secrets) | Promise-integrity + doubles the addressable artifacts | 2d |
-| 5 | 2–3 agent-specific checks (e.g. `allowed-tools` scope vs. stated purpose, model-field validity, missing-description detection) | The rubric must be real for the new kinds, not a relabel | 1.5d |
-| 6 | Surfaces: CLI/web/Action/badge for the new kinds + a "State of Claude Code **Agents**" report edition (the launch content for this sprint) | Every capability ships with its demand loop | 1d |
+> Items 4–5 `live-proven` in `skillcrossroads@0.3.0`: subagents + slash commands graded end-to-end
+> (kind auto-detection from `agents/`/`commands/` paths + `--kind` flag; kind-aware STRUCT-01/02 —
+> command frontmatter optional; SAFETY-02 reads `tools` and warns on the agent inherits-every-tool
+> trap; new AGENT-01 model-validity and CMD-01 argument-hint checks; skill-only checks scoped out
+> for single-file artifacts; batch scans mix kinds with labels). 219 tests. The Action grades
+> agents/commands now (it wraps the CLI). **Item 6 remaining:** hosted web scanning of
+> agents/commands + the "State of Claude Code Agents" report edition — next session.
 
 ### Sprint 3 — Funnel + CI depth · ~4 dev-days · 1 week · **gated on G0 sustained**
 

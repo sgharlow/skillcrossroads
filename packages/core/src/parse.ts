@@ -124,12 +124,56 @@ function listFiles(root: string): string[] {
 }
 
 /**
- * Parse a Claude Code skill directory (or its SKILL.md) into an Artifact.
- * v0.1 supports `skill` only.
+ * Infer the artifact kind from a path: `SKILL.md` (or a dir containing one) → skill; a `.md`
+ * file whose parent directory is `agents/` → subagent; `commands/` → command. Returns null when
+ * the path is ambiguous (caller should require an explicit kind).
+ */
+export function detectKind(inputPath: string): ArtifactType | null {
+  const abs = resolve(inputPath);
+  const posix = toPosix(abs).toLowerCase();
+  if (posix.endsWith("/skill.md")) return "skill";
+  if (existsSync(abs) && statSync(abs).isDirectory()) {
+    const entries = readdirSync(abs);
+    if (entries.some((e) => e.toLowerCase() === ENTRY_FILENAME.toLowerCase())) return "skill";
+    return null;
+  }
+  if (posix.endsWith(".md")) {
+    const parent = posix.split("/").slice(-2, -1)[0];
+    if (parent === "agents") return "subagent";
+    if (parent === "commands") return "command";
+  }
+  return null;
+}
+
+/**
+ * Parse a Claude Code artifact into an Artifact.
+ *  - `skill`: a directory containing SKILL.md (or the SKILL.md path) — supporting files listed.
+ *  - `subagent` / `command`: a single `.md` file (`.claude/agents/*.md`, `.claude/commands/*.md`);
+ *    single-file artifacts have no supporting-file list — sibling agents are NOT this artifact's files.
  */
 export function parse(inputPath: string, type: ArtifactType = "skill"): Artifact {
+  if (type === "subagent" || type === "command") {
+    const abs = resolve(inputPath);
+    if (!existsSync(abs)) throw new ParseError(`Path does not exist: ${inputPath}`);
+    if (!statSync(abs).isFile() || !toPosix(abs).toLowerCase().endsWith(".md")) {
+      throw new ParseError(`A ${type} is a single .md file — got: ${inputPath}`);
+    }
+    const raw = readFileSync(abs, "utf8");
+    const { frontmatter, frontmatterError, body, bodyStartLine } = splitFrontmatter(raw);
+    return {
+      type,
+      root: resolve(abs, ".."),
+      entryPath: abs,
+      raw,
+      frontmatter,
+      frontmatterError,
+      body,
+      bodyStartLine,
+      files: [],
+    };
+  }
   if (type !== "skill") {
-    throw new ParseError(`Artifact type "${type}" is not supported in v0.1 (skills only).`);
+    throw new ParseError(`Artifact type "${type}" is not supported yet (skill, subagent, command).`);
   }
   const { root, entryPath } = resolveEntry(inputPath);
   const raw = readFileSync(entryPath, "utf8");

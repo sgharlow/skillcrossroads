@@ -20,6 +20,8 @@ import {
   loadConfig,
   applySuppressions,
   ConfigError,
+  detectKind,
+  type ArtifactType,
   type CrossroadsConfig,
   type CheckContext,
   type AuditResult,
@@ -32,7 +34,8 @@ ${pc.bold("Usage:")}
   skillcrossroads <path-to-skill | github-url> [options]
 
 ${pc.bold("Arguments:")}
-  <path-to-skill>    Local skill directory (containing SKILL.md) or the SKILL.md file.
+  <path-to-skill>    A skill directory (containing SKILL.md), a subagent/command .md file
+                     (.claude/agents/*.md, .claude/commands/*.md), or a folder of any of them.
   <github-url>       Public GitHub repo to scan by URL (no clone), e.g.
                      https://github.com/owner/repo  or  owner/repo
 
@@ -43,6 +46,8 @@ ${pc.bold("Options:")}
   --markdown         Emit a Markdown report (for CI / PR comments).
   --min-grade=<G>    Exit non-zero if any scanned skill grades below <G> (CI gate), e.g. B or C-.
   --no-llm           Deterministic checks only; skip LLM-assisted triggering analysis.
+  --kind=<k>         Artifact kind for a bare .md file: skill | agent | command
+                     (auto-detected from agents/ and commands/ paths when omitted).
   --max=<n>          Cap the number of skills scanned from a repo.
   --no-color         Disable ANSI colors.
   -h, --help         Show this help.
@@ -70,6 +75,7 @@ interface Args {
   json: boolean;
   markdown: boolean;
   minGrade?: string;
+  kind?: string;
   html: OptionalPath;
   badge: OptionalPath;
   noLlm: boolean;
@@ -112,6 +118,7 @@ function parseArgs(argv: readonly string[]): Args {
     if (a === "--json") args.json = true;
     else if (a === "--markdown" || a === "--md") args.markdown = true;
     else if (a === "--min-grade" || a.startsWith("--min-grade=")) args.minGrade = takesValue("--min-grade");
+    else if (a === "--kind" || a.startsWith("--kind=")) args.kind = takesValue("--kind");
     else if (a === "--max" || a.startsWith("--max=")) setMax(takesValue("--max") ?? "");
     else if (a === "-h" || a === "--help") args.help = true;
     else if (a === "-v" || a === "--version") args.version = true;
@@ -139,7 +146,7 @@ function today(): string {
 }
 
 /** CLI version — keep in sync with packages/cli/package.json on every `npm version` bump. */
-const VERSION = "0.2.0";
+const VERSION = "0.3.0";
 
 /** The site whose scorecards/badges the CLI points at (override for self-hosting). */
 const SITE_URL = process.env["BEACON_SITE_URL"] ?? "https://skillcrossroads.com";
@@ -168,9 +175,16 @@ function buildContext(noLlm: boolean, warnings: string[]): CheckContext {
   };
 }
 
-/** Emit one skill's report (terminal or markdown) + any requested HTML/badge artifacts. */
+/** Display label: name plus a kind tag for non-skill artifacts. */
+function kindLabel(r: AuditResult): string {
+  const t = r.artifact.type;
+  return t === "skill" ? r.name : `${r.name} [${t === "subagent" ? "agent" : t}]`;
+}
+
+/** Emit one artifact's report (terminal or markdown) + any requested HTML/badge artifacts. */
 function emitSingle(result: AuditResult, args: Args): void {
-  const { scorecard, name } = result;
+  const { scorecard } = result;
+  const name = kindLabel(result);
   if (args.markdown) {
     process.stdout.write(`${renderMarkdown(scorecard, { name })}\n`);
   } else {
@@ -226,7 +240,7 @@ function emitBatch(
     out.push("| Grade | Score | Skill | Path |");
     out.push("|---|---:|---|---|");
     for (const s of rows)
-      out.push(`| ${s.scorecard.grade} | ${s.scorecard.overall} | ${mdCell(s.name)} | \`${mdCell(s.repoPath)}\` |`);
+      out.push(`| ${s.scorecard.grade} | ${s.scorecard.overall} | ${mdCell(kindLabel(s))} | \`${mdCell(s.repoPath)}\` |`);
     out.push("");
     for (const s of rows.filter((r) => r.scorecard.results.some((x) => x.status !== "pass"))) {
       out.push(`<details><summary>${s.scorecard.grade} — ${mdCell(s.name)}</summary>\n`);
@@ -246,7 +260,7 @@ function emitBatch(
   for (const s of rows) {
     const g = gradeColor(s.scorecard.grade);
     process.stdout.write(
-      `  ${g(pc.bold(s.scorecard.grade.padEnd(2)))}  ${String(s.scorecard.overall).padStart(5)}  ${pc.dim(s.repoPath)}  ${s.name}\n`,
+      `  ${g(pc.bold(s.scorecard.grade.padEnd(2)))}  ${String(s.scorecard.overall).padStart(5)}  ${pc.dim(s.repoPath)}  ${kindLabel(s)}\n`,
     );
   }
   process.stdout.write(pc.dim(`\n  average ${avg.toFixed(1)}/100 across ${rows.length} skills\n`));
@@ -298,13 +312,31 @@ async function main(): Promise<void> {
       errors = [...scan.errors];
       meta = { ref: scan.ref, treeSha: scan.treeSha, truncated: scan.truncated };
     } else {
-      const local = await scanLocalDir(args.path, ctx);
-      skills = [...local.skills];
-      errors = [...local.errors];
-      // Fallback: a direct SKILL.md file path, which the directory walk can't enumerate.
-      if (skills.length === 0 && errors.length === 0) {
-        const res = await auditAsync(args.path, ctx);
+      const abs = resolve(args.path);
+      const directFile = existsSync(abs) && statSync(abs).isFile();
+      if (directFile) {
+        // A single .md file: SKILL.md, a subagent, or a slash command. --kind wins; otherwise
+        // infer from the path (agents/ vs commands/); ambiguous bare .md files need the flag.
+        const flagKind: ArtifactType | undefined =
+          args.kind === undefined
+            ? undefined
+            : args.kind === "agent" || args.kind === "subagent"
+              ? "subagent"
+              : args.kind === "command"
+                ? "command"
+                : args.kind === "skill"
+                  ? "skill"
+                  : (() => {
+                      process.stderr.write(pc.red(`Unknown --kind: ${args.kind} (use skill | agent | command)\n`));
+                      process.exit(2);
+                    })();
+        const kind = flagKind ?? detectKind(abs) ?? "skill";
+        const res = await auditAsync(abs, ctx, kind);
         skills = [{ ...res, repoPath: "." }];
+      } else {
+        const local = await scanLocalDir(args.path, ctx);
+        skills = [...local.skills];
+        errors = [...local.errors];
       }
     }
   } catch (err) {

@@ -32,10 +32,34 @@ export const safety02: Check = {
   run(artifact): CheckResult {
     const file = entryRel(artifact);
     const fm = artifact.frontmatter;
-    const raw = fm?.["allowed-tools"] ?? fm?.["allowed_tools"];
+    // Skills/commands declare `allowed-tools`; subagents declare `tools`.
+    const raw = fm?.["allowed-tools"] ?? fm?.["allowed_tools"] ?? fm?.["tools"];
     const tools = parseAllowedTools(raw);
 
     if (raw === undefined || tools.length === 0) {
+      // A subagent with NO `tools` list inherits EVERY tool (including Bash) — the opposite of
+      // least-privilege for a delegated worker. Skills/commands run in the main permission flow,
+      // so absence is fine there.
+      if (artifact.type === "subagent") {
+        return {
+          id: this.id,
+          category: this.category,
+          title: this.title,
+          weight: this.weight,
+          status: "warn",
+          score: 70,
+          evidence: [
+            {
+              file,
+              line: 1,
+              claimed: "no `tools` declared",
+              verified: "the agent inherits every tool, including Bash",
+              message: "Subagents without a `tools` list get unrestricted tool access.",
+            },
+          ],
+          fix: "Declare a scoped `tools:` list with only what the agent needs (e.g. `tools: Read, Grep, Glob`).",
+        };
+      }
       return {
         id: this.id,
         category: this.category,

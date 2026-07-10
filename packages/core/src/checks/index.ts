@@ -14,20 +14,29 @@ import { safety04 } from "./safety-04-injection.js";
 import { trigger01 } from "./trigger-01-triggering.js";
 import { verify04 } from "./verify-04-verification.js";
 import { clarity05 } from "./clarity-05-constraints.js";
+import { agent01 } from "./agent-01-model.js";
+import { cmd01 } from "./cmd-01-arguments.js";
 
-/** The v0.1 deterministic check catalog. Adding a check = adding one entry here. */
+/**
+ * The deterministic check catalog. Adding a check = adding one entry here.
+ * Kind-scoping: checks without `appliesTo` run on every artifact kind; skill-structure checks
+ * (supporting files / progressive disclosure) are scoped to skills at registration — single-file
+ * artifacts (subagents, commands) have no supporting-file tree to judge.
+ */
 export const CHECKS: readonly Check[] = [
   struct01,
   struct02,
-  struct05,
+  { ...struct05, appliesTo: ["skill"] },
   token01,
-  token02,
+  { ...token02, appliesTo: ["skill"] },
   token03,
   clarity03,
   safety01,
   safety02,
   safety03,
   safety04,
+  agent01,
+  cmd01,
 ];
 
 /** LLM-assisted checks. Run only when a model client is supplied (BYOK). */
@@ -48,12 +57,19 @@ export {
   trigger01,
   verify04,
   clarity05,
+  agent01,
+  cmd01,
 };
 export type { AsyncCheck, CheckContext } from "./async.js";
 
-/** Run every deterministic check against an artifact. Sync, no network. `ctx` is optional. */
+/** Checks applicable to an artifact's kind (absent `appliesTo` = applies to all kinds). */
+export function applicableChecks(artifact: Artifact): readonly Check[] {
+  return CHECKS.filter((c) => !c.appliesTo || c.appliesTo.includes(artifact.type));
+}
+
+/** Run every applicable deterministic check against an artifact. Sync, no network. `ctx` is optional. */
 export function runChecks(artifact: Artifact, ctx?: CheckContext): CheckResult[] {
-  return CHECKS.map((check) => check.run(artifact, ctx));
+  return applicableChecks(artifact).map((check) => check.run(artifact, ctx));
 }
 
 /**

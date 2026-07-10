@@ -16,6 +16,21 @@ export const struct02: Check = {
     const fm = artifact.frontmatter;
 
     if (fm === null) {
+      // A command with no frontmatter has no description in /help — recommended, not required.
+      if (artifact.type === "command") {
+        return {
+          id: this.id,
+          category: this.category,
+          title: this.title,
+          weight: this.weight,
+          status: "warn",
+          score: 70,
+          evidence: [
+            { file, line: 1, message: "No `description` — /help and the SlashCommand tool show nothing for this command." },
+          ],
+          fix: "Add frontmatter with a `description` so the command is discoverable.",
+        };
+      }
       return {
         id: this.id,
         category: this.category,
@@ -33,13 +48,15 @@ export const struct02: Check = {
     const hasName = typeof fm["name"] === "string" && (fm["name"] as string).trim().length > 0;
 
     if (!hasDescription) {
+      // Commands: missing description degrades discoverability but the command still runs.
+      const commandCase = artifact.type === "command";
       return {
         id: this.id,
         category: this.category,
         title: this.title,
         weight: this.weight,
-        status: "fail",
-        score: 0,
+        status: commandCase ? "warn" : "fail",
+        score: commandCase ? 70 : 0,
         evidence: [
           {
             file,
@@ -49,6 +66,19 @@ export const struct02: Check = {
           },
         ],
         fix: "Add a `description` that leads with the key use case and the phrases a user would actually say.",
+      };
+    }
+
+    // Commands are named by their filename — `name` is not a command field.
+    if (artifact.type === "command") {
+      return {
+        id: this.id,
+        category: this.category,
+        title: this.title,
+        weight: this.weight,
+        status: "pass",
+        score: 100,
+        evidence: [{ file, line: 1, message: "`description` present (commands are named by filename)." }],
       };
     }
 

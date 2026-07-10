@@ -5,7 +5,7 @@
  * Model-agnostic and deterministic in v0.1 (no network, no LLM).
  */
 export * from "./types.js";
-export { parse, splitFrontmatter, ParseError } from "./parse.js";
+export { parse, splitFrontmatter, detectKind, ParseError } from "./parse.js";
 export { runChecks, runChecksAsync, CHECKS, ASYNC_CHECKS, trigger01, verify04, clarity05 } from "./checks/index.js";
 export { parseVerdict, mapVerdict, type TriggerVerdict } from "./checks/trigger-01-triggering.js";
 export { parseVerify, mapVerify, type VerifyVerdict } from "./checks/verify-04-verification.js";
@@ -63,7 +63,12 @@ export interface AuditResult {
 
 function displayName(artifact: Artifact): string {
   const fmName = artifact.frontmatter?.["name"];
-  return typeof fmName === "string" && fmName.trim() ? fmName.trim() : basename(artifact.root);
+  if (typeof fmName === "string" && fmName.trim()) return fmName.trim();
+  // Single-file artifacts are named by their filename; skills by their directory.
+  if (artifact.type === "subagent" || artifact.type === "command") {
+    return basename(artifact.entryPath).replace(/\.md$/i, "");
+  }
+  return basename(artifact.root);
 }
 
 /** Convenience: parse a skill directory and return its deterministic scorecard (no LLM). */
@@ -129,26 +134,71 @@ export function findLocalSkillDirs(root: string): string[] {
   return out.sort();
 }
 
+/**
+ * Find subagent and slash-command files under a local path: any `.md` directly inside a
+ * directory named `agents/` or `commands/` (covers `.claude/agents`, plugin layouts, and bare
+ * `agents/` folders). README files are skipped — they document, they don't run.
+ */
+export function findLocalAgentCommandFiles(root: string): { agents: string[]; commands: string[] } {
+  const abs = resolve(root);
+  const agents: string[] = [];
+  const commands: string[] = [];
+  if (!existsSync(abs)) return { agents, commands };
+  const walk = (dir: string): void => {
+    let entries: string[];
+    try {
+      entries = readdirSync(dir);
+    } catch {
+      return;
+    }
+    const dirName = basename(dir).toLowerCase();
+    for (const name of entries) {
+      if (IGNORED_WALK.has(name)) continue;
+      const full = join(dir, name);
+      try {
+        const st = statSync(full);
+        if (st.isDirectory()) {
+          walk(full);
+        } else if (
+          /\.md$/i.test(name) &&
+          !/^readme\.md$/i.test(name) &&
+          (dirName === "agents" || dirName === "commands")
+        ) {
+          (dirName === "agents" ? agents : commands).push(full);
+        }
+      } catch {
+        /* unreadable entry — skip */
+      }
+    }
+  };
+  walk(abs);
+  return { agents: agents.sort(), commands: commands.sort() };
+}
+
 export interface LocalScanResult {
   readonly skills: readonly ScannedSkill[];
   readonly errors: ReadonlyArray<{ repoPath: string; message: string }>;
 }
 
-/** Scan every skill under a local directory (CI checkout, a local skills folder). */
+/** Scan every skill, subagent, and slash command under a local directory (CI checkout, a repo). */
 export async function scanLocalDir(root: string, ctx: CheckContext = {}): Promise<LocalScanResult> {
   const abs = resolve(root);
   const dirs = findLocalSkillDirs(abs);
+  const { agents, commands } = findLocalAgentCommandFiles(abs);
   const skills: ScannedSkill[] = [];
   const errors: Array<{ repoPath: string; message: string }> = [];
-  for (const dir of dirs) {
-    const repoPath = relative(abs, dir).split(sep).join("/") || basename(dir);
+  const scanOne = async (path: string, type: ArtifactType): Promise<void> => {
+    const repoPath = relative(abs, path).split(sep).join("/") || basename(path);
     try {
-      const res = await auditAsync(dir, ctx);
+      const res = await auditAsync(path, ctx, type);
       skills.push({ ...res, repoPath });
     } catch (err) {
       errors.push({ repoPath, message: err instanceof Error ? err.message : String(err) });
     }
-  }
+  };
+  for (const dir of dirs) await scanOne(dir, "skill");
+  for (const f of agents) await scanOne(f, "subagent");
+  for (const f of commands) await scanOne(f, "command");
   return { skills, errors };
 }
 

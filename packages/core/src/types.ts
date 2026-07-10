@@ -8,8 +8,8 @@ import type { ModelClient } from "./llm/types.js";
 import type { Cache } from "./llm/cache.js";
 import type { TokenCounter } from "./llm/tokens.js";
 
-/** The kinds of Claude Code artifacts Beacon can grade. v0.1 implements `skill` only. */
-export type ArtifactType = "skill" | "subagent" | "mcp" | "plugin";
+/** The kinds of Claude Code artifacts the engine can grade. Implemented: skill, subagent, command. */
+export type ArtifactType = "skill" | "subagent" | "command" | "mcp" | "plugin";
 
 /** The six rubric categories (Build Bible §3.4). */
 export type Category =
@@ -124,6 +124,8 @@ export interface Check {
   readonly category: Category;
   readonly title: string;
   readonly weight: number;
+  /** Artifact kinds this check applies to. Absent = all kinds. Non-applicable checks are skipped. */
+  readonly appliesTo?: readonly ArtifactType[];
   run(artifact: Artifact, ctx?: CheckContext): CheckResult;
 }
 

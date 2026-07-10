@@ -43,6 +43,24 @@ node packages/cli/dist/cli.js ./path-to-a-skill --html --badge
 npx skillcrossroads ./path-to-a-skill
 ```
 
+### Subagents and slash commands too
+
+The same rubric grades **subagents** (`.claude/agents/*.md`) and **slash commands**
+(`.claude/commands/*.md`) — auto-detected from the path, or forced with `--kind`:
+
+```bash
+skillcrossroads .claude/agents/code-reviewer.md    # one agent
+skillcrossroads .claude                            # every skill, agent, and command in one batch
+skillcrossroads my-prompt.md --kind=command        # bare .md file, kind stated
+```
+
+Kind-aware grading: commands may omit frontmatter (valid-but-undiscoverable warns instead of
+fails), agents are checked for typo'd `model:` values (AGENT-01) and for the
+inherits-every-tool trap when no `tools:` list is declared (SAFETY-02), and commands for
+`$ARGUMENTS`/`argument-hint` agreement (CMD-01). Skill-only structure checks (supporting-file
+refs, progressive disclosure) are skipped for single-file artifacts, disclosed as unscored.
+*(Hosted web scanning of agents/commands is on the roadmap — CLI + GitHub Action today.)*
+
 ### Scan a whole GitHub repo (no clone)
 
 Point Skill Crossroads at a public repo and it grades every skill it finds — fetched via the GitHub API,

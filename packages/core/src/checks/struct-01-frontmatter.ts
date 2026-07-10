@@ -35,6 +35,20 @@ export const struct01: Check = {
     }
 
     if (artifact.frontmatter === null) {
+      // Slash commands: frontmatter is OPTIONAL — a bare prompt file is a valid command.
+      if (artifact.type === "command") {
+        return {
+          id: this.id,
+          category: this.category,
+          title: this.title,
+          weight: this.weight,
+          status: "pass",
+          score: 100,
+          evidence: [
+            { file, line: 1, message: "No frontmatter — optional for slash commands (valid when present)." },
+          ],
+        };
+      }
       return {
         id: this.id,
         category: this.category,
@@ -47,7 +61,7 @@ export const struct01: Check = {
             file,
             line: 1,
             message: "No YAML frontmatter block found at the top of the file.",
-            claimed: "a Claude Code skill",
+            claimed: `a Claude Code ${artifact.type}`,
             verified: "file does not begin with a `---` frontmatter fence",
           },
         ],
