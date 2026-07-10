@@ -1,4 +1,4 @@
-# Dead-man's-switch uptime monitor. GitHub emails the workflow's maintainer when a scheduled
+# Dead-man's-switch uptime monitor (schedule re-registered 2026-07-10). GitHub emails the workflow's maintainer when a scheduled
 # run FAILS, so an unreachable site or dead dependency produces an alert, not silence.
 # NOTE: GitHub pauses scheduled workflows after ~60 days without repo activity — routine commits
 # keep it alive; check Actions if the repo goes quiet for two months.
