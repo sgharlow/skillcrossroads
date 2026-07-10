@@ -52,10 +52,12 @@ inlined — and must **escape** every dynamic value (a scanned skill is untruste
 Never write "DONE" bare. The ladder: idea → built → wired → live-proven → dogfooded →
 customer-used → revenue-proven. This repo's status: the **engine, CLI, and hosted web app are
 `live-proven`** (production at skillcrossroads.com; `skillcrossroads` on npm, npx-verified;
-TRIGGER-01 ran against the real Anthropic API at 92.9% label agreement). **Stripe Pro and GitHub
-OAuth are `wired` + configured but NOT customer-dogfooded** (no real Pro purchase or full OAuth
-round-trip by a stranger yet); the **Action is `built`, never proven on a real external PR**.
-When you finish work, state the ladder level.
+TRIGGER-01 ran against the real Anthropic API at 92.9% label agreement). **The full money path is
+`dogfooded`** (2026-07-10: real OAuth round-trip → live Stripe Pro subscription → webhook flipped
+the Postgres entitlement in ~1.3s → a Pro scan ran managed-LLM with all six categories scored),
+and the **Action is `live-proven`** (scanned, commented a scorecard, and gated on a real PR —
+including a correct hard-fail on a bad path). Not yet: `customer-used` (no arms-length user) or
+`revenue-proven` (trial, $0 collected). When you finish work, state the ladder level.
 
 ## Architecture
 
@@ -194,8 +196,8 @@ The CLI is CI-native: a local path may be a **single skill or a folder of skills
 `<G>` (`meetsMinGrade` / `gradeRank` in `score.ts`) — the CI gate. `apps/action` is a **composite**
 GitHub Action (`action.yml` + `comment.mjs`, a dependency-free PR-comment poster that updates one
 marker comment in place). The action runs `npx skillcrossroads@latest` (published) and is tagged
-`v1`; the gate + markdown + local batch are live-proven via the CLI, but the Action itself has not
-yet commented on a real external PR — that proof is still outstanding.
+`v1`; **live-proven 2026-07-10** — it scanned, posted the scorecard comment, and enforced the
+gate on a real PR (this repo's own `.github/workflows/crossroads.yml` now dogfoods it on every PR).
 
 ## Running locally
 
