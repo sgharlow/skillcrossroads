@@ -21,6 +21,7 @@ import { trigger02 } from "./trigger-02-desc-quality.js";
 import { trigger03 } from "./trigger-03-cues.js";
 import { verify01 } from "./verify-01-evals.js";
 import { mcp01, mcp02, mcp03 } from "./mcp-config.js";
+import { plugin01, plugin02, plugin03, hook01 } from "./plugin.js";
 
 /**
  * The deterministic check catalog. Adding a check = adding one entry here.
@@ -37,7 +38,7 @@ export const CHECKS: readonly Check[] = [
   token03,
   clarity03,
   // The secret scan also covers .mcp.json (inline keys in `env` blocks are the classic leak).
-  { ...safety01, appliesTo: ["skill", "subagent", "command", "mcp"] },
+  { ...safety01, appliesTo: ["skill", "subagent", "command", "mcp", "plugin"] },
   safety02,
   safety03,
   safety04,
@@ -49,6 +50,10 @@ export const CHECKS: readonly Check[] = [
   mcp01,
   mcp02,
   mcp03,
+  plugin01,
+  plugin02,
+  plugin03,
+  hook01,
 ];
 
 /**
@@ -87,6 +92,10 @@ export {
   mcp01,
   mcp02,
   mcp03,
+  plugin01,
+  plugin02,
+  plugin03,
+  hook01,
 };
 export type { AsyncCheck, CheckContext } from "./async.js";
 
@@ -104,13 +113,15 @@ export function applicableAsyncChecks(artifact: Artifact): readonly AsyncCheck[]
   return asyncChecksForKind(artifact.type);
 }
 
+const WHITELIST_KINDS: readonly ArtifactType[] = ["mcp", "plugin"]; // JSON entries — prose checks must name them explicitly
+
 function checksForKind(kind: ArtifactType): readonly Check[] {
-  if (kind === "mcp") return CHECKS.filter((c) => c.appliesTo?.includes("mcp"));
+  if (WHITELIST_KINDS.includes(kind)) return CHECKS.filter((c) => c.appliesTo?.includes(kind));
   return CHECKS.filter((c) => !c.appliesTo || c.appliesTo.includes(kind));
 }
 
 function asyncChecksForKind(kind: ArtifactType): readonly AsyncCheck[] {
-  if (kind === "mcp") return ASYNC_CHECKS.filter((c) => c.appliesTo?.includes("mcp"));
+  if (WHITELIST_KINDS.includes(kind)) return ASYNC_CHECKS.filter((c) => c.appliesTo?.includes(kind));
   return ASYNC_CHECKS.filter((c) => !c.appliesTo || c.appliesTo.includes(kind));
 }
 

@@ -85,16 +85,16 @@ describe("command-specific grading", () => {
 });
 
 describe("local discovery includes agents and commands", () => {
-  it("findLocalAgentCommandFiles finds .md files under agents/ and commands/ dirs", () => {
+  it("findLocalAgentCommandFiles finds .md files under agents/ and commands/ dirs (incl. plugin layouts)", () => {
     const { agents, commands } = findLocalAgentCommandFiles(artifacts);
     expect(agents.length).toBe(2);
-    expect(commands.length).toBe(2);
+    expect(commands.length).toBe(3); // 2 top-level + the good-plugin fixture's commands/deploy.md
   });
 
-  it("scanLocalDir grades all kinds in one batch", async () => {
+  it("scanLocalDir grades all kinds in one batch (plugins included)", async () => {
     const { skills, errors } = await scanLocalDir(artifacts);
     expect(errors).toEqual([]);
     const types = skills.map((s) => s.artifact.type).sort();
-    expect(types).toEqual(["command", "command", "subagent", "subagent"]);
+    expect(types).toEqual(["command", "command", "command", "plugin", "plugin", "subagent", "subagent"]);
   });
 });

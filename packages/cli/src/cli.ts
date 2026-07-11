@@ -56,7 +56,7 @@ ${pc.bold("Options:")}
                      to <f> — cat it in a CI step to get inline PR annotations.
   --min-grade=<G>    Exit non-zero if any scanned skill grades below <G> (CI gate), e.g. B or C-.
   --no-llm           Deterministic checks only; skip LLM-assisted triggering analysis.
-  --kind=<k>         Artifact kind for a bare file: skill | agent | command | mcp
+  --kind=<k>         Artifact kind for a bare file: skill | agent | command | mcp | plugin
                      (auto-detected from agents//commands/ paths and .mcp.json when omitted).
   --mcp-live         With a .mcp.json: SPAWN each stdio server from YOUR config (explicit
                      consent), list its tools, and grade tool/param descriptions too.
@@ -355,10 +355,12 @@ async function main(): Promise<void> {
                 ? "command"
                 : args.kind === "mcp"
                   ? "mcp"
-                  : args.kind === "skill"
+                  : args.kind === "plugin"
+                    ? "plugin"
+                    : args.kind === "skill"
                     ? "skill"
                     : (() => {
-                        process.stderr.write(pc.red(`Unknown --kind: ${args.kind} (use skill | agent | command | mcp)\n`));
+                        process.stderr.write(pc.red(`Unknown --kind: ${args.kind} (use skill | agent | command | mcp | plugin)\n`));
                         process.exit(2);
                       })();
         const kind = flagKind ?? detectKind(abs) ?? "skill";

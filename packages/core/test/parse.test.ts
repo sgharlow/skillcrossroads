@@ -58,7 +58,7 @@ describe("parse", () => {
     expect(() => parse(fixture("does-not-exist"))).toThrow(ParseError);
   });
 
-  it("rejects unsupported artifact types in v0.1", () => {
-    expect(() => parse(fixture("good-skill"), "plugin")).toThrow(/not supported/i);
+  it("rejects a plugin parse on a directory without a manifest", () => {
+    expect(() => parse(fixture("good-skill"), "plugin")).toThrow(/plugin\.json/i);
   });
 });

@@ -131,10 +131,13 @@ function listFiles(root: string): string[] {
 export function detectKind(inputPath: string): ArtifactType | null {
   const abs = resolve(inputPath);
   const posix = toPosix(abs).toLowerCase();
+  if (posix.endsWith("/.claude-plugin/plugin.json")) return "plugin";
   if (posix.endsWith("/skill.md")) return "skill";
   if (posix.endsWith(".mcp.json")) return "mcp"; // `.mcp.json` or `<name>.mcp.json`
   if (existsSync(abs) && statSync(abs).isDirectory()) {
     const entries = readdirSync(abs);
+    // A manifest makes the dir a plugin — even a root SKILL.md layout (single-skill plugin).
+    if (existsSync(join(abs, ".claude-plugin", "plugin.json"))) return "plugin";
     if (entries.some((e) => e.toLowerCase() === ENTRY_FILENAME.toLowerCase())) return "skill";
     return null;
   }
@@ -171,6 +174,30 @@ export function parse(inputPath: string, type: ArtifactType = "skill"): Artifact
       body: "",
       bodyStartLine: 1,
       files: [],
+    };
+  }
+  // Plugin: the artifact is the plugin DIRECTORY; its entry is `.claude-plugin/plugin.json`.
+  // `files` lists the whole plugin tree so component-resolution and secret checks see it.
+  if (type === "plugin") {
+    let abs = resolve(inputPath);
+    if (!existsSync(abs)) throw new ParseError(`Path does not exist: ${inputPath}`);
+    if (statSync(abs).isFile()) abs = resolve(abs, "..", ".."); // plugin.json path → plugin root
+    const entryPath = join(abs, ".claude-plugin", "plugin.json");
+    if (!existsSync(entryPath)) {
+      throw new ParseError(`No .claude-plugin/plugin.json found in ${inputPath} — is this a plugin directory?`);
+    }
+    const raw = readFileSync(entryPath, "utf8");
+    const entryRel = toPosix(relative(abs, entryPath));
+    return {
+      type,
+      root: abs,
+      entryPath,
+      raw,
+      frontmatter: null,
+      frontmatterError: null,
+      body: "",
+      bodyStartLine: 1,
+      files: listFiles(abs).filter((f) => f !== entryRel),
     };
   }
   if (type === "subagent" || type === "command") {

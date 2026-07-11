@@ -208,6 +208,33 @@ export function findLocalAgentCommandFiles(root: string): { agents: string[]; co
   return { agents: agents.sort(), commands: commands.sort() };
 }
 
+/** Find plugin roots under a local path: any directory containing `.claude-plugin/plugin.json`. */
+export function findLocalPluginDirs(root: string): string[] {
+  const abs = resolve(root);
+  const out: string[] = [];
+  if (!existsSync(abs)) return out;
+  const walk = (dir: string): void => {
+    let entries: string[];
+    try {
+      entries = readdirSync(dir);
+    } catch {
+      return;
+    }
+    if (existsSync(join(dir, ".claude-plugin", "plugin.json"))) out.push(dir);
+    for (const name of entries) {
+      if (IGNORED_WALK.has(name)) continue;
+      const full = join(dir, name);
+      try {
+        if (statSync(full).isDirectory()) walk(full);
+      } catch {
+        /* unreadable entry — skip */
+      }
+    }
+  };
+  walk(abs);
+  return out.sort();
+}
+
 export interface LocalScanResult {
   readonly skills: readonly ScannedSkill[];
   readonly errors: ReadonlyArray<{ repoPath: string; message: string }>;
@@ -232,6 +259,9 @@ export async function scanLocalDir(root: string, ctx: CheckContext = {}): Promis
   for (const dir of dirs) await scanOne(dir, "skill");
   for (const f of agents) await scanOne(f, "subagent");
   for (const f of commands) await scanOne(f, "command");
+  // Plugins: the manifest artifact rows in a batch — contained skills/agents/commands are already
+  // discovered by the walks above, so a plugin scan is naturally the manifest + member roll-up.
+  for (const dir of findLocalPluginDirs(abs)) await scanOne(dir, "plugin");
   // MCP Phase A: a project-level .mcp.json at the scan root.
   const mcpConfig = join(abs, ".mcp.json");
   if (existsSync(mcpConfig)) await scanOne(mcpConfig, "mcp");
