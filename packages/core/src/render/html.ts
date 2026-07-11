@@ -21,6 +21,8 @@ export interface HtmlOptions {
    * primitive. Omitted by the CLI so the local HTML file stays fully self-contained (no requests).
    */
   embed?: { badgeUrl: string; scorecardUrl: string };
+  /** Site origin for check-docs links (self-hosting override); defaults to skillcrossroads.com. */
+  siteUrl?: string;
 }
 
 /** Escape text for safe embedding in HTML element content and attribute values. */
@@ -58,7 +60,7 @@ function gauge(card: Scorecard): string {
 function categoryRow(cat: CategoryScore): string {
   if (!cat.evaluated) {
     // Structurally n/a for this kind (no check can ever score it) vs a real coverage hole.
-    const label = cat.applicable ? "not yet scored" : "n/a for this artifact kind";
+    const label = cat.applicable === false ? "n/a for this artifact kind" : "not yet scored";
     return `<div class="cat cat--na">
       <span class="cat-label">${esc(cat.label)}</span>
       <span class="cat-na">${label}</span>
@@ -96,7 +98,7 @@ function evidenceBlock(e: Evidence): string {
   return html + `</div>`;
 }
 
-function fixCard(r: CheckResult): string {
+function fixCard(r: CheckResult, siteUrl?: string): string {
   const isFail = r.status === "fail";
   const color = isFail ? PALETTE.fail : PALETTE.warn;
   const mark = isFail ? "✗" : "⚠";
@@ -106,7 +108,7 @@ function fixCard(r: CheckResult): string {
   return `<article class="fix">
     <header class="fix-head">
       <span class="fix-mark" style="color:${color}">${mark}</span>
-      <a class="fix-id" style="color:${color}" href="${esc(checkDocsUrl(r.id))}">${esc(r.id)}</a>
+      <a class="fix-id" style="color:${color}" href="${esc(checkDocsUrl(r.id, siteUrl))}">${esc(r.id)}</a>
       <span class="fix-title">${esc(r.title)}</span>
     </header>
     ${ev}
@@ -210,7 +212,7 @@ export function renderHtml(card: Scorecard, opts: HtmlOptions = {}): string {
   const fixesSection =
     fixes.length > 0
       ? `<section class="fixes"><h2>Top fixes — ranked by score impact</h2>${fixes
-          .map(fixCard)
+          .map((r) => fixCard(r, opts.siteUrl))
           .join("")}</section>`
       : `<section class="clean">✓ No warnings or failures. Clean scan.</section>`;
 

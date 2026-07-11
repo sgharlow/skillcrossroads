@@ -206,12 +206,12 @@ function emitSingle(result: AuditResult, args: Args): void {
   const { scorecard } = result;
   const name = kindLabel(result);
   if (args.markdown) {
-    process.stdout.write(`${renderMarkdown(scorecard, { name })}\n`);
+    process.stdout.write(`${renderMarkdown(scorecard, { name, siteUrl: SITE_URL })}\n`);
   } else {
-    process.stdout.write(`\n${renderTerminal(scorecard, { name })}\n`);
+    process.stdout.write(`\n${renderTerminal(scorecard, { name, siteUrl: SITE_URL })}\n`);
   }
   if (args.html !== undefined) {
-    writeArtifact("html", args.html, name, renderHtml(scorecard, { name, scannedAt: today(), homeUrl: SITE_URL }));
+    writeArtifact("html", args.html, name, renderHtml(scorecard, { name, scannedAt: today(), homeUrl: SITE_URL, siteUrl: SITE_URL }));
   }
   if (args.badge !== undefined) {
     const target = writeArtifact("svg", args.badge, name, renderBadge(scorecard));
@@ -264,7 +264,7 @@ function emitBatch(
     out.push("");
     for (const s of rows.filter((r) => r.scorecard.results.some((x) => x.status !== "pass"))) {
       out.push(`<details><summary>${s.scorecard.grade} — ${mdCell(s.name)}</summary>\n`);
-      out.push(renderMarkdown(s.scorecard, { name: s.name, level: 4 }));
+      out.push(renderMarkdown(s.scorecard, { name: s.name, level: 4, siteUrl: SITE_URL }));
       out.push(`\n</details>`);
     }
     for (const e of errors) out.push(`- ⚠ \`${mdCell(e.repoPath)}\`: ${mdCell(e.message)}`);
@@ -415,7 +415,7 @@ async function main(): Promise<void> {
   }
   if (args.annotations && !remote) {
     const prefix = args.path === "." ? "" : args.path;
-    const lines = renderAnnotations(skills, prefix);
+    const lines = renderAnnotations(skills, prefix, SITE_URL);
     writeFileSync(resolve(args.annotations), lines.length ? `${lines.join("\n")}\n` : "", "utf8");
     process.stderr.write(pc.dim(`  wrote ${lines.length} annotation(s) → ${resolve(args.annotations)}\n`));
   }

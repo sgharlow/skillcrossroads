@@ -36,7 +36,7 @@ function joinRepoPath(...segs: string[]): string {
  * to the repository root (the Action's `path` input) so `file=` anchors resolve in the PR diff.
  * A single-file artifact's evidence file IS its repoPath (its own .md), so segments deduplicate.
  */
-export function renderAnnotations(results: readonly AnnotatableResult[], pathPrefix = ""): string[] {
+export function renderAnnotations(results: readonly AnnotatableResult[], pathPrefix = "", siteUrl?: string): string[] {
   const lines: string[] = [];
   for (const r of results) {
     for (const check of r.scorecard.results) {
@@ -50,7 +50,7 @@ export function renderAnnotations(results: readonly AnnotatableResult[], pathPre
         : joinRepoPath(pathPrefix, r.repoPath, evFile);
       const line = ev?.line ?? 1;
       // Ends with the check's reference page so the inline annotation carries its own fix guide.
-      const msg = `[${check.id}] ${r.name}: ${ev?.message ?? check.title}${check.fix ? ` Fix: ${check.fix}` : ""} (${checkDocsUrl(check.id)})`;
+      const msg = `[${check.id}] ${r.name}: ${ev?.message ?? check.title}${check.fix ? ` Fix: ${check.fix}` : ""} (${checkDocsUrl(check.id, siteUrl)})`;
       lines.push(
         `::${level} file=${propEscape(file)},line=${line},title=${propEscape(`Skill Crossroads ${check.id}`)}::${cmdEscape(msg)}`,
       );

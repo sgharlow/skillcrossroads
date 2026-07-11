@@ -5,6 +5,8 @@ import { usedLlm, type CategoryScore, type CheckResult, type Scorecard } from ".
 
 export interface MarkdownOptions {
   name?: string;
+  /** Site origin for check-docs links (self-hosting override); defaults to skillcrossroads.com. */
+  siteUrl?: string;
   /** Heading level for the report title (default 3 → `###`). */
   level?: number;
 }
@@ -50,19 +52,19 @@ function statusMark(status: string): string {
 function categoryRow(cat: CategoryScore): string {
   // cat.label is a fixed rubric label (trusted) — no escaping needed.
   // Structurally n/a for this kind vs a real coverage hole ("not scored").
-  if (!cat.evaluated) return `| ${cat.label} | — | ${cat.applicable ? "_not scored_" : "_n/a_"} |`;
+  if (!cat.evaluated) return `| ${cat.label} | — | ${cat.applicable === false ? "_n/a_" : "_not scored_"} |`;
   const summary = cat.failCount > 0 ? `✗ ${cat.failCount}` : cat.warnCount > 0 ? `⚠ ${cat.warnCount}` : "✓";
   return `| ${cat.label} | ${Math.round(cat.score as number)} | ${summary} |`;
 }
 
-function fixLine(r: CheckResult): string {
+function fixLine(r: CheckResult, siteUrl?: string): string {
   // r.id / r.title are Beacon's own constants (trusted); ev.file/message and r.fix are untrusted.
   const ev = r.evidence[0];
   const loc = ev?.line ? `\`${mdCode(ev.file)}:${ev.line}\`` : ev?.file ? `\`${mdCode(ev.file)}\`` : "";
   const detail = ev?.message ? mdText(ev.message) : "";
   const fix = r.fix ? `\n  - _Fix:_ ${mdText(r.fix)}` : "";
   // The check id links to its reference page (why it matters + how to fix, with examples).
-  return `- ${statusMark(r.status)} **[${r.id}](${checkDocsUrl(r.id)})** ${r.title} — ${loc} ${detail}${fix}`;
+  return `- ${statusMark(r.status)} **[${r.id}](${checkDocsUrl(r.id, siteUrl)})** ${r.title} — ${loc} ${detail}${fix}`;
 }
 
 /** Render a Scorecard as a Markdown report — for PR comments and issues. */
@@ -89,7 +91,7 @@ export function renderMarkdown(card: Scorecard, opts: MarkdownOptions = {}): str
   if (fixes.length > 0) {
     lines.push("**Top fixes**");
     lines.push("");
-    for (const r of fixes) lines.push(fixLine(r));
+    for (const r of fixes) lines.push(fixLine(r, opts.siteUrl));
   } else {
     lines.push("✓ **Clean scan** — no warnings or failures.");
   }

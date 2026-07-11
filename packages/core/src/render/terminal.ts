@@ -52,7 +52,7 @@ function categorySummary(cat: CategoryScore): string {
 function categoryRow(cat: CategoryScore): string {
   if (!cat.evaluated) {
     // Structurally n/a for this kind vs a real coverage hole ("not yet scored").
-    const label = cat.applicable ? "not yet scored" : "n/a for this kind";
+    const label = cat.applicable === false ? "n/a for this kind" : "not yet scored";
     const content = `  ${padTo(cat.label, LABEL_W)}      ${pc.dim(label)}`;
     // pad using plain (uncolored) length
     const plain = `  ${padTo(cat.label, LABEL_W)}      ${label}`;
@@ -80,7 +80,7 @@ function evidenceLine(e: Evidence): string {
   return `   ${pc.dim("Evidence:")} ${loc}  ${detail}`;
 }
 
-function fixItem(r: CheckResult): string {
+function fixItem(r: CheckResult, siteUrl?: string): string {
   const isFail = r.status === "fail";
   const mark = isFail ? pc.red("✗") : pc.yellow("⚠");
   const id = isFail ? pc.red(pc.bold(r.id)) : pc.yellow(pc.bold(r.id));
@@ -88,7 +88,7 @@ function fixItem(r: CheckResult): string {
   for (const e of r.evidence.slice(0, 3)) lines.push(evidenceLine(e));
   if (r.evidence.length > 3) lines.push(`   ${pc.dim(`… and ${r.evidence.length - 3} more`)}`);
   if (r.fix) lines.push(`   ${pc.dim("Fix:")} ${r.fix}`);
-  lines.push(`   ${pc.dim(`Docs: ${checkDocsUrl(r.id)}`)}`);
+  lines.push(`   ${pc.dim(`Docs: ${checkDocsUrl(r.id, siteUrl)}`)}`);
   return lines.join("\n");
 }
 
@@ -107,6 +107,8 @@ export interface RenderOptions {
   name?: string;
   /** Force color on/off; defaults to picocolors' auto-detection. */
   color?: boolean;
+  /** Site origin for check-docs links (self-hosting override); defaults to skillcrossroads.com. */
+  siteUrl?: string;
 }
 
 /** Render a Scorecard as a colored terminal report. */
@@ -141,7 +143,7 @@ export function renderTerminal(card: Scorecard, opts: RenderOptions = {}): strin
     lines.push("");
     lines.push(pc.bold("TOP FIXES (ranked by score impact)"));
     lines.push("");
-    lines.push(fixes.map(fixItem).join("\n\n"));
+    lines.push(fixes.map((r) => fixItem(r, opts.siteUrl)).join("\n\n"));
   } else {
     lines.push("");
     lines.push(pc.green("No warnings or failures. Clean scan."));
