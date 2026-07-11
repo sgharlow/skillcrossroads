@@ -82,6 +82,7 @@ import {
   findSkillDirs,
   findArtifactFiles,
   materializeSkill,
+  materializePlugin,
   fetchArtifactFile,
   type GitHubFetchOptions,
 } from "./github.js";
@@ -333,6 +334,28 @@ export async function scanGitHubRepo(
         skills.push({ ...res, repoPath: path });
       } catch (err) {
         errors.push({ repoPath: path, message: err instanceof Error ? err.message : String(err) });
+      }
+    }
+    // Plugins: each `.claude-plugin/plugin.json` marks its parent dir as a plugin root, graded as
+    // the whole-tree "plugin" artifact (contained agents/commands were already scanned above —
+    // same manifest-plus-member-roll-up shape as scanLocalDir). Remaining `max` budget applies.
+    const manifestSuffix = "/.claude-plugin/plugin.json";
+    const pluginBudget = opts.max ? Math.max(0, opts.max - skills.length) : files.plugins.length;
+    for (const manifestPath of files.plugins.slice(0, pluginBudget)) {
+      const pluginRoot = manifestPath.endsWith(manifestSuffix)
+        ? manifestPath.slice(0, -manifestSuffix.length)
+        : ""; // bare ".claude-plugin/plugin.json" → the repo root is the plugin
+      const repoPath = pluginRoot || "(root)";
+      try {
+        const unscanned: string[] = [];
+        const local = await materializePlugin(target, pluginRoot, tree, dest, {
+          ...opts,
+          onPlaceholder: (rel) => unscanned.push(rel),
+        });
+        const res = await auditAsync(local, ctx, "plugin", { unscannedFiles: unscanned });
+        skills.push({ ...res, repoPath });
+      } catch (err) {
+        errors.push({ repoPath, message: err instanceof Error ? err.message : String(err) });
       }
     }
   } finally {

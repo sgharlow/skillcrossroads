@@ -16,9 +16,9 @@ badge loop); money is the hosted Pro tier (private-repo scanning, managed LLM ch
 dashboards).
 
 **Current scope (rubric v1.1):** the `@beacon/core` engine + the `skillcrossroads` CLI (npm),
-grading FOUR artifact kinds — **skills, subagents, slash commands, and `.mcp.json` configs**
+grading FIVE artifact kinds — **skills, subagents, slash commands, `.mcp.json` configs, and plugins** (a plugin scan = the `.claude-plugin/plugin.json` manifest row PLUS its member artifacts — the roll-up batch)
 (kind-aware `applicableChecks`/`applicableAsyncChecks`; `mcp` is whitelist-only so prose checks
-never mis-fire on JSON). **19 deterministic checks** + 3 LLM-assisted (TRIGGER-01/VERIFY-04/
+never mis-fire on JSON). **23 deterministic checks** + 3 LLM-assisted (TRIGGER-01/VERIFY-04/
 CLARITY-05, BYOK, kind-scoped) + 3 live MCP server checks (`--mcp-live`, CLI-only opt-in —
 NEVER hosted: spawning configured commands server-side is RCE by design). Keyless SKILL scans
 score all six categories. Surfaces: terminal, HTML, badge, Markdown, JSON (`--json[=file]`),
@@ -31,8 +31,8 @@ plan + per-user scan history; `/api/billing/portal` Stripe Customer Portal for c
 `/api/auth/logout`). Hosted app + GitHub Action (`v1`) + Stripe Pro all live and owner-dogfooded.
 `scripts/state-of-skills.mjs` regenerates the data report.
 
-**Not yet built** (roadmap — do not add speculatively): plugin scoring, more checks from the
-v1 catalog, org/team features. Everything further is demand-gated (see ROADMAP.md).
+**Not yet built** (roadmap — do not add speculatively): more checks from the v1 catalog,
+marketplace.json grading, org/team features. Everything further is demand-gated (see ROADMAP.md).
 
 ### LLM-assisted checks (BYOK) — the async path
 
@@ -99,7 +99,8 @@ The current catalog (rubric v1.1): **deterministic** — `STRUCT-01/02/05` front
 `TOKEN-01/02/03` budgets + disclosure · `CLARITY-03` no filler · `SAFETY-01..04` secrets
 (incl. JSON env values)/least-privilege/auto-invoke/`!`-injection · `TRIGGER-02/03` description
 length + invocation cues · `VERIFY-01` evals present (skills) · `AGENT-01` model validity ·
-`CMD-01` argument-hint agreement · `MCP-01/02/03` config shape/pinning/TLS. **LLM-assisted
+`CMD-01` argument-hint agreement · `MCP-01/02/03` config shape/pinning/TLS · `PLUGIN-01/02/03` manifest validity/component
+resolution/description · `HOOK-01` hooks destructive-command sweep. **LLM-assisted
 (BYOK, kind-scoped)** — `TRIGGER-01` (skills+agents) · `VERIFY-04` · `CLARITY-05`. **Live MCP
 (`--mcp-live`)** — `MCPT-01/02/03` reachability/tool descriptions/param docs. The full v1 catalog
 lives in the private Build Bible; the

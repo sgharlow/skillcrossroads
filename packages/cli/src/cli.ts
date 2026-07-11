@@ -166,7 +166,7 @@ function today(): string {
 }
 
 /** CLI version — keep in sync with packages/cli/package.json on every `npm version` bump. */
-const VERSION = "0.9.0";
+const VERSION = "0.10.0";
 
 /** The site whose scorecards/badges the CLI points at (override for self-hosting). */
 const SITE_URL = process.env["BEACON_SITE_URL"] ?? DEFAULT_SITE_URL;

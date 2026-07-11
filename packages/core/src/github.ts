@@ -120,13 +120,14 @@ export function findSkillDirs(entries: readonly TreeEntry[], subpath?: string): 
 
 /**
  * Single-file artifacts in the tree: subagents (`…/agents/*.md`), slash commands
- * (`…/commands/*.md`, README excluded), and MCP configs (`.mcp.json` at any level). Honors
+ * (`…/commands/*.md`, README excluded), MCP configs (`.mcp.json` at any level), and plugin
+ * manifests (`.claude-plugin/plugin.json` — each marks its parent dir as a plugin root). Honors
  * `subpath` (a containing dir OR the exact file path, so deep links to one artifact work).
  */
 export function findArtifactFiles(
   entries: readonly TreeEntry[],
   subpath?: string,
-): { agents: string[]; commands: string[]; mcp: string[] } {
+): { agents: string[]; commands: string[]; mcp: string[]; plugins: string[] } {
   const norm = subpath ? subpath.replace(/^\/+|\/+$/g, "") : undefined;
   const inScope = (p: string): boolean => !norm || p === norm || p.startsWith(`${norm}/`);
   // Test/fixture trees are not shipped artifacts — excluding them keeps a repo's public
@@ -136,6 +137,7 @@ export function findArtifactFiles(
   const agents: string[] = [];
   const commands: string[] = [];
   const mcp: string[] = [];
+  const plugins: string[] = [];
   for (const e of entries) {
     if (e.type !== "blob" || !inScope(e.path)) continue;
     if (excluded.test(e.path) && !(norm && excluded.test(`${norm}/`))) continue; // explicit deep links into test trees still work
@@ -143,8 +145,9 @@ export function findArtifactFiles(
     if (/(^|\/)agents\/[^/]+\.md$/i.test(e.path) && !/^readme\.md$/i.test(base)) agents.push(e.path);
     else if (/(^|\/)commands\/[^/]+\.md$/i.test(e.path) && !/^readme\.md$/i.test(base)) commands.push(e.path);
     else if (base === ".mcp.json") mcp.push(e.path);
+    else if (/(^|\/)\.claude-plugin\/plugin\.json$/.test(e.path)) plugins.push(e.path);
   }
-  return { agents: agents.sort(), commands: commands.sort(), mcp: mcp.sort() };
+  return { agents: agents.sort(), commands: commands.sort(), mcp: mcp.sort(), plugins: plugins.sort() };
 }
 
 async function fetchRaw(
@@ -187,6 +190,12 @@ export interface MaterializeOptions extends GitHubFetchOptions {
   onPlaceholder?: (rel: string) => void;
 }
 
+// Encode path separators distinctly ("/" → "__") BEFORE slugging, so `a/b` and `a-b` don't collide
+// into the same temp dir (which would mix their file lists / secret scans).
+function slugDir(name: string): string {
+  return name.replace(/\//g, "__").replace(/[^\w.-]+/g, "-").replace(/^-+|-+$/g, "");
+}
+
 /**
  * Reconstruct one skill locally under `destRoot` and return its directory.
  *
@@ -204,11 +213,7 @@ export async function materializeSkill(
 ): Promise<string> {
   const maxContent = opts.maxContentFiles ?? 12;
   const prefix = skillDir ? `${skillDir}/` : "";
-  // Encode path separators distinctly ("/" → "__") BEFORE slugging, so `a/b` and `a-b` don't collide
-  // into the same temp dir (which would mix their file lists / secret scans).
-  const localName =
-    (skillDir || target.repo).replace(/\//g, "__").replace(/[^\w.-]+/g, "-").replace(/^-+|-+$/g, "") || "skill";
-  const localRoot = join(destRoot, localName);
+  const localRoot = join(destRoot, slugDir(skillDir || target.repo) || "skill");
 
   const blobs = tree.entries.filter(
     (e) => e.type === "blob" && (skillDir === "" || e.path.startsWith(prefix)),
@@ -239,6 +244,83 @@ export async function materializeSkill(
       writeFileSync(outPath, "", "utf8"); // supporting-file fetch failed (rate limit) → placeholder
       if (!isBinary) opts.onPlaceholder?.(rel);
     }
+  }
+  return localRoot;
+}
+
+const PLUGIN_MANIFEST = ".claude-plugin/plugin.json";
+
+/** Max hook-config files fetched with real content per plugin (rate-limit cap for HOOK-01). */
+const MAX_HOOK_FILES = 4;
+
+/** Plugin-root-relative `.json` hook-config paths whose REAL content HOOK-01 needs to scan. */
+function hookConfigPaths(manifestRaw: string, treeRels: ReadonlySet<string>): string[] {
+  const out = new Set<string>();
+  if (treeRels.has("hooks/hooks.json")) out.add("hooks/hooks.json");
+  try {
+    const manifest: unknown = JSON.parse(manifestRaw);
+    const h =
+      typeof manifest === "object" && manifest !== null && !Array.isArray(manifest)
+        ? (manifest as Record<string, unknown>)["hooks"]
+        : undefined;
+    const declared = typeof h === "string" ? [h] : Array.isArray(h) ? h.filter((x): x is string => typeof x === "string") : [];
+    for (const p of declared) {
+      const rel = p.replace(/^\.\//, "");
+      if (rel.endsWith(".json") && treeRels.has(rel)) out.add(rel);
+    }
+  } catch {
+    /* an unparseable manifest is PLUGIN-01's finding, not a materialization failure */
+  }
+  return [...out].slice(0, MAX_HOOK_FILES);
+}
+
+/**
+ * Reconstruct one plugin locally under `destRoot` and return its root directory.
+ *
+ * Mirrors materializeSkill's minimum-download contract: real content is fetched only for the
+ * manifest (always — PLUGIN-01/02/03 parse it) and up to MAX_HOOK_FILES hook-config `.json`
+ * files (HOOK-01 must scan actual hook commands, not placeholders); every other blob under the
+ * plugin root becomes an empty placeholder so the file list stays accurate (PLUGIN-02 resolves
+ * component paths by name). Only a manifest fetch failure is fatal. `pluginRoot` is "" when the
+ * repo root itself is the plugin.
+ */
+export async function materializePlugin(
+  target: GitHubTarget,
+  pluginRoot: string,
+  tree: RepoTree,
+  destRoot: string,
+  opts: GitHubFetchOptions & Pick<MaterializeOptions, "onPlaceholder"> = {},
+): Promise<string> {
+  const prefix = pluginRoot ? `${pluginRoot}/` : "";
+  // The "plugins" segment keeps a root-level plugin from colliding with a same-named skill slug.
+  const localRoot = join(destRoot, "plugins", slugDir(pluginRoot || target.repo) || "plugin");
+
+  const blobs = tree.entries.filter(
+    (e) => e.type === "blob" && (pluginRoot === "" || e.path.startsWith(prefix)),
+  );
+  const rels = new Set(blobs.map((b) => (pluginRoot === "" ? b.path : b.path.slice(prefix.length))));
+
+  const manifestRaw = await fetchRaw(target, tree.ref, `${prefix}${PLUGIN_MANIFEST}`, opts); // fatal: no manifest → not gradable
+  const wantContent = new Set(hookConfigPaths(manifestRaw, rels));
+
+  for (const blob of blobs) {
+    const rel = pluginRoot === "" ? blob.path : blob.path.slice(prefix.length);
+    const outPath = join(localRoot, rel);
+    mkdirSync(dirname(outPath), { recursive: true });
+    if (rel === PLUGIN_MANIFEST) {
+      writeFileSync(outPath, manifestRaw, "utf8");
+      continue;
+    }
+    if (wantContent.has(rel)) {
+      try {
+        writeFileSync(outPath, await fetchRaw(target, tree.ref, blob.path, opts), "utf8");
+        continue;
+      } catch {
+        /* hook-config fetch failed (rate limit) → fall through to a placeholder */
+      }
+    }
+    writeFileSync(outPath, "", "utf8"); // placeholder — keeps the file list accurate
+    if (!BINARY_EXT.has(ext(rel))) opts.onPlaceholder?.(rel); // a text file whose content was never scanned
   }
   return localRoot;
 }

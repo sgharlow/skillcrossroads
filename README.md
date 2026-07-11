@@ -187,11 +187,11 @@ plus evidence. Category scores roll up to an overall 0–100 and a letter grade.
 
 | Category | Weight | Checks (rubric v1.1) |
 |---|---|---|
-| Correctness & Structure | 20% | valid frontmatter, recommended fields, references resolve; valid agent `model:` (AGENT-01); valid MCP config (MCP-01) |
-| Triggering & Discoverability | 22% | description length + invocation cues (TRIGGER-02/03, deterministic); triggers reliably *(LLM-assisted, BYOK)* |
+| Correctness & Structure | 20% | valid frontmatter, recommended fields, references resolve; valid agent `model:` (AGENT-01); valid MCP config (MCP-01); plugin manifest validity + component resolution (PLUGIN-01/02) |
+| Triggering & Discoverability | 22% | description length + invocation cues (TRIGGER-02/03, deterministic); plugin marketplace description (PLUGIN-03); triggers reliably *(LLM-assisted, BYOK)* |
 | Clarity & Instruction Quality | 18% | no ASCII-art/persona filler; `argument-hint` agreement (CMD-01); constraints & failure modes stated *(LLM)* |
 | Token & Context Cost | 15% | body budget, progressive disclosure, description footprint (exact `count_tokens` with a key) |
-| Safety & Security | 15% | no hardcoded secrets (incl. JSON env values), `allowed-tools`/`tools` least-privilege, no destructive auto-invocation, no `!`-block shell injection, pinned MCP servers + TLS transports (MCP-02/03) |
+| Safety & Security | 15% | no hardcoded secrets (incl. JSON env values), `allowed-tools`/`tools` least-privilege, no destructive auto-invocation, no `!`-block shell injection, pinned MCP servers + TLS transports (MCP-02/03), hooks destructive-command sweep (HOOK-01) |
 | Verifiability & Maintainability | 10% | evals/tests present (VERIFY-01, deterministic); verification step quality *(LLM-assisted, BYOK)* |
 
 The rubric is **versioned** (`RUBRIC_VERSION` in `@beacon/core`); the implemented check catalog
