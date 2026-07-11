@@ -70,7 +70,7 @@ function categoryScore(results: CheckResult[]): number {
  * excluded from the overall — an honest partial grade, never a faked zero or a full 100.
  *
  * When `kind` is given, categories no check in the catalog can score for that kind are marked
- * `applicable: false` and never make the grade `partial` — a command's Triggering row is
+ * `applicable: false` and never make the grade `partial` — an mcp config's Token row is
  * structurally n/a, not missing coverage. Without a kind every category counts as applicable
  * (legacy behavior for hand-rolled results).
  */

@@ -9,7 +9,7 @@ describe("renderMarkdown", () => {
   it("renders a grade header, category table, and top fixes", () => {
     const { scorecard, name } = audit(fixture("dangling-ref"));
     const md = renderMarkdown(scorecard, { name });
-    expect(md).toMatch(/^### .*Skill Crossroads: A —/m); // v1.1: dangling-ref grades A (was A−)
+    expect(md).toMatch(/^### .*Skill Crossroads: A− —/m); // v1.2: VERIFY-03 warn moves dangling-ref A → A−
     expect(md).toContain("| Category | Score | |");
     expect(md).toContain("**Top fixes**");
     expect(md).toContain("**[STRUCT-05](https://skillcrossroads.com/docs/checks/struct-05)**");

@@ -21,8 +21,8 @@ describe("audit — end to end on fixtures", () => {
     expect(struct05?.evidence.length).toBe(2); // converter.md + style.md
     const correctness = scorecard.categories.find((c) => c.key === "correctness");
     expect(correctness?.failCount).toBe(1);
-    // v1.1: triggering + verifiability now score deterministically, lifting the overall.
-    expect(scorecard.grade).toBe("A");
+    // v1.2: VERIFY-03 warns (no version/changelog/readme in this fixture), nudging A → A−.
+    expect(scorecard.grade).toBe("A−");
   });
 
   it("catches hardcoded secrets in the skill and its supporting files", () => {

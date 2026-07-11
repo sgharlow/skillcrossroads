@@ -34,7 +34,7 @@ export function createAnthropicClient(opts: AnthropicClientOptions): ModelClient
     async generateStructured(req: StructuredRequest): Promise<unknown> {
       const body = {
         model,
-        max_tokens: 1024,
+        max_tokens: req.maxTokens ?? 1024,
         system: req.system,
         messages: [{ role: "user", content: req.prompt }],
         tools: [

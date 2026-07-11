@@ -1,6 +1,7 @@
 ---
 name: meeting-notes
 description: Turn raw meeting notes into a clean list of action items with owners and due dates. Use when the user says "turn my notes into action items", "who owns what from this call", or pastes meeting notes and asks for follow-ups.
+version: 1.0.0
 ---
 
 # Meeting Notes to Action Items

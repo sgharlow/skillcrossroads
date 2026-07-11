@@ -59,4 +59,35 @@ describe("renderHtml", () => {
     expect(html).not.toContain("<script>alert(1)</script>");
     expect(html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
   });
+
+  it("renders suggested fixes escaped (suggestions derive from untrusted model output)", () => {
+    const { scorecard } = audit(fixture("dangling-ref"));
+    const html = renderHtml(scorecard, {
+      name: "x",
+      suggestions: [
+        {
+          checkId: "STRUCT-05",
+          summary: "Remove the <script> reference",
+          current: "<script>alert(1)</script>",
+          proposed: "</pre><img src=x onerror=alert(2)>",
+        },
+        { checkId: "TOKEN-01", summary: "split it up", steps: ["do <b>this</b> first", "then that"] },
+      ],
+    });
+    expect(html).toContain("Suggested fixes");
+    // Check ids link to their docs pages, same as top fixes.
+    expect(html).toContain("/docs/checks/struct-05");
+    // Every dynamic value is escaped — nothing from the model lands as live markup.
+    expect(html).not.toContain("<script>alert(1)</script>");
+    expect(html).toContain("&lt;script&gt;alert(1)&lt;/script&gt;");
+    expect(html).not.toContain("<img src=x");
+    expect(html).toContain("do &lt;b&gt;this&lt;/b&gt; first");
+    expect(html).toContain("then that");
+  });
+
+  it("renders no suggestions section when none are supplied", () => {
+    const { scorecard } = audit(fixture("dangling-ref"));
+    expect(renderHtml(scorecard, { name: "x" })).not.toContain("Suggested fixes");
+    expect(renderHtml(scorecard, { name: "x", suggestions: [] })).not.toContain("Suggested fixes");
+  });
 });

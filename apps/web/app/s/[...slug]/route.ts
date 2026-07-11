@@ -1,5 +1,5 @@
 import { after } from "next/server";
-import { renderHtml } from "@beacon/core";
+import { renderHtml, suggestFixes, type FixSuggestion } from "@beacon/core";
 import { parseSlug, scanTarget } from "@/lib/scan";
 import { resolveScanOptions } from "@/lib/pro-scan";
 import { renderRepoSummaryHtml } from "@/lib/summary";
@@ -23,8 +23,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
   }
 
   let scan;
+  let scanOpts;
   try {
-    scan = await scanTarget(target, await resolveScanOptions(req));
+    scanOpts = await resolveScanOptions(req);
+    scan = await scanTarget(target, scanOpts);
   } catch (err) {
     return new Response(`<h1>Scan failed</h1><p>${err instanceof Error ? err.message : "error"}</p>`, {
       status: 502,
@@ -46,7 +48,19 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
   const viewer = readSession(req).login;
   after(() => recordScans(target.owner, target.repo, scan.skills, viewer));
 
-  const origin = new URL(req.url).origin;
+  const url = new URL(req.url);
+  const origin = url.origin;
+
+  // Pro-only fix suggestions (?suggest=1): single-artifact scans with a managed model. Anonymous /
+  // free requests ignore the param entirely (no error) — no model, no suggestions, same public page.
+  const suggestWanted =
+    url.searchParams.get("suggest") === "1" && Boolean(scanOpts.ctx?.model) && scan.skills.length === 1;
+  let suggestions: FixSuggestion[] | undefined;
+  if (suggestWanted && scanOpts.ctx) {
+    const single = scan.skills[0]!;
+    suggestions = await suggestFixes(single.artifact, single.scorecard, scanOpts.ctx);
+  }
+
   const body =
     scan.skills.length === 1
       ? renderHtml(scan.skills[0]!.scorecard, {
@@ -56,10 +70,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
             badgeUrl: `${origin}/api/badge/${target.slug}.svg`,
             scorecardUrl: `${origin}/s/${target.slug}`,
           },
+          ...(suggestions ? { suggestions } : {}),
         })
       : renderRepoSummaryHtml(scan, target, { homeUrl: "/" });
 
-  return new Response(body, {
-    headers: { ...HTML, "cache-control": "public, max-age=0, s-maxage=300, stale-while-revalidate=600" },
-  });
+  // A suggestions response is per-user Pro output — it must never land in a shared cache.
+  const cacheControl = suggestWanted
+    ? "private, no-store"
+    : "public, max-age=0, s-maxage=300, stale-while-revalidate=600";
+  return new Response(body, { headers: { ...HTML, "cache-control": cacheControl } });
 }

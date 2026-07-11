@@ -2,6 +2,7 @@ import { percentileLabel } from "../percentile.js";
 import { CONFIG_FILENAME } from "../suppress.js";
 import { checkDocsUrl } from "../badge-embed.js";
 import { usedLlm, type CategoryScore, type CheckResult, type Evidence, type Scorecard } from "../types.js";
+import type { FixSuggestion } from "../suggest.js";
 import { PALETTE, gradeHex, statusHex } from "./theme.js";
 
 export interface HtmlOptions {
@@ -23,6 +24,12 @@ export interface HtmlOptions {
   embed?: { badgeUrl: string; scorecardUrl: string };
   /** Site origin for check-docs links (self-hosting override); defaults to skillcrossroads.com. */
   siteUrl?: string;
+  /**
+   * LLM fix suggestions (`--suggest` / Pro `?suggest=1`) rendered after the top-fixes section.
+   * Proposals only — nothing is ever applied. Content derives from model output over an
+   * untrusted artifact, so every field is escaped like any other dynamic value.
+   */
+  suggestions?: readonly FixSuggestion[];
 }
 
 /** Escape text for safe embedding in HTML element content and attribute values. */
@@ -116,6 +123,30 @@ function fixCard(r: CheckResult, siteUrl?: string): string {
   </article>`;
 }
 
+/** One suggested fix: linked check id, summary, then current→proposed blocks (or steps). */
+function suggestionCard(s: FixSuggestion, siteUrl?: string): string {
+  const blocks: string[] = [];
+  if (s.current !== undefined || s.proposed !== undefined) {
+    if (s.current !== undefined) {
+      blocks.push(`<div class="sug-label">current</div><pre class="sug-pre sug-current">${esc(s.current)}</pre>`);
+    }
+    if (s.proposed !== undefined) {
+      blocks.push(
+        `<div class="sug-label sug-label--proposed">proposed</div><pre class="sug-pre sug-proposed">${esc(s.proposed)}</pre>`,
+      );
+    }
+  } else if (s.steps && s.steps.length > 0) {
+    blocks.push(`<ol class="sug-steps">${s.steps.map((st) => `<li>${esc(st)}</li>`).join("")}</ol>`);
+  }
+  return `<article class="fix">
+    <header class="fix-head">
+      <a class="fix-id" style="color:${PALETTE.beam}" href="${esc(checkDocsUrl(s.checkId, siteUrl))}">${esc(s.checkId)}</a>
+      <span class="fix-title">${esc(s.summary)}</span>
+    </header>
+    ${blocks.join("\n")}
+  </article>`;
+}
+
 function rankFixes(results: readonly CheckResult[]): CheckResult[] {
   return results
     .filter((r) => r.status !== "pass")
@@ -174,6 +205,14 @@ header.top::before{content:"";position:absolute;inset:0;pointer-events:none;
 .ev-snip{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:${PALETTE.fog};
   background:${PALETTE.ink2};border:1px solid ${PALETTE.ink3};border-radius:7px;
   padding:7px 10px;margin-top:7px;overflow-x:auto;white-space:pre-wrap;word-break:break-all}
+.sug-label{margin-top:10px;font-size:11px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:${PALETTE.fog}}
+.sug-label--proposed{color:${PALETTE.pass}}
+.sug-pre{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;
+  background:${PALETTE.ink2};border:1px solid ${PALETTE.ink3};border-radius:7px;
+  padding:7px 10px;margin-top:5px;overflow-x:auto;white-space:pre-wrap;word-break:break-all}
+.sug-current{color:${PALETTE.fog}}
+.sug-proposed{color:${PALETTE.pass}}
+.sug-steps{margin:10px 0 0 20px;font-size:13px;color:${PALETTE.foam}}
 .fix-do{margin-top:11px;font-size:13px;color:${PALETTE.foam}}
 .fix-do span{color:${PALETTE.pass};font-weight:700;text-transform:uppercase;font-size:11px;letter-spacing:.08em;margin-right:6px}
 .clean{padding:26px;border-top:1px solid ${PALETTE.ink3};color:${PALETTE.pass};font-weight:600}
@@ -215,6 +254,14 @@ export function renderHtml(card: Scorecard, opts: HtmlOptions = {}): string {
           .map((r) => fixCard(r, opts.siteUrl))
           .join("")}</section>`
       : `<section class="clean">✓ No warnings or failures. Clean scan.</section>`;
+
+  // Suggested fixes (LLM proposals) — rendered only when the caller supplies them; never applied.
+  const suggestionsSection =
+    opts.suggestions && opts.suggestions.length > 0
+      ? `<section class="fixes"><h2>Suggested fixes — review before applying, nothing is written</h2>${opts.suggestions
+          .map((s) => suggestionCard(s, opts.siteUrl))
+          .join("")}</section>`
+      : "";
 
   const partialNote = card.partial
     ? `<div class="note">Partial grade — some applicable rubric categories were not scored on this scan (e.g. LLM-assisted checks without a key) and are excluded from the overall.</div>`
@@ -281,6 +328,7 @@ export function renderHtml(card: Scorecard, opts: HtmlOptions = {}): string {
       </div>
     </section>
     ${fixesSection}
+    ${suggestionsSection}
     ${notes ? `<div class="fixes" style="border-top:none;padding-top:0">${notes}</div>` : ""}
     ${embedSection}
     ${ctaSection}

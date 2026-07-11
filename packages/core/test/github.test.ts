@@ -137,7 +137,8 @@ See [the reference](./references/x.md).
     expect(scan.skills).toHaveLength(3); // skill + hosted agent + .mcp.json
     const skill = scan.skills.find((s) => s.repoPath === "skills/foo")!;
     expect(skill.name).toBe("mock-skill");
-    // clean skill, deterministic-only → all deterministic checks pass
+    // clean skill, deterministic-only → structure passes; only VERIFY-03 warns (no version/
+    // changelog/readme in the mock repo), which keeps the grade at A+.
     expect(skill.scorecard.results.find((r) => r.id === "STRUCT-05")?.status).toBe("pass");
     expect(skill.scorecard.grade).toBe("A+");
     const agent = scan.skills.find((s) => s.repoPath === ".claude/agents/helper.md")!;

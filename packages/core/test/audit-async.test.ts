@@ -21,8 +21,8 @@ describe("auditAsync", () => {
     });
     const triggering = scorecard.categories.find((c) => c.key === "triggering");
     expect(triggering?.evaluated).toBe(true);
-    // v1.1: TRIGGER-01 (86, w1) blends with deterministic TRIGGER-02/03 (100, w0.5 each) → 93.
-    expect(triggering?.score).toBe(93);
+    // v1.2: TRIGGER-01 (86, w1) blends with deterministic TRIGGER-02/03/05 (100, w0.5 each) → 94.4.
+    expect(triggering?.score).toBe(94.4);
     expect(scorecard.results.some((r) => r.id === "TRIGGER-01")).toBe(true);
   });
 
@@ -47,6 +47,7 @@ describe("auditAsync", () => {
     expect(errors).toContain("TRIGGER-01");
     expect(errors).toContain("VERIFY-04");
     expect(errors).toContain("CLARITY-05");
+    expect(errors).toContain("CLARITY-02");
     // v1.1: the dropped LLM checks leave the deterministic checks scoring both categories,
     // so the grade equals a plain deterministic audit — errors still never tank the grade.
     expect(scorecard.categories.find((c) => c.key === "triggering")?.evaluated).toBe(true);

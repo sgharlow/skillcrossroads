@@ -3,7 +3,7 @@
 **Know before you ship.** The signpost for Claude Code skills, agents, and MCP servers —
 live at [skillcrossroads.com](https://skillcrossroads.com).
 
-[![Skill Crossroads — live scorecard](https://img.shields.io/badge/skill%20crossroads-live%20scorecard-2ea043)](https://skillcrossroads.com/s/anthropics/skills) &nbsp; ![rubric v1.1](https://img.shields.io/badge/rubric-v1.1-555)
+[![Skill Crossroads — live scorecard](https://img.shields.io/badge/skill%20crossroads-live%20scorecard-2ea043)](https://skillcrossroads.com/s/anthropics/skills) &nbsp; ![rubric v1.2](https://img.shields.io/badge/rubric-v1.2-555)
 
 Every skill hits a crossroads before you ship it. Skill Crossroads reads a Claude Code artifact — a
 **Skill**, subagent, MCP server, or plugin — against an evidence-based rubric and points you one of
@@ -169,7 +169,7 @@ a clearly-labeled rough estimate (skill markdown tokenizes denser than prose, so
 ```
 ┌───────────────────────────────────────────────────────────────┐
 │  CROSSROADS SCORECARD                      recipe-001          │
-│  Overall: B−  (83/100)          rubric v1.1 · deterministic    │
+│  Overall: B−  (83/100)          rubric v1.2 · deterministic    │
 ├───────────────────────────────────────────────────────────────┤
 │  Correctness & Structure   ████████████████░░░░  82   ⚠ 1      │
 │  Clarity & Instructions    ██████████████████░░  90   ✓        │
@@ -192,8 +192,14 @@ TOP FIXES (ranked by score impact)
 
 The voice is the product: **evidence-cited, "claimed vs. verified," no false confidence.**
 
-## The scoring rubric (v1.1)
+## The scoring rubric (v1.2)
 
+> **v1.2 (2026-07):** adds TRIGGER-05 (invocation-flag consistency — flags must be real YAML
+> booleans, and an artifact nobody can invoke fails), TOKEN-04 (recurring per-invocation cost
+> estimate at a named reference rate), CLARITY-02 (internal contradictions, LLM-assisted), and
+> VERIFY-03 (maintenance hygiene: version/changelog/readme). Commands now score Triggering
+> deterministically via TRIGGER-05.
+>
 > **v1.1 (2026-07):** deterministic Triggering (TRIGGER-02/03 description heuristics) and
 > Verifiability (VERIFY-01 evals-present) checks — **keyless skill scans now score all six
 > categories** (no more partial asterisk for skills). A key still upgrades Triggering to the
@@ -202,14 +208,14 @@ The voice is the product: **evidence-cited, "claimed vs. verified," no false con
 Six weighted categories. Each runs individual **checks**; each check emits pass / warn / fail
 plus evidence. Category scores roll up to an overall 0–100 and a letter grade.
 
-| Category | Weight | Checks (rubric v1.1) |
+| Category | Weight | Checks (rubric v1.2) |
 |---|---|---|
 | Correctness & Structure | 20% | valid frontmatter, recommended fields, references resolve; valid agent `model:` (AGENT-01); valid MCP config (MCP-01); plugin manifest validity + component resolution (PLUGIN-01/02) |
-| Triggering & Discoverability | 22% | description length + invocation cues (TRIGGER-02/03, deterministic); plugin marketplace description (PLUGIN-03); triggers reliably *(LLM-assisted, BYOK)* |
-| Clarity & Instruction Quality | 18% | no ASCII-art/persona filler; `argument-hint` agreement (CMD-01); constraints & failure modes stated *(LLM)* |
-| Token & Context Cost | 15% | body budget, progressive disclosure, description footprint (exact `count_tokens` with a key) |
+| Triggering & Discoverability | 22% | description length + invocation cues (TRIGGER-02/03, deterministic); invocation-flag consistency (TRIGGER-05, deterministic); plugin marketplace description (PLUGIN-03); triggers reliably *(LLM-assisted, BYOK)* |
+| Clarity & Instruction Quality | 18% | no ASCII-art/persona filler; `argument-hint` agreement (CMD-01); no internal contradictions *(LLM, CLARITY-02)*; constraints & failure modes stated *(LLM)* |
+| Token & Context Cost | 15% | body budget, progressive disclosure, description footprint, recurring per-invocation cost estimate (TOKEN-04) (exact `count_tokens` with a key) |
 | Safety & Security | 15% | no hardcoded secrets (incl. JSON env values), `allowed-tools`/`tools` least-privilege, no destructive auto-invocation, no `!`-block shell injection, pinned MCP servers + TLS transports (MCP-02/03), hooks destructive-command sweep (HOOK-01) |
-| Verifiability & Maintainability | 10% | evals/tests present (VERIFY-01, deterministic); verification step quality *(LLM-assisted, BYOK)* |
+| Verifiability & Maintainability | 10% | evals/tests present (VERIFY-01, deterministic); version/changelog/readme hygiene (VERIFY-03, deterministic); verification step quality *(LLM-assisted, BYOK)* |
 
 The rubric is **versioned** (`RUBRIC_VERSION` in `@beacon/core`); the implemented check catalog
 is [`packages/core/src/checks/index.ts`](./packages/core/src/checks/index.ts), with more checks
@@ -221,8 +227,8 @@ surface (scorecard, PR comment, annotations, terminal) link to their check's pag
 **Partial grades are kind-aware:** a grade is marked partial (`*` on the badge) only when a
 category that *could* score for that artifact kind went unscored — e.g. keyless LLM checks, or
 a `.mcp.json` scanned without `--mcp-live`. Categories that structurally don't apply to a kind
-(Triggering for an explicitly-invoked slash command) show as "n/a" and never mark the grade
-partial, so a fully-keyed command scan is a full grade.
+(Token cost for a `.mcp.json` config) show as "n/a" and never mark the grade partial, so a
+fully-keyed command scan is a full grade.
 
 ## Configuration (`.skillcrossroads.json`)
 
@@ -302,18 +308,20 @@ Run locally: `cd apps/web && npm run dev`. Set `GITHUB_TOKEN` for higher GitHub 
 **Live in production** — the hosted app (public scorecards, always-fresh badges, gallery, trends,
 and the published [State of Claude Code Skills report](https://skillcrossroads.com/report)) is
 `live-proven` at [skillcrossroads.com](https://skillcrossroads.com), and the CLI is published on
-npm as [`skillcrossroads`](https://www.npmjs.com/package/skillcrossroads). **Nineteen
-deterministic checks** across skills, subagents, slash commands, and `.mcp.json` configs — plus
-three live MCP server checks behind `--mcp-live` and three LLM-assisted checks (BYOK) —
-**TRIGGER-01** (triggering; verdicts matched a hand-labeled 14-skill set at **92.9%** against the
-live API, run `npm run eval:triggering`), **VERIFY-04** (verification quality), and
-**CLARITY-05** (constraints & failure modes). Keyless **skill** scans score all six rubric
-categories (rubric v1.1); a key upgrades triggering to the LLM verdict. Scans run on local paths,
+npm as [`skillcrossroads`](https://www.npmjs.com/package/skillcrossroads). **Twenty-six
+deterministic checks** across skills, subagents, slash commands, `.mcp.json` configs, and
+plugins — plus three live MCP server checks behind `--mcp-live` and four LLM-assisted checks
+(BYOK) — **TRIGGER-01** (triggering; verdicts matched a hand-labeled 14-skill set at **92.9%**
+against the live API, run `npm run eval:triggering`), **VERIFY-04** (verification quality),
+**CLARITY-05** (constraints & failure modes), and **CLARITY-02** (internal contradictions).
+Keyless **skill** scans score all six rubric
+categories (rubric v1.2); a key upgrades triggering to the LLM verdict. Scans run on local paths,
 pasted files (skillcrossroads.com/paste), or **any public GitHub repo by URL** (batch, including
 its agents/commands/MCP configs); six output surfaces (terminal, self-contained HTML, SVG badge,
 Markdown, JSON, GitHub annotations). The source report is generated from live scans
 (`npm run report:skills`). Honest remainder: the Stripe Pro tier and GitHub sign-in are
-configured and owner-dogfooded but not yet customer-proven, and plugin scoring is on the roadmap.
+configured and owner-dogfooded but not yet customer-proven, and marketplace.json grading is on
+the roadmap.
 
 ## License
 

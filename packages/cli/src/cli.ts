@@ -25,6 +25,7 @@ import {
   introspectMcpConfig,
   gradeMcpLive,
   score,
+  suggestFixes,
   DEFAULT_SITE_URL,
   type ArtifactType,
   type CrossroadsConfig,
@@ -56,6 +57,7 @@ ${pc.bold("Options:")}
                      to <f> — cat it in a CI step to get inline PR annotations.
   --min-grade=<G>    Exit non-zero if any scanned skill grades below <G> (CI gate), e.g. B or C-.
   --no-llm           Deterministic checks only; skip LLM-assisted triggering analysis.
+  --suggest[=N]      propose fixes for the top N findings (needs ANTHROPIC_API_KEY; never auto-applies)
   --kind=<k>         Artifact kind for a bare file: skill | agent | command | mcp | plugin
                      (auto-detected from agents//commands/ paths and .mcp.json when omitted).
   --mcp-live         With a .mcp.json: SPAWN each stdio server from YOUR config (explicit
@@ -95,6 +97,8 @@ interface Args {
   html: OptionalPath;
   badge: OptionalPath;
   noLlm: boolean;
+  /** `--suggest[=N]` — propose fixes for the top N findings (undefined = flag absent). */
+  suggest?: number;
   max?: number;
   help: boolean;
   version: boolean;
@@ -142,6 +146,8 @@ function parseArgs(argv: readonly string[]): Args {
     else if (a === "-h" || a === "--help") args.help = true;
     else if (a === "-v" || a === "--version") args.version = true;
     else if (a === "--no-llm") args.noLlm = true;
+    else if (a === "--suggest") args.suggest = 3;
+    else if (a.startsWith("--suggest=")) args.suggest = Math.max(1, Number(a.slice("--suggest=".length)) || 3);
     else if (a === "--mcp-live") args.mcpLive = true;
     else if (a === "--no-color" || a === "--color") continue; // picocolors reads the env
     else if (a === "--html") args.html = true;
@@ -223,6 +229,48 @@ function emitSingle(result: AuditResult, args: Args): void {
       pc.dim(`  or an always-fresh, linked badge from ${SITE_URL} once your repo is public:\n`) +
         pc.dim(`    [![Skill Crossroads](${SITE_URL}/api/badge/OWNER/REPO.svg)](${SITE_URL}/s/OWNER/REPO)\n`),
     );
+  }
+}
+
+/**
+ * Print the `--suggest` section for a single artifact. Suggestions are PROPOSALS — this function
+ * (and the CLI as a whole) never writes them anywhere; the human reviews and edits.
+ */
+async function emitSuggestions(
+  result: AuditResult,
+  ctx: CheckContext,
+  max: number,
+  out: NodeJS.WriteStream,
+): Promise<void> {
+  const findings = result.scorecard.results.filter((r) => r.status !== "pass");
+  if (findings.length === 0) {
+    out.write(pc.dim("\n  clean scan — nothing to suggest\n"));
+    return;
+  }
+  if (!ctx.model) {
+    out.write(pc.yellow("\n  set ANTHROPIC_API_KEY to enable --suggest\n"));
+    return;
+  }
+  const suggestions = await suggestFixes(result.artifact, result.scorecard, ctx, { max });
+  if (suggestions.length === 0) {
+    out.write(pc.dim("\n  no suggestions produced for these findings\n"));
+    return;
+  }
+  out.write(`\n${pc.bold("SUGGESTED FIXES")} ${pc.dim("(review before applying — nothing is written)")}\n`);
+  for (const s of suggestions) {
+    out.write(`\n  ${pc.bold(s.checkId)}  ${s.summary}\n`);
+    if (s.current !== undefined || s.proposed !== undefined) {
+      if (s.current !== undefined) {
+        out.write(pc.dim("    current:\n"));
+        for (const line of s.current.split("\n")) out.write(pc.dim(`      ${line}\n`));
+      }
+      if (s.proposed !== undefined) {
+        out.write(pc.green("    proposed:\n"));
+        for (const line of s.proposed.split("\n")) out.write(pc.green(`      ${line}\n`));
+      }
+    } else if (s.steps && s.steps.length > 0) {
+      s.steps.forEach((step, i) => out.write(`    ${i + 1}. ${step}\n`));
+    }
   }
 }
 
@@ -433,6 +481,17 @@ async function main(): Promise<void> {
     emitSingle(skills[0] as AuditResult, args);
   } else {
     emitBatch(skills, errors, args.path, args, meta);
+  }
+
+  // Suggested fixes (--suggest): single-artifact scans only. Reports on stdout stay clean —
+  // in --json/--markdown mode the section goes to stderr like every other diagnostic.
+  if (args.suggest !== undefined) {
+    if (skills.length > 1) {
+      process.stderr.write(pc.yellow("  suggest works on a single artifact — point it at one\n"));
+    } else {
+      const out = args.json || args.markdown ? process.stderr : process.stdout;
+      await emitSuggestions(skills[0] as AuditResult, ctx, args.suggest, out);
+    }
   }
 
   // Gate — the flag wins; otherwise the config's minGrade is the default CI gate.

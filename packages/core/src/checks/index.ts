@@ -19,7 +19,11 @@ import { agent01 } from "./agent-01-model.js";
 import { cmd01 } from "./cmd-01-arguments.js";
 import { trigger02 } from "./trigger-02-desc-quality.js";
 import { trigger03 } from "./trigger-03-cues.js";
+import { trigger05 } from "./trigger-05-invocation-flags.js";
+import { token04 } from "./token-04-recurring-cost.js";
 import { verify01 } from "./verify-01-evals.js";
+import { verify03 } from "./verify-03-maintenance.js";
+import { clarity02 } from "./clarity-02-contradictions.js";
 import { mcp01, mcp02, mcp03 } from "./mcp-config.js";
 import { plugin01, plugin02, plugin03, hook01 } from "./plugin.js";
 
@@ -36,6 +40,7 @@ export const CHECKS: readonly Check[] = [
   token01,
   { ...token02, appliesTo: ["skill"] },
   token03,
+  token04,
   clarity03,
   // The secret scan also covers .mcp.json (inline keys in `env` blocks are the classic leak).
   { ...safety01, appliesTo: ["skill", "subagent", "command", "mcp", "plugin"] },
@@ -46,7 +51,9 @@ export const CHECKS: readonly Check[] = [
   cmd01,
   trigger02,
   trigger03,
+  trigger05,
   verify01,
+  verify03,
   mcp01,
   mcp02,
   mcp03,
@@ -59,14 +66,16 @@ export const CHECKS: readonly Check[] = [
 /**
  * LLM-assisted checks. Run only when a model client is supplied (BYOK). Kind-scoped at
  * registration like the deterministic catalog: TRIGGER-01 judges invocation descriptions
- * (skills + subagents; commands are explicitly invoked, matching TRIGGER-02/03); VERIFY-04 and
- * CLARITY-05 judge markdown instructions (never a JSON `.mcp.json` — a config structurally has
- * no description/body, and grading it with prose checks turned clean configs into Fs).
+ * (skills + subagents; commands are explicitly invoked, matching TRIGGER-02/03); VERIFY-04,
+ * CLARITY-05, and CLARITY-02 judge markdown instructions (never a JSON `.mcp.json` — a config
+ * structurally has no description/body, and grading it with prose checks turned clean configs
+ * into Fs).
  */
 export const ASYNC_CHECKS: readonly AsyncCheck[] = [
   { ...trigger01, appliesTo: ["skill", "subagent"] },
   { ...verify04, appliesTo: ["skill", "subagent", "command"] },
   { ...clarity05, appliesTo: ["skill", "subagent", "command"] },
+  { ...clarity02, appliesTo: ["skill", "subagent", "command"] },
 ];
 
 export {
@@ -84,11 +93,15 @@ export {
   trigger01,
   verify04,
   clarity05,
+  clarity02,
   agent01,
   cmd01,
   trigger02,
   trigger03,
+  trigger05,
   verify01,
+  verify03,
+  token04,
   mcp01,
   mcp02,
   mcp03,

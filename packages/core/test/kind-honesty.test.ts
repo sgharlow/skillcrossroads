@@ -23,6 +23,8 @@ const stub: ModelClient = {
     if (schema.includes("wouldReliablyTrigger"))
       return Promise.resolve({ score: 85, wouldReliablyTrigger: true, issues: [], suggestedTriggerPhrases: [] });
     if (schema.includes("verifies")) return Promise.resolve({ score: 90, verifies: true, finding: "ok", suggestion: "" });
+    if (schema.includes("contradictions"))
+      return Promise.resolve({ score: 91, consistent: true, contradictions: [], suggestion: "" });
     return Promise.resolve({ score: 88, statesConstraints: true, gaps: [], suggestion: "" });
   },
 };

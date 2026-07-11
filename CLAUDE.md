@@ -15,11 +15,11 @@ Skill Crossroads is **open-core**: the CLI and public audits are free (that is t
 badge loop); money is the hosted Pro tier (private-repo scanning, managed LLM checks, CI gating,
 dashboards).
 
-**Current scope (rubric v1.1):** the `@beacon/core` engine + the `skillcrossroads` CLI (npm),
+**Current scope (rubric v1.2):** the `@beacon/core` engine + the `skillcrossroads` CLI (npm),
 grading FIVE artifact kinds — **skills, subagents, slash commands, `.mcp.json` configs, and plugins** (a plugin scan = the `.claude-plugin/plugin.json` manifest row PLUS its member artifacts — the roll-up batch)
 (kind-aware `applicableChecks`/`applicableAsyncChecks`; `mcp` is whitelist-only so prose checks
-never mis-fire on JSON). **23 deterministic checks** + 3 LLM-assisted (TRIGGER-01/VERIFY-04/
-CLARITY-05, BYOK, kind-scoped) + 3 live MCP server checks (`--mcp-live`, CLI-only opt-in —
+never mis-fire on JSON). **26 deterministic checks** + 4 LLM-assisted (TRIGGER-01/VERIFY-04/
+CLARITY-05/CLARITY-02, BYOK, kind-scoped) + 3 live MCP server checks (`--mcp-live`, CLI-only opt-in —
 NEVER hosted: spawning configured commands server-side is RCE by design). Keyless SKILL scans
 score all six categories. Surfaces: terminal, HTML, badge, Markdown, JSON (`--json[=file]`),
 GitHub annotations (`--annotations`), paste-to-scan (`/paste`), hosted repo scans incl.
@@ -95,13 +95,17 @@ Each check emits `status` (`pass` | `warn` | `fail`), a `score` (0–100), and *
 cited, file-and-line, "claimed vs verified" voice IS the brand — every check must produce
 concrete receipts, never vibes. Register new checks in `packages/core/src/checks/index.ts`.
 
-The current catalog (rubric v1.1): **deterministic** — `STRUCT-01/02/05` frontmatter/fields/refs ·
-`TOKEN-01/02/03` budgets + disclosure · `CLARITY-03` no filler · `SAFETY-01..04` secrets
+The current catalog (rubric v1.2): **deterministic** — `STRUCT-01/02/05` frontmatter/fields/refs ·
+`TOKEN-01/02/03` budgets + disclosure · `TOKEN-04` recurring per-invocation cost estimate
+(informational; never fails — TOKEN-01 owns the budget gate) · `CLARITY-03` no filler · `SAFETY-01..04` secrets
 (incl. JSON env values)/least-privilege/auto-invoke/`!`-injection · `TRIGGER-02/03` description
-length + invocation cues · `VERIFY-01` evals present (skills) · `AGENT-01` model validity ·
+length + invocation cues · `TRIGGER-05` invocation-flag consistency (skills+agents+commands —
+commands score Triggering since v1.2) · `VERIFY-01` evals present (skills) · `VERIFY-03`
+version/changelog/readme hygiene (skills; warns, never fails) · `AGENT-01` model validity ·
 `CMD-01` argument-hint agreement · `MCP-01/02/03` config shape/pinning/TLS · `PLUGIN-01/02/03` manifest validity/component
 resolution/description · `HOOK-01` hooks destructive-command sweep. **LLM-assisted
-(BYOK, kind-scoped)** — `TRIGGER-01` (skills+agents) · `VERIFY-04` · `CLARITY-05`. **Live MCP
+(BYOK, kind-scoped)** — `TRIGGER-01` (skills+agents) · `VERIFY-04` · `CLARITY-05` · `CLARITY-02`
+internal contradictions. **Live MCP
 (`--mcp-live`)** — `MCPT-01/02/03` reachability/tool descriptions/param docs. The full v1 catalog
 lives in the private Build Bible; the
 implemented set in `packages/core/src/checks/index.ts` is the public source of truth.
@@ -118,13 +122,15 @@ Six weighted categories (weights defined in `packages/core/src/types.ts`): corre
 token 15%, safety 15%, verifiability 10%. The rubric is **versioned** (`RUBRIC_VERSION`) — a
 rubric bump is a content/announcement event, so never change weights silently.
 
-Under **rubric v1.1, keyless SKILL scans score all six categories** (Triggering via TRIGGER-02/03,
-Verifiability via VERIFY-01). Overall is computed over **evaluated categories only, with weights
-renormalized**. **Partial is kind-aware** (Sprint 7): `applicableCategories(kind)` in the check
+Under **rubric v1.2, keyless SKILL scans score all six categories** (Triggering via
+TRIGGER-02/03/05, Verifiability via VERIFY-01/03) — and since v1.2, keyless COMMAND scans score
+Triggering too (TRIGGER-05 invocation-flag consistency). Overall is computed over **evaluated
+categories only, with weights renormalized**. **Partial is kind-aware** (Sprint 7):
+`applicableCategories(kind)` in the check
 registry is the one authoritative answer to "what CAN score for this kind" (deterministic + LLM +
 live-MCPT for mcp), and a grade is `partial` only when an APPLICABLE category went unscored
 (keyless LLM checks, a static-only mcp scan, a suppression hole). Categories no check can ever
-score for the kind (e.g. Triggering for an explicitly-invoked command) are `applicable: false`,
+score for the kind (e.g. Token cost for a `.mcp.json` config) are `applicable: false`,
 render as "n/a for this artifact kind", and never mark the grade partial — so a keyed command
 scan or a full `--mcp-live` scan carries no asterisk. This is deliberate honesty, not a bug —
 do not fake scores for categories without checks.

@@ -59,6 +59,7 @@ export {
   type BadgeMarkdownOptions,
   type InsertBadgeResult,
 } from "./badge-embed.js";
+export { suggestFixes, parseSuggestions, type FixSuggestion } from "./suggest.js";
 export {
   loadConfig,
   parseConfig,

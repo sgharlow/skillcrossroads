@@ -18,6 +18,12 @@ export interface StructuredRequest {
   readonly toolDescription: string;
   /** JSON schema for the tool input — this is the verdict shape. */
   readonly schema: JsonSchema;
+  /**
+   * Output-token budget for the structured call. Optional — implementations default to a small
+   * verdict-sized cap. Set it higher for outputs that carry text blocks (e.g. fix suggestions),
+   * where a truncated tool call silently parses to nothing.
+   */
+  readonly maxTokens?: number;
 }
 
 export interface ModelClient {

@@ -41,8 +41,10 @@ export const CATEGORIES: readonly CategoryMeta[] = [
  * v1.1 (2026-07): deterministic Triggering (TRIGGER-02/03) and Verifiability (VERIFY-01) checks —
  * keyless SKILL scans now score all six categories (no longer partial); agents/commands still
  * partial without a key.
+ * v1.2 (2026-07): adds TRIGGER-05 invocation-flag consistency, TOKEN-04 recurring-cost estimate,
+ * CLARITY-02 contradiction check (LLM), and VERIFY-03 maintenance hygiene.
  */
-export const RUBRIC_VERSION = "1.1";
+export const RUBRIC_VERSION = "1.2";
 
 /** A parsed artifact — the input to every check. */
 export interface Artifact {
@@ -163,8 +165,8 @@ export interface CategoryScore {
   readonly evaluated: boolean;
   /**
    * Whether ANY check in the catalog could score this category for the graded artifact's kind
-   * (see `applicableCategories`). `false` = structurally n/a (e.g. Triggering for an explicitly
-   * invoked command) — renderers label it "n/a", and it never makes a grade partial. `true` +
+   * (see `applicableCategories`). `false` = structurally n/a (e.g. Token cost for a `.mcp.json`
+   * config) — renderers label it "n/a", and it never makes a grade partial. `true` +
    * `evaluated: false` = a real coverage hole (keyless LLM, static-only mcp, suppression).
    * Always `true` when `score()` was called without a kind (legacy behavior).
    */
@@ -177,7 +179,7 @@ export interface CategoryScore {
 /** The LLM-assisted check ids. Renderers use this to label a scan's mode honestly — since
  * rubric v1.1 the triggering category ALSO scores deterministically, so "category evaluated"
  * no longer implies a model ran. */
-export const LLM_CHECK_IDS: readonly string[] = ["TRIGGER-01", "VERIFY-04", "CLARITY-05"];
+export const LLM_CHECK_IDS: readonly string[] = ["TRIGGER-01", "VERIFY-04", "CLARITY-05", "CLARITY-02"];
 
 /** Did any LLM-assisted check actually contribute to this scorecard? */
 export function usedLlm(card: Pick<Scorecard, "results">): boolean {

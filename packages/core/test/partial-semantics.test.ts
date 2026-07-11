@@ -23,6 +23,8 @@ const stub: ModelClient = {
     if (schema.includes("wouldReliablyTrigger"))
       return Promise.resolve({ score: 85, wouldReliablyTrigger: true, issues: [], suggestedTriggerPhrases: [] });
     if (schema.includes("verifies")) return Promise.resolve({ score: 90, verifies: true, finding: "ok", suggestion: "" });
+    if (schema.includes("contradictions"))
+      return Promise.resolve({ score: 91, consistent: true, contradictions: [], suggestion: "" });
     return Promise.resolve({ score: 88, statesConstraints: true, gaps: [], suggestion: "" });
   },
 };
@@ -43,10 +45,10 @@ describe("applicableCategories — what CAN ever score for a kind", () => {
     expect(applicableCategories("subagent").size).toBe(6);
   });
 
-  it("commands can never score triggering (explicitly invoked), but can score the other five", () => {
+  it("commands score all six categories since v1.2 (TRIGGER-05 flag consistency covers triggering)", () => {
     const cats = applicableCategories("command");
-    expect(cats.has("triggering")).toBe(false);
-    expect(cats.size).toBe(5);
+    expect(cats.has("triggering")).toBe(true); // v1.2: invocation-flag consistency, not discoverability
+    expect(cats.size).toBe(6);
   });
 
   it("mcp configs can score correctness+safety statically and triggering+clarity via --mcp-live; never token/verifiability", () => {
@@ -77,8 +79,9 @@ describe("kind-aware partial — asterisk only when applicable coverage is incom
     const { scorecard } = await auditAsync(cmdFile, { model: stub }, "command");
     expect(scorecard.partial).toBe(false);
     const trig = scorecard.categories.find((c) => c.key === "triggering")!;
-    expect(trig.applicable).toBe(false);
-    expect(trig.evaluated).toBe(false);
+    // v1.2: TRIGGER-05 scores triggering for commands deterministically.
+    expect(trig.applicable).toBe(true);
+    expect(trig.evaluated).toBe(true);
     expect(renderBadge(scorecard)).not.toContain("*");
   });
 
@@ -122,23 +125,30 @@ describe("kind-aware partial — asterisk only when applicable coverage is incom
 });
 
 describe("renderers label structural n/a differently from unscored-but-possible", () => {
-  it("html/terminal/markdown say n/a for a command's triggering row, not 'not yet scored'", async () => {
-    const { scorecard, name } = await auditAsync(cmdFile, { model: stub }, "command");
+  // v1.2: commands score triggering via TRIGGER-05, so a static mcp scan is now the
+  // structural-n/a exemplar (token + verifiability have no mcp checks, live or static).
+  it("html/terminal/markdown say n/a for an mcp config's token row, not 'not yet scored'", () => {
+    const { scorecard, name } = audit(mcpFile, "mcp");
     const html = renderHtml(scorecard, { name });
     expect(html).toContain("n/a for this artifact kind");
-    expect(html).not.toContain("not yet scored");
+    expect(html).toContain("not yet scored"); // triggering/clarity: could score with --mcp-live
     const term = renderTerminal(scorecard, { name });
     expect(term).toContain("n/a for this kind");
-    expect(term).not.toContain("not yet scored");
     const md = renderMarkdown(scorecard, { name });
     expect(md).toContain("_n/a_");
-    expect(md).not.toContain("_not scored_");
   });
 
-  it("a keyless command still labels verifiability as unscored (a real hole), triggering as n/a", () => {
+  it("a KEYED command scan has no n/a rows and no unscored rows (all six categories score)", async () => {
+    const { scorecard, name } = await auditAsync(cmdFile, { model: stub }, "command");
+    const html = renderHtml(scorecard, { name });
+    expect(html).not.toContain("n/a for this artifact kind");
+    expect(html).not.toContain("not yet scored");
+  });
+
+  it("a keyless command still labels verifiability as unscored (a real hole)", () => {
     const { scorecard, name } = audit(cmdFile, "command");
     const html = renderHtml(scorecard, { name });
-    expect(html).toContain("n/a for this artifact kind");
     expect(html).toContain("not yet scored");
+    expect(html).not.toContain("n/a for this artifact kind"); // v1.2: triggering scores via TRIGGER-05
   });
 });
