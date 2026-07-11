@@ -248,14 +248,39 @@ user hits and repairs known warts on the core loop.*
 | 15 | **Hooks safety sweep** — hooks (in plugins and `.claude/settings.json`) run arbitrary shell on events; SAFETY checks for injection surface, destructive commands, inline secrets | The riskiest artifact surface nobody grades — pure differentiation for the evidence-cited safety brand | 1d |
 | 16 | **Ship Skill Crossroads as a plugin** (packaging the existing `audit-skill` + a command), self-graded via item 14 | Distribution inside the marketplaces being audited; dogfoods the new kind | 0.5d |
 
-### Sprint 9 — `--suggest`: close the loop from graded to fixed · est. ~3 dev-days · 1 week
+### Sprint 9 — `--suggest`: close the loop from graded to fixed · **SHIPPED 2026-07-10** (`live-proven`, owner-approved "go ahead with sprints 9 and 10")
+
+> Item 17 in `skillcrossroads@0.11.0`: core `suggestFixes` (one cached structured call over the
+> top-N ranked findings, grounded in each check's docs; proposals only — never auto-applied,
+> model-invented checkIds filtered, ANSI-sanitized on the terminal, escaped in HTML). CLI
+> `--suggest[=N]` live-proven against the real API (found+fixed strict-schema and max_tokens
+> truncation bugs en route); `--suggest --html` embeds the section; hosted `?suggest=1` for Pro
+> single-artifact scans (private/no-store, per-instance verdict cache so reloads don't re-bill
+> the managed key). **Item 18 was already shipped in v1** — the CLI has scanned `owner/repo`
+> remotely since the first release; no code needed.
 
 | # | Item | Why now | Est. |
 |---|------|---------|------|
 | 17 | **LLM fix suggestions** — CLI `--suggest` (BYOK) + a Pro hosted "Suggest fixes": a rewritten description / frontmatter patch / token-trim plan per failing check, presented as a reviewable diff; **never auto-applies**; content-hash cached like the other LLM checks | The audit's endgame — the fastest path from C to A. Its v1 precondition (suppression shipped first) is met; sequenced after rule docs so suggestions can cite them | 2.5d |
 | 18 | **CLI remote scan** — `skillcrossroads owner/repo` (reuses `scanGitHubRepo`) so "check it before you install it" works in the terminal | The consumer-side use case with near-zero marginal cost; rounds out the CLI | 0.5d |
 
-### Sprint 10 — Moat cadence: rubric v1.2 + State of Agents · est. ~3 dev-days · 1 week
+### Sprint 10 — Moat cadence: rubric v1.2 + State of Agents · **SHIPPED 2026-07-10** (`live-proven`)
+
+> Item 19, RUBRIC v1.2 (versioned + announced): TRIGGER-05 invocation-flag consistency
+> (skills+subagents — review reversed the command scoping: a command must not score 100/100 on
+> the 22% Triggering category for mere flag-absence, so commands keep the honest n/a), TOKEN-04
+> recurring-cost estimate ($3/Mtok reference constant, exact-vs-rough labeling), CLARITY-02
+> internal-contradiction check (LLM, 24k-char window with disclosed truncation, drop-not-tank on
+> degenerate verdicts), VERIFY-03 maintenance hygiene (demoted to informational in review —
+> per-skill scans can't see repo-root hygiene, warning was a systematic false accusation).
+> Item 20, **State of Claude Code Agents & Commands** at /report-agents (real run, trees pinned,
+> deterministic edition disclosed): 85 artifacts / 9 of 17 repos; headlines — **43% of public
+> subagents declare no `tools` and silently inherit everything incl. Bash**, 94% lack clean
+> invocation cues; avg 91.3 (agents) / 96.1 (commands). A 27-agent adversarial review of both
+> sprints found 10 verified defects (incl. reflected XSS on /s error pages and Pro scorecards
+> entering the shared CDN cache) — all fixed same-day with regressions. 409 tests.
+> **The v2 roadmap is now fully shipped (Sprints 7–10). Everything below is demand-gated;
+> the launch send remains the binding constraint.**
 
 | # | Item | Why now | Est. |
 |---|------|---------|------|
