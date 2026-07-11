@@ -99,6 +99,14 @@ Skill Crossroads' **deterministic checks only** (rubric v1.2, no LLM) were run 2
 
 Caps: up to 15 artifacts per repo (`BEACON_MAX_PER_REPO`), 250 total (`BEACON_MAX_TOTAL`). Discovery finds `.md` files whose parent directory is `agents/` or `commands/` at any depth; each kind is sampled alphabetically, and when a repo ships both kinds the per-repo cap is split between them so neither crowds the other out of the sample. "Discovered" below is everything in the tree matching that layout; "graded" is the capped sample this report aggregates. A repo where discovery finds nothing is marked "no discoverable agent/command layout".
 
+> **Discovery update (v0.11.2, 2026-07-11):** this edition ran with the flat-parent rule above
+> (`.md` directly inside an `agents/` or `commands/` dir). Discovery now also finds nested,
+> category-organized layouts (`agents/<category>/*.md`, `commands/git/commit.md` — nearest
+> ancestor wins), which is how several of the "no discoverable agent/command layout" repos below
+> are organized. Their absence understates ecosystem *coverage*, not artifact quality — the
+> headline figures describe only the 85 artifacts graded. The next edition, re-run with nested
+> discovery, will include them.
+
 | Repo | Ref | Tree sha | Agents graded | Commands graded | Discovered (agents+cmds) | Errors | Note |
 |---|---|---|---|---|---|---|---|
 | VoltAgent/awesome-claude-code-subagents | main | `947b44ca0c58` | 0 | 0 | 0+0 | 0 | no discoverable agent/command layout |

@@ -190,8 +190,9 @@ function gitignoreMatcher(root: string): (rel: string) => boolean {
 
 /**
  * Infer the artifact kind from a path: `SKILL.md` (or a dir containing one) → skill; a `.md`
- * file whose parent directory is `agents/` → subagent; `commands/` → command. Returns null when
- * the path is ambiguous (caller should require an explicit kind).
+ * file under an `agents/` directory (any depth) → subagent; under `commands/` → command
+ * (nearest ancestor wins — namespaced layouts like `commands/git/commit.md`). Returns null
+ * when the path is ambiguous (caller should require an explicit kind).
  */
 export function detectKind(inputPath: string): ArtifactType | null {
   const abs = resolve(inputPath);
@@ -209,9 +210,11 @@ export function detectKind(inputPath: string): ArtifactType | null {
     return null;
   }
   if (posix.endsWith(".md")) {
-    const parent = posix.split("/").slice(-2, -1)[0];
-    if (parent === "agents") return "subagent";
-    if (parent === "commands") return "command";
+    const ancestors = posix.split("/").slice(0, -1);
+    for (let i = ancestors.length - 1; i >= 0; i--) {
+      if (ancestors[i] === "agents") return "subagent";
+      if (ancestors[i] === "commands") return "command";
+    }
   }
   return null;
 }

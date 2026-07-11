@@ -104,6 +104,25 @@ export async function fetchRepoTree(target: GitHubTarget, opts: GitHubFetchOptio
   };
 }
 
+/**
+ * Test/fixture trees are not shipped artifacts — excluding them keeps a repo's public scorecard
+ * about what it SHIPS. Applies to every discovery kind (skills included since 0.11.2 — earlier
+ * editions of the data reports were generated with fixture skills discoverable; their pinned
+ * tree SHAs keep them reproducible against their own methodology). An explicit `subpath` deep
+ * link INTO a test tree still scans — the escape both discovery functions honor.
+ */
+const EXCLUDED_TREES = /(^|\/)(?:node_modules|\.git|tests?|__tests__|fixtures?)\//i;
+
+/** Nearest ancestor directory named `agents/` or `commands/` decides a nested `.md`'s kind. */
+function agentOrCommand(path: string): "agent" | "command" | null {
+  const segs = path.toLowerCase().split("/");
+  for (let i = segs.length - 2; i >= 0; i--) {
+    if (segs[i] === "agents") return "agent";
+    if (segs[i] === "commands") return "command";
+  }
+  return null;
+}
+
 /** Directories in the tree that contain a SKILL.md (each is one skill), optionally under `subpath`. */
 export function findSkillDirs(entries: readonly TreeEntry[], subpath?: string): string[] {
   const norm = subpath ? subpath.replace(/^\/+|\/+$/g, "") : undefined;
@@ -111,6 +130,7 @@ export function findSkillDirs(entries: readonly TreeEntry[], subpath?: string): 
   for (const e of entries) {
     if (e.type !== "blob") continue;
     if (!/(^|\/)SKILL\.md$/i.test(e.path)) continue;
+    if (EXCLUDED_TREES.test(e.path) && !(norm && EXCLUDED_TREES.test(`${norm}/`))) continue;
     const dir = e.path.includes("/") ? posix.dirname(e.path) : "";
     if (norm && !(dir === norm || dir.startsWith(`${norm}/`))) continue;
     dirs.add(dir);
@@ -119,9 +139,11 @@ export function findSkillDirs(entries: readonly TreeEntry[], subpath?: string): 
 }
 
 /**
- * Single-file artifacts in the tree: subagents (`…/agents/*.md`), slash commands
- * (`…/commands/*.md`, README excluded), MCP configs (`.mcp.json` at any level), and plugin
- * manifests (`.claude-plugin/plugin.json` — each marks its parent dir as a plugin root). Honors
+ * Single-file artifacts in the tree: subagents (`.md` under an `agents/` dir, any depth), slash
+ * commands (`.md` under a `commands/` dir, any depth — namespaced layouts like
+ * `commands/git/commit.md` are how Claude Code spells `/git:commit`; nearest ancestor wins,
+ * README excluded), MCP configs (`.mcp.json` at any level), and plugin manifests
+ * (`.claude-plugin/plugin.json` — each marks its parent dir as a plugin root). Honors
  * `subpath` (a containing dir OR the exact file path, so deep links to one artifact work).
  */
 export function findArtifactFiles(
@@ -130,21 +152,19 @@ export function findArtifactFiles(
 ): { agents: string[]; commands: string[]; mcp: string[]; plugins: string[] } {
   const norm = subpath ? subpath.replace(/^\/+|\/+$/g, "") : undefined;
   const inScope = (p: string): boolean => !norm || p === norm || p.startsWith(`${norm}/`);
-  // Test/fixture trees are not shipped artifacts — excluding them keeps a repo's public
-  // scorecard about what it SHIPS. (Skill discovery predates this rule and keeps its
-  // methodology for report reproducibility; single-file discovery is a new surface.)
-  const excluded = /(^|\/)(?:node_modules|\.git|tests?|__tests__|fixtures?)\//i;
   const agents: string[] = [];
   const commands: string[] = [];
   const mcp: string[] = [];
   const plugins: string[] = [];
   for (const e of entries) {
     if (e.type !== "blob" || !inScope(e.path)) continue;
-    if (excluded.test(e.path) && !(norm && excluded.test(`${norm}/`))) continue; // explicit deep links into test trees still work
+    if (EXCLUDED_TREES.test(e.path) && !(norm && EXCLUDED_TREES.test(`${norm}/`))) continue; // explicit deep links into test trees still work
     const base = posix.basename(e.path);
-    if (/(^|\/)agents\/[^/]+\.md$/i.test(e.path) && !/^readme\.md$/i.test(base)) agents.push(e.path);
-    else if (/(^|\/)commands\/[^/]+\.md$/i.test(e.path) && !/^readme\.md$/i.test(base)) commands.push(e.path);
-    else if (base === ".mcp.json") mcp.push(e.path);
+    if (/\.md$/i.test(base) && !/^readme\.md$/i.test(base)) {
+      const kind = agentOrCommand(e.path);
+      if (kind === "agent") agents.push(e.path);
+      else if (kind === "command") commands.push(e.path);
+    } else if (base === ".mcp.json") mcp.push(e.path);
     else if (/(^|\/)\.claude-plugin\/plugin\.json$/.test(e.path)) plugins.push(e.path);
   }
   return { agents: agents.sort(), commands: commands.sort(), mcp: mcp.sort(), plugins: plugins.sort() };

@@ -26,6 +26,40 @@ describe("parse + detectKind for subagents and commands", () => {
   it("rejects a directory as a subagent input", () => {
     expect(() => parse(artifacts, "subagent")).toThrow(ParseError);
   });
+
+  it("detects kind from a nested ancestor directory (namespaced layouts), nearest ancestor winning", () => {
+    expect(detectKind("/repo/agents/core/reviewer.md")).toBe("subagent");
+    expect(detectKind("/repo/.claude/commands/git/commit.md")).toBe("command");
+    expect(detectKind("/repo/agents/tools/commands/run.md")).toBe("command");
+    expect(detectKind("/repo/docs/notes.md")).toBe(null);
+  });
+});
+
+describe("local discovery — nested agents & commands", () => {
+  it("finds .md files in subdirectories of agents/ and commands/, nearest ancestor winning", async () => {
+    const { mkdtempSync, mkdirSync, writeFileSync, rmSync } = await import("node:fs");
+    const { tmpdir } = await import("node:os");
+    const root = mkdtempSync(join(tmpdir(), "beacon-nested-"));
+    try {
+      for (const rel of [
+        ["agents", "core"],
+        ["agents", "tools", "commands"],
+        [".claude", "commands", "git"],
+      ])
+        mkdirSync(join(root, ...rel), { recursive: true });
+      writeFileSync(join(root, "agents", "flat.md"), "# a");
+      writeFileSync(join(root, "agents", "core", "reviewer.md"), "# a");
+      writeFileSync(join(root, "agents", "core", "README.md"), "# doc");
+      writeFileSync(join(root, "agents", "tools", "commands", "run.md"), "# c");
+      writeFileSync(join(root, ".claude", "commands", "git", "commit.md"), "# c");
+      const { agents, commands } = findLocalAgentCommandFiles(root);
+      const rel = (p: string): string => p.slice(root.length + 1).replace(/\\/g, "/");
+      expect(agents.map(rel)).toEqual(["agents/core/reviewer.md", "agents/flat.md"]);
+      expect(commands.map(rel)).toEqual(["agents/tools/commands/run.md", ".claude/commands/git/commit.md"].sort());
+    } finally {
+      rmSync(root, { recursive: true, force: true });
+    }
+  });
 });
 
 describe("check applicability by kind", () => {

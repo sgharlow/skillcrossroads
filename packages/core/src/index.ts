@@ -170,43 +170,41 @@ export function findLocalSkillDirs(root: string): string[] {
 }
 
 /**
- * Find subagent and slash-command files under a local path: any `.md` directly inside a
- * directory named `agents/` or `commands/` (covers `.claude/agents`, plugin layouts, and bare
- * `agents/` folders). README files are skipped — they document, they don't run.
+ * Find subagent and slash-command files under a local path: any `.md` inside a directory named
+ * `agents/` or `commands/` at any depth (covers `.claude/agents`, plugin layouts, bare `agents/`
+ * folders, and namespaced layouts like `commands/git/commit.md` = `/git:commit`). The nearest
+ * such ancestor decides the kind — mirrors the hosted scanner's discovery, so local and hosted
+ * scans of the same repo agree. README files are skipped — they document, they don't run.
  */
 export function findLocalAgentCommandFiles(root: string): { agents: string[]; commands: string[] } {
   const abs = resolve(root);
   const agents: string[] = [];
   const commands: string[] = [];
   if (!existsSync(abs)) return { agents, commands };
-  const walk = (dir: string): void => {
+  const walk = (dir: string, mode: "agents" | "commands" | null): void => {
     let entries: string[];
     try {
       entries = readdirSync(dir);
     } catch {
       return;
     }
-    const dirName = basename(dir).toLowerCase();
     for (const name of entries) {
       if (IGNORED_WALK.has(name)) continue;
       const full = join(dir, name);
+      const lower = name.toLowerCase();
       try {
         const st = statSync(full);
         if (st.isDirectory()) {
-          walk(full);
-        } else if (
-          /\.md$/i.test(name) &&
-          !/^readme\.md$/i.test(name) &&
-          (dirName === "agents" || dirName === "commands")
-        ) {
-          (dirName === "agents" ? agents : commands).push(full);
+          walk(full, lower === "agents" || lower === "commands" ? lower : mode);
+        } else if (/\.md$/i.test(name) && !/^readme\.md$/i.test(name) && mode !== null) {
+          (mode === "agents" ? agents : commands).push(full);
         }
       } catch {
         /* unreadable entry — skip */
       }
     }
   };
-  walk(abs);
+  walk(abs, null);
   return { agents: agents.sort(), commands: commands.sort() };
 }
 

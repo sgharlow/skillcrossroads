@@ -64,6 +64,49 @@ describe("findSkillDirs", () => {
   });
 });
 
+describe("findSkillDirs — test/fixture exclusion", () => {
+  const tree: TreeEntry[] = [
+    { path: "skill/SKILL.md", type: "blob" },
+    { path: "packages/core/test/fixtures/skills/vulnerable/SKILL.md", type: "blob" },
+    { path: "vendor/fixtures/x/SKILL.md", type: "blob" },
+    { path: "node_modules/dep/skills/y/SKILL.md", type: "blob" },
+  ];
+  it("excludes test/fixture/node_modules trees — the public scorecard is about what a repo SHIPS", () => {
+    expect(findSkillDirs(tree)).toEqual(["skill"]);
+  });
+  it("still honors an explicit deep link into a test tree", () => {
+    expect(findSkillDirs(tree, "packages/core/test/fixtures/skills/vulnerable")).toEqual([
+      "packages/core/test/fixtures/skills/vulnerable",
+    ]);
+  });
+});
+
+describe("findArtifactFiles — nested agents & commands", () => {
+  const tree: TreeEntry[] = [
+    { path: "agents/flat.md", type: "blob" },
+    { path: "agents/core/reviewer.md", type: "blob" },
+    { path: "agents/core/README.md", type: "blob" },
+    { path: ".claude/commands/deploy.md", type: "blob" },
+    { path: ".claude/commands/git/commit.md", type: "blob" },
+    { path: "agents/tools/commands/run.md", type: "blob" },
+    { path: "docs/agents.md", type: "blob" },
+  ];
+  it("discovers agents and commands in nested subdirectories (namespaced layouts)", () => {
+    const { agents, commands } = findArtifactFiles(tree);
+    expect(agents).toEqual(["agents/core/reviewer.md", "agents/flat.md"]);
+    expect(commands).toEqual([
+      ".claude/commands/deploy.md",
+      ".claude/commands/git/commit.md",
+      "agents/tools/commands/run.md", // nearest ancestor dir wins
+    ]);
+  });
+  it("still excludes READMEs and files not under an agents/ or commands/ dir", () => {
+    const { agents, commands } = findArtifactFiles(tree);
+    expect([...agents, ...commands]).not.toContain("agents/core/README.md");
+    expect([...agents, ...commands]).not.toContain("docs/agents.md");
+  });
+});
+
 describe("findArtifactFiles — plugins", () => {
   const tree: TreeEntry[] = [
     { path: ".claude-plugin/plugin.json", type: "blob" },
