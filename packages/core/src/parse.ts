@@ -123,6 +123,71 @@ function listFiles(root: string): string[] {
   return out.sort();
 }
 
+interface IgnoreRule {
+  readonly re: RegExp;
+  /** Trailing `/` in the pattern — matches directories only. */
+  readonly dir: boolean;
+  /** Leading `/` (or an inner `/`) — anchored to the plugin root. */
+  readonly anchored: boolean;
+  /** Segment count of the (anchored) pattern. */
+  readonly segCount: number;
+}
+
+/** Escape regex specials, translating `*` to a within-segment wildcard. */
+function globToRegExp(pat: string): RegExp {
+  const body = pat
+    .split("*")
+    .map((s) => s.replace(/[.+?^${}()|[\]\\]/g, "\\$&"))
+    .join("[^/]*");
+  return new RegExp(`^${body}$`);
+}
+
+/**
+ * Minimal `.gitignore` matcher for plugin trees. Gitignored files don't ship via git-based
+ * marketplace installs, so they are not part of the published plugin — sweeping them into the
+ * scan (e.g. a local-only `.env.local`) makes SAFETY-01 flag files no installer ever receives.
+ * (`--plugin-dir` users still see them locally via a plain skill/file scan.)
+ *
+ * Supported: comment/blank lines skipped; trailing `/` = directory prefix; leading `/` (or an
+ * inner `/`) = root-anchored; `*` wildcard within a segment; plain names match any path segment.
+ * `!` negation lines are unsupported and skipped entirely (never cause an exclusion).
+ */
+function gitignoreMatcher(root: string): (rel: string) => boolean {
+  const giPath = join(root, ".gitignore");
+  if (!existsSync(giPath)) return () => false;
+  const rules: IgnoreRule[] = [];
+  for (const rawLine of readFileSync(giPath, "utf8").split(/\r?\n/)) {
+    const line = rawLine.trim();
+    if (!line || line.startsWith("#") || line.startsWith("!")) continue;
+    let pat = line;
+    const dir = pat.endsWith("/");
+    if (dir) pat = pat.replace(/\/+$/, "");
+    let anchored = false;
+    if (pat.startsWith("/")) {
+      anchored = true;
+      pat = pat.replace(/^\/+/, "");
+    } else if (pat.includes("/")) {
+      anchored = true; // a slash anywhere anchors the pattern (git semantics)
+    }
+    if (!pat) continue;
+    rules.push({ re: globToRegExp(pat), dir, anchored, segCount: pat.split("/").length });
+  }
+  if (rules.length === 0) return () => false;
+  return (rel: string): boolean => {
+    const segs = rel.split("/");
+    return rules.some((rule) => {
+      if (rule.anchored) {
+        // Match a prefix of the path at a segment boundary; a dir pattern must be a strict
+        // prefix (a directory containing the file), a file pattern may also be the file itself.
+        if (rule.dir ? segs.length <= rule.segCount : segs.length < rule.segCount) return false;
+        return rule.re.test(segs.slice(0, rule.segCount).join("/"));
+      }
+      // Plain name: any segment (dir patterns must match a non-final segment).
+      return (rule.dir ? segs.slice(0, -1) : segs).some((s) => rule.re.test(s));
+    });
+  };
+}
+
 /**
  * Infer the artifact kind from a path: `SKILL.md` (or a dir containing one) → skill; a `.md`
  * file whose parent directory is `agents/` → subagent; `commands/` → command. Returns null when
@@ -136,9 +201,11 @@ export function detectKind(inputPath: string): ArtifactType | null {
   if (posix.endsWith(".mcp.json")) return "mcp"; // `.mcp.json` or `<name>.mcp.json`
   if (existsSync(abs) && statSync(abs).isDirectory()) {
     const entries = readdirSync(abs);
-    // A manifest makes the dir a plugin — even a root SKILL.md layout (single-skill plugin).
-    if (existsSync(join(abs, ".claude-plugin", "plugin.json"))) return "plugin";
+    // A root SKILL.md keeps the dir a skill even when a plugin manifest exists — single-artifact
+    // flows must not silently downgrade prose grading to a manifest scan. (Batch scans via
+    // scanLocalDir emit both rows regardless.) Only manifest-without-root-SKILL.md dirs are plugins.
     if (entries.some((e) => e.toLowerCase() === ENTRY_FILENAME.toLowerCase())) return "skill";
+    if (existsSync(join(abs, ".claude-plugin", "plugin.json"))) return "plugin";
     return null;
   }
   if (posix.endsWith(".md")) {
@@ -181,13 +248,20 @@ export function parse(inputPath: string, type: ArtifactType = "skill"): Artifact
   if (type === "plugin") {
     let abs = resolve(inputPath);
     if (!existsSync(abs)) throw new ParseError(`Path does not exist: ${inputPath}`);
-    if (statSync(abs).isFile()) abs = resolve(abs, "..", ".."); // plugin.json path → plugin root
+    if (statSync(abs).isFile()) {
+      // A file input must be the manifest itself, like the sibling branches validate their entry.
+      if (!toPosix(abs).toLowerCase().endsWith("/.claude-plugin/plugin.json")) {
+        throw new ParseError(`A plugin file input must be .claude-plugin/plugin.json — got: ${inputPath}`);
+      }
+      abs = resolve(abs, "..", ".."); // plugin.json path → plugin root
+    }
     const entryPath = join(abs, ".claude-plugin", "plugin.json");
     if (!existsSync(entryPath)) {
       throw new ParseError(`No .claude-plugin/plugin.json found in ${inputPath} — is this a plugin directory?`);
     }
     const raw = readFileSync(entryPath, "utf8");
     const entryRel = toPosix(relative(abs, entryPath));
+    const ignored = gitignoreMatcher(abs);
     return {
       type,
       root: abs,
@@ -197,7 +271,7 @@ export function parse(inputPath: string, type: ArtifactType = "skill"): Artifact
       frontmatterError: null,
       body: "",
       bodyStartLine: 1,
-      files: listFiles(abs).filter((f) => f !== entryRel),
+      files: listFiles(abs).filter((f) => f !== entryRel && !ignored(f)),
     };
   }
   if (type === "subagent" || type === "command") {

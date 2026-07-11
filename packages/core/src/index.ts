@@ -341,7 +341,7 @@ export async function scanGitHubRepo(
     // same manifest-plus-member-roll-up shape as scanLocalDir). Remaining `max` budget applies.
     const manifestSuffix = "/.claude-plugin/plugin.json";
     const pluginBudget = opts.max ? Math.max(0, opts.max - skills.length) : files.plugins.length;
-    for (const manifestPath of files.plugins.slice(0, pluginBudget)) {
+    for (const [pluginIndex, manifestPath] of files.plugins.slice(0, pluginBudget).entries()) {
       const pluginRoot = manifestPath.endsWith(manifestSuffix)
         ? manifestPath.slice(0, -manifestSuffix.length)
         : ""; // bare ".claude-plugin/plugin.json" → the repo root is the plugin
@@ -350,6 +350,7 @@ export async function scanGitHubRepo(
         const unscanned: string[] = [];
         const local = await materializePlugin(target, pluginRoot, tree, dest, {
           ...opts,
+          index: pluginIndex,
           onPlaceholder: (rel) => unscanned.push(rel),
         });
         const res = await auditAsync(local, ctx, "plugin", { unscannedFiles: unscanned });

@@ -193,7 +193,7 @@ describe("scanGitHubRepo — plugins (mock fetch)", () => {
     return Promise.resolve(new Response("not found", { status: 404 }));
   }
 
-  it("grades a plugin: real hook content for HOOK-01, placeholders satisfy PLUGIN-02", async () => {
+  it("grades a plugin: real hook content for HOOK-01, full text coverage within the budget", async () => {
     const scan = await scanGitHubRepo("o/p", {}, { fetchImpl: mockFetch as unknown as typeof fetch });
     expect(scan.errors).toEqual([]);
     const plugin = scan.skills.find((s) => s.artifact.type === "plugin")!;
@@ -203,14 +203,126 @@ describe("scanGitHubRepo — plugins (mock fetch)", () => {
     const hook = plugin.scorecard.results.find((r) => r.id === "HOOK-01")!;
     expect(hook.status).toBe("fail");
     expect(hook.evidence.some((e) => e.file === "hooks/hooks.json")).toBe(true);
-    // PLUGIN-02 resolves the declared ./commands/x.md via its empty placeholder.
+    // PLUGIN-02 resolves the declared ./commands/x.md.
     expect(plugin.scorecard.results.find((r) => r.id === "PLUGIN-02")?.status).toBe("pass");
-    // Partial coverage disclosed: the placeholder file, but NOT the really-fetched hook config.
-    expect(plugin.artifact.unscannedFiles).toContain("commands/x.md");
-    expect(plugin.artifact.unscannedFiles).not.toContain("hooks/hooks.json");
+    // Every text file fit in the content budget (materializeSkill parity) — nothing undisclosed.
+    expect(plugin.artifact.unscannedFiles ?? []).toEqual([]);
     // The plugin's command is still graded as its own single-file artifact (roll-up shape).
     expect(
       scan.skills.some((s) => s.artifact.type === "command" && s.repoPath === "my-plugin/commands/x.md"),
     ).toBe(true);
+  });
+
+  it("a manifest-file deep link (subpath) rescans to exactly the plugin row — the summary-row link path", async () => {
+    const scan = await scanGitHubRepo(
+      "o/p",
+      {},
+      { fetchImpl: mockFetch as unknown as typeof fetch, subpath: "my-plugin/.claude-plugin/plugin.json" },
+    );
+    expect(scan.errors).toEqual([]);
+    expect(scan.skills).toHaveLength(1);
+    expect(scan.skills[0]!.artifact.type).toBe("plugin");
+    expect(scan.skills[0]!.repoPath).toBe("my-plugin");
+  });
+});
+
+describe("materializePlugin — text-file budget + hook placeholder disclosure (mock fetch)", () => {
+  const MANIFEST = JSON.stringify({
+    name: "leaky-tools",
+    description: "A plugin whose supporting script hides an obviously-fake credential for the coverage test.",
+    commands: ["./commands/x.md"],
+    hooks: "./hooks/hooks.json",
+  });
+
+  function mockFetch(url: string): Promise<Response> {
+    const u = url.toString();
+    if (u === "https://api.github.com/repos/o/leak") {
+      return Promise.resolve(new Response(JSON.stringify({ default_branch: "main" })));
+    }
+    if (u.includes("/git/trees/main")) {
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            sha: "beefbeef",
+            truncated: false,
+            tree: [
+              { path: "pl/.claude-plugin/plugin.json", type: "blob" },
+              { path: "pl/hooks/hooks.json", type: "blob" },
+              { path: "pl/scripts/deploy.sh", type: "blob" },
+            ],
+          }),
+        ),
+      );
+    }
+    if (u.endsWith("/pl/.claude-plugin/plugin.json")) return Promise.resolve(new Response(MANIFEST));
+    // The hook config 404s (rate limit) → placeholder; the script fetches with a fake secret.
+    if (u.endsWith("/pl/scripts/deploy.sh"))
+      return Promise.resolve(new Response(`#!/bin/sh\ntoken = "fake-fake-fake-not-a-real-value"\n`));
+    return Promise.resolve(new Response("not found", { status: 404 }));
+  }
+
+  it("SAFETY-01 sees secrets beyond the manifest + hook configs (materializeSkill parity)", async () => {
+    const scan = await scanGitHubRepo("o/leak", {}, { fetchImpl: mockFetch as unknown as typeof fetch });
+    const plugin = scan.skills.find((s) => s.artifact.type === "plugin")!;
+    const safety = plugin.scorecard.results.find((r) => r.id === "SAFETY-01")!;
+    expect(safety.status).toBe("fail");
+    expect(safety.evidence.some((e) => e.file === "scripts/deploy.sh")).toBe(true);
+  });
+
+  it("an unfetched hook config yields a HOOK-01 coverage disclosure, not a fabricated parse error", async () => {
+    const scan = await scanGitHubRepo("o/leak", {}, { fetchImpl: mockFetch as unknown as typeof fetch });
+    const plugin = scan.skills.find((s) => s.artifact.type === "plugin")!;
+    expect(plugin.artifact.unscannedFiles).toContain("hooks/hooks.json");
+    const hook = plugin.scorecard.results.find((r) => r.id === "HOOK-01")!;
+    expect(hook.status).toBe("warn");
+    const msgs = hook.evidence.map((e) => e.message).join(" ");
+    expect(msgs).toContain("not fetched");
+    expect(msgs).not.toContain("Unexpected end of JSON input");
+  });
+});
+
+describe("materializePlugin — temp dirs never collide (root + same-named subdirectory plugin)", () => {
+  const rootManifest = JSON.stringify({ name: "root-plugin", description: "The repo-root plugin used by the slug-collision regression test.", commands: ["./rootonly.md"] });
+  const subManifest = JSON.stringify({ name: "sub-plugin", description: "The subdirectory plugin (dir named like the repo) used by the slug-collision regression test.", commands: ["./nested.md"] });
+
+  function mockFetch(url: string): Promise<Response> {
+    const u = url.toString();
+    if (u === "https://api.github.com/repos/o/p2") {
+      return Promise.resolve(new Response(JSON.stringify({ default_branch: "main" })));
+    }
+    if (u.includes("/git/trees/main")) {
+      return Promise.resolve(
+        new Response(
+          JSON.stringify({
+            sha: "c0ffee",
+            truncated: false,
+            tree: [
+              { path: ".claude-plugin/plugin.json", type: "blob" },
+              { path: "rootonly.md", type: "blob" },
+              // subdirectory plugin whose dir name equals the repo name → identical slug before the fix
+              { path: "p2/.claude-plugin/plugin.json", type: "blob" },
+              { path: "p2/nested.md", type: "blob" },
+            ],
+          }),
+        ),
+      );
+    }
+    if (u.endsWith(`/main/.claude-plugin/plugin.json`)) return Promise.resolve(new Response(rootManifest));
+    if (u.endsWith(`/p2/.claude-plugin/plugin.json`)) return Promise.resolve(new Response(subManifest));
+    if (u.endsWith("/rootonly.md")) return Promise.resolve(new Response("# root only\n"));
+    if (u.endsWith("/nested.md")) return Promise.resolve(new Response("# nested\n"));
+    return Promise.resolve(new Response("not found", { status: 404 }));
+  }
+
+  it("both plugins scan with their OWN file lists — no cross-contamination", async () => {
+    const scan = await scanGitHubRepo("o/p2", {}, { fetchImpl: mockFetch as unknown as typeof fetch });
+    expect(scan.errors).toEqual([]);
+    const plugins = scan.skills.filter((s) => s.artifact.type === "plugin");
+    expect(plugins.map((p) => p.repoPath).sort()).toEqual(["(root)", "p2"]);
+    const sub = plugins.find((p) => p.repoPath === "p2")!;
+    expect((JSON.parse(sub.artifact.raw) as { name: string }).name).toBe("sub-plugin");
+    expect(sub.artifact.files).toContain("nested.md");
+    // Before the indexed temp dirs, the root plugin's tree leaked into the subdir plugin's scan.
+    expect(sub.artifact.files).not.toContain("rootonly.md");
   });
 });

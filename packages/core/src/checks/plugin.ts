@@ -136,7 +136,8 @@ export const plugin02: Check = {
       return fileSet.has(clean) || a.files.some((f) => f.startsWith(clean + "/")) || existsSync(join(a.root, clean));
     };
     for (const { field, path } of manifest ? declaredPaths(manifest) : []) {
-      if (path.includes("..")) {
+      // Traversal = a literal `..` path SEGMENT — a filename merely containing ".." (migrate-v1..v2.md) is fine.
+      if (path.split("/").includes("..")) {
         status = "fail"; score = Math.min(score, 30);
         evidence.push({ file, line: lineOf(a.raw, path), snippet: path, claimed: `${field} path is usable`, verified: "traverses outside the plugin root", message: "Paths outside the plugin root are not copied to the install cache — this component is dead after install." });
         continue;
@@ -204,13 +205,39 @@ export const plugin03: Check = {
   },
 };
 
-const DANGEROUS: Array<{ re: RegExp; what: string }> = [
-  { re: /\brm\s+(-[a-z]*r[a-z]*f|-[a-z]*f[a-z]*r)[a-z]*\b/i, what: "recursive force-delete (`rm -rf`)" },
-  { re: /\bsudo\b/, what: "privilege escalation (`sudo`)" },
-  { re: /\b(curl|wget)\b[^|&;]*\|\s*(ba|z|da)?sh\b/i, what: "remote code piped to a shell (`curl … | sh`)" },
-  { re: /\bgit\s+push\s+[^|&;]*--force\b/, what: "force-push (`git push --force`)" },
-  { re: /\bchmod\s+(-[a-z]+\s+)?777\b/, what: "world-writable permissions (`chmod 777`)" },
-  { re: /\bmkfs\b|\bdd\s+if=/, what: "disk-destructive command" },
+/**
+ * `rm` with BOTH recursive and force — combined (`-rf`, `-fr`), separate (`-r -f`), or long
+ * (`--recursive --force`), in any order. Recursive alone (`rm -r build`) is a normal clean step.
+ */
+function isRecursiveForceRm(command: string): boolean {
+  for (const seg of command.split(/[|;&]+/)) {
+    const tokens = seg.trim().split(/\s+/);
+    const rm = tokens.findIndex((t) => t === "rm" || t.toLowerCase().endsWith("/rm"));
+    if (rm === -1) continue;
+    const flags = tokens.slice(rm + 1).filter((t) => t.startsWith("-"));
+    const has = (short: string, long: string): boolean =>
+      flags.some((t) => t === long || (/^-[a-z]+$/i.test(t) && t.toLowerCase().includes(short)));
+    if (has("r", "--recursive") && has("f", "--force")) return true;
+  }
+  return false;
+}
+
+/** `git push` with a `-f`/`--force` argument. `--force-with-lease` is a distinct, safer flag — not flagged. */
+function isForcePush(command: string): boolean {
+  const m = /\bgit\s+push\b([^|&;]*)/i.exec(command);
+  if (!m) return false;
+  return (m[1] ?? "").trim().split(/\s+/).some((t) => t === "-f" || t === "--force");
+}
+
+// Piped-to-shell matches bare shells (`| sh`), absolute paths (`| /bin/sh`), and env launches
+// (`| /usr/bin/env bash`). A downloaded-to-file `.sh` (`curl … -o file.sh`) has no pipe — allowed.
+const DANGEROUS: Array<{ hit: (command: string) => boolean; what: string }> = [
+  { hit: isRecursiveForceRm, what: "recursive force-delete (`rm -rf`)" },
+  { hit: (c) => /\bsudo\b/.test(c), what: "privilege escalation (`sudo`)" },
+  { hit: (c) => /\b(curl|wget)\b[^|&;]*\|\s*(?:[\w./-]*\/)?(?:env\s+)?(?:ba|z|da)?sh\b/i.test(c), what: "remote code piped to a shell (`curl … | sh`)" },
+  { hit: isForcePush, what: "force-push (`git push --force`)" },
+  { hit: (c) => /\bchmod\s+(-[a-z]+\s+)?777\b/.test(c), what: "world-writable permissions (`chmod 777`)" },
+  { hit: (c) => /\bmkfs\b|\bdd\s+if=/.test(c), what: "disk-destructive command" },
 ];
 
 interface HookCmd { file: string; command: string }
@@ -220,7 +247,14 @@ export function collectHookCommands(a: Artifact): { cmds: HookCmd[]; badShape: E
   const cmds: HookCmd[] = [];
   const badShape: Evidence[] = [];
   const sources: Array<{ file: string; config: unknown }> = [];
+  // Hosted placeholders: content was never fetched, so an empty file must read as a coverage
+  // gap (warn-level disclosure), not as a fabricated JSON parse failure.
+  const unscanned = new Set(a.unscannedFiles ?? []);
   const readJson = (rel: string): unknown => {
+    if (unscanned.has(rel)) {
+      badShape.push({ file: rel, line: 1, message: "Hook config not fetched on this scan — commands not inspected (re-scan locally for full hook coverage)." });
+      return null;
+    }
     try {
       return JSON.parse(readFileSync(join(a.root, rel), "utf8"));
     } catch (err) {
@@ -288,8 +322,8 @@ export const hook01: Check = {
     let status: "pass" | "warn" | "fail" = badShape.length > 0 ? "warn" : "pass";
     let score = badShape.length > 0 ? 75 : 100;
     for (const { file, command } of cmds) {
-      for (const { re, what } of DANGEROUS) {
-        if (re.test(command)) {
+      for (const { hit, what } of DANGEROUS) {
+        if (hit(command)) {
           status = "fail"; score = Math.min(score, 20);
           evidence.push({ file, line: lineOf(a.files.includes(file) ? readFileSync(join(a.root, file), "utf8") : a.raw, command.slice(0, 40)), snippet: command.slice(0, 120), claimed: "a safe event hook", verified: what, message: `Hook command contains ${what} — it runs automatically on every installer's machine.` });
           break;

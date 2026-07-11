@@ -11,9 +11,23 @@ function countLabel(rows: readonly { artifact: { type: string } }[]): string {
   for (const r of rows) counts.set(r.artifact.type, (counts.get(r.artifact.type) ?? 0) + 1);
   if (counts.size === 1 && counts.has("skill")) return `${rows.length} skills`;
   const label = (t: string): string =>
-    t === "skill" ? "skills" : t === "subagent" ? "agents" : t === "command" ? "commands" : "mcp configs";
+    t === "skill" ? "skills" : t === "subagent" ? "agents" : t === "command" ? "commands" : t === "plugin" ? "plugins" : "mcp configs";
   const parts = [...counts.entries()].map(([t, n]) => `${n} ${label(t)}`);
   return `${rows.length} artifacts (${parts.join(" · ")})`;
+}
+
+/**
+ * Scorecard link for one summary row. Plugin rows deep-link to the manifest FILE path
+ * (`…/<pluginRoot>/.claude-plugin/plugin.json`) — the exact-file path that rescans to exactly
+ * the plugin row. Linking the plugin ROOT would 404 (no SKILL.md there) or rescan the subtree
+ * into multiple rows, leaving the plugin scorecard unreachable. `(root)` marks a repo-root plugin.
+ */
+export function rowHref(t: SlugTarget, row: { repoPath: string; artifact: { type: string } }): string {
+  if (row.artifact.type === "plugin") {
+    const root = row.repoPath === "(root)" ? "" : `${row.repoPath}/`;
+    return `/s/${t.owner}/${t.repo}/${root}.claude-plugin/plugin.json`;
+  }
+  return `/s/${t.owner}/${t.repo}/${row.repoPath}`;
 }
 
 /** A repo-level summary page: every skill in the repo with its grade, linking to each scorecard. */
@@ -25,7 +39,7 @@ export function renderRepoSummaryHtml(scan: RepoScanResult, t: SlugTarget, opts:
   const rowHtml = rows
     .map((s) => {
       const color = gradeHex(s.scorecard.grade);
-      const href = `/s/${t.owner}/${t.repo}/${s.repoPath}`;
+      const href = rowHref(t, s);
       return `<a class="row" href="${esc(href)}">
         <span class="g" style="color:${color};border-color:${color}">${esc(s.scorecard.grade)}</span>
         <span class="sc">${s.scorecard.overall}</span>

@@ -277,23 +277,35 @@ function hookConfigPaths(manifestRaw: string, treeRels: ReadonlySet<string>): st
 /**
  * Reconstruct one plugin locally under `destRoot` and return its root directory.
  *
- * Mirrors materializeSkill's minimum-download contract: real content is fetched only for the
- * manifest (always — PLUGIN-01/02/03 parse it) and up to MAX_HOOK_FILES hook-config `.json`
- * files (HOOK-01 must scan actual hook commands, not placeholders); every other blob under the
- * plugin root becomes an empty placeholder so the file list stays accurate (PLUGIN-02 resolves
- * component paths by name). Only a manifest fetch failure is fatal. `pluginRoot` is "" when the
- * repo root itself is the plugin.
+ * Mirrors materializeSkill's minimum-download contract: real content is fetched for the manifest
+ * (always — PLUGIN-01/02/03 parse it), up to MAX_HOOK_FILES hook-config `.json` files first
+ * (HOOK-01 must scan actual hook commands, not placeholders), and then remaining text files up
+ * to the same `maxContentFiles` cap materializeSkill uses (so SAFETY-01 can scan the plugin
+ * tree for secrets, not just the manifest); every other blob under the plugin root becomes an
+ * empty placeholder so the file list stays accurate (PLUGIN-02 resolves component paths by
+ * name). Only a manifest fetch failure is fatal. `pluginRoot` is "" when the repo root itself
+ * is the plugin. `opts.index` (the plugin's position in the batch) is baked into the temp dir
+ * name so two plugins can never share a directory — a repo-root plugin and a subdirectory
+ * plugin with the same name would otherwise collide and mix their file lists.
  */
 export async function materializePlugin(
   target: GitHubTarget,
   pluginRoot: string,
   tree: RepoTree,
   destRoot: string,
-  opts: GitHubFetchOptions & Pick<MaterializeOptions, "onPlaceholder"> = {},
+  opts: MaterializeOptions & { index?: number } = {},
 ): Promise<string> {
+  const maxContent = opts.maxContentFiles ?? 12;
   const prefix = pluginRoot ? `${pluginRoot}/` : "";
-  // The "plugins" segment keeps a root-level plugin from colliding with a same-named skill slug.
-  const localRoot = join(destRoot, "plugins", slugDir(pluginRoot || target.repo) || "plugin");
+  // The "plugins" segment keeps a root-level plugin from colliding with a same-named skill slug;
+  // the index segment keeps two plugins (e.g. root + same-named subdirectory) from colliding.
+  // The index lives in the PARENT segment, not the leaf — basename(root) is the display name.
+  const localRoot = join(
+    destRoot,
+    "plugins",
+    String(opts.index ?? 0),
+    slugDir(pluginRoot || target.repo) || "plugin",
+  );
 
   const blobs = tree.entries.filter(
     (e) => e.type === "blob" && (pluginRoot === "" || e.path.startsWith(prefix)),
@@ -301,8 +313,9 @@ export async function materializePlugin(
   const rels = new Set(blobs.map((b) => (pluginRoot === "" ? b.path : b.path.slice(prefix.length))));
 
   const manifestRaw = await fetchRaw(target, tree.ref, `${prefix}${PLUGIN_MANIFEST}`, opts); // fatal: no manifest → not gradable
-  const wantContent = new Set(hookConfigPaths(manifestRaw, rels));
+  const hookConfigs = new Set(hookConfigPaths(manifestRaw, rels));
 
+  let contentFetched = 0;
   for (const blob of blobs) {
     const rel = pluginRoot === "" ? blob.path : blob.path.slice(prefix.length);
     const outPath = join(localRoot, rel);
@@ -311,16 +324,21 @@ export async function materializePlugin(
       writeFileSync(outPath, manifestRaw, "utf8");
       continue;
     }
-    if (wantContent.has(rel)) {
-      try {
-        writeFileSync(outPath, await fetchRaw(target, tree.ref, blob.path, opts), "utf8");
-        continue;
-      } catch {
-        /* hook-config fetch failed (rate limit) → fall through to a placeholder */
-      }
+    const isBinary = BINARY_EXT.has(ext(rel));
+    // Hook configs are fetched regardless of the budget (extension priority: HOOK-01 needs them).
+    const wantContent = hookConfigs.has(rel) || (!isBinary && contentFetched < maxContent);
+    if (!wantContent) {
+      writeFileSync(outPath, "", "utf8"); // placeholder — keeps the file list accurate
+      if (!isBinary) opts.onPlaceholder?.(rel); // a text file whose content was never scanned
+      continue;
     }
-    writeFileSync(outPath, "", "utf8"); // placeholder — keeps the file list accurate
-    if (!BINARY_EXT.has(ext(rel))) opts.onPlaceholder?.(rel); // a text file whose content was never scanned
+    try {
+      writeFileSync(outPath, await fetchRaw(target, tree.ref, blob.path, opts), "utf8");
+      contentFetched++;
+    } catch {
+      writeFileSync(outPath, "", "utf8"); // fetch failed (rate limit) → placeholder
+      if (!isBinary) opts.onPlaceholder?.(rel);
+    }
   }
   return localRoot;
 }
