@@ -317,6 +317,20 @@ user hits and repairs known warts on the core loop.*
 - **Auto-apply fixes** — `--suggest` proposes, the human applies; the tool never edits a repo
   beyond `init`'s reviewed README insert
 
+## Pre-launch QA pass · **CLOSED 2026-07-11** (`live-proven`, npm 0.11.1)
+
+> A 4-track read-only QA audit (spec-vs-code, live funnel, functional CLI sweep, report/data
+> integrity) found ZERO critical defects and a 5-item punch list, all fixed + live-verified
+> same-day: (1) **percentile honesty** — the sample is now the deterministic rubric-v1.2
+> distribution (regenerated live: 78% of public skills grade A under v1.2 — the old v1.0 LLM
+> sample was inflating percentiles ~68 points), labeled with its rubric, and a pinning test
+> makes future drift impossible; (2) the skills report is date/rubric-stamped with an honest
+> reproducibility note; (3) the trial button follows the sign-in URL; (4) all copy says five
+> kinds, --suggest/--annotations/--json documented, CI Action correctly FREE on both pricing
+> surfaces, /docs/checks + /dashboard de-orphaned; (5) --annotations single-target paths fixed
+> (segment-aware dedup) and the gallery seeded with real graded artifacts. 415 tests.
+> **Ship-ready. The launch send is the only remaining action.**
+
 ## Post-launch branch plan
 - **Win** (G0 passes): proceed down the v2 ranking — Sprint 7 → 8 → 9 → 10, re-ranked against
   what the first real users actually ask for.
