@@ -1,5 +1,9 @@
 # Skill Crossroads
 
+[![Skill Crossroads](https://skillcrossroads.com/api/badge/sgharlow/skillcrossroads.svg)](https://skillcrossroads.com/s/sgharlow/skillcrossroads)
+
+Claude Code artifacts graded by [Skill Crossroads](https://skillcrossroads.com) — click the badge for the evidence-cited scorecard.
+
 **Know before you ship.** The signpost for Claude Code skills, agents, slash commands, MCP
 configs, and plugins — live at [skillcrossroads.com](https://skillcrossroads.com).
 
