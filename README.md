@@ -161,8 +161,9 @@ skillcrossroads ./my-skill                        # now also scores Triggering &
 BEACON_MODEL=claude-haiku-4-5 skillcrossroads ./my-skill   # cheaper model
 ```
 
-Verdicts are cached by content hash in `.beacon-cache/`, so re-scanning an unchanged skill is
-free. Without a key, Skill Crossroads runs deterministic-only — **skill scans still score all six
+Verdicts are cached by content hash in a per-user OS cache directory (shared across every repo
+you scan; a legacy `./.beacon-cache` is used if one already exists), so re-scanning an unchanged
+skill is free. Without a key, Skill Crossroads runs deterministic-only — **skill scans still score all six
 categories** (rubric v1.1+; Triggering uses the deterministic heuristics, and a key upgrades it
 to the LLM verdict). Keyless agent scans leave Verifiability unscored; keyless command scans
 leave Verifiability unscored too (Triggering is n/a for commands either way).

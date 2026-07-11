@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { gradeHex, gradeRank } from "@beacon/core";
 import { scanHistory } from "@/lib/scans";
+import { badgeServes, type BadgeServeStats } from "@/lib/badge-serves";
 
 export const dynamic = "force-dynamic";
 
@@ -10,7 +11,13 @@ export const metadata: Metadata = {
 };
 
 export default async function Dashboard() {
-  const [stats, recent] = await Promise.all([scanHistory.stats(), scanHistory.recent(15)]);
+  // Badge stats degrade to null (tile hidden) rather than failing the page — the table may not
+  // exist yet on a fresh database, and metrics must never take the dashboard down.
+  const [stats, recent, badges] = await Promise.all([
+    scanHistory.stats(),
+    scanHistory.recent(15),
+    badgeServes.stats().catch((): BadgeServeStats | null => null),
+  ]);
   // Sort by the canonical grade ranking from @beacon/core (single source of truth — no local copy to drift).
   const gradeRows = Object.entries(stats.byGrade).sort((a, b) => gradeRank(a[0]) - gradeRank(b[0]));
   const maxGrade = Math.max(1, ...gradeRows.map(([, n]) => n));
@@ -39,6 +46,15 @@ export default async function Dashboard() {
           <div className="n">{stats.distinctSkills.toLocaleString()}</div>
           <div className="l">skills tracked</div>
         </div>
+        {badges !== null && (
+          <div className="tile">
+            <div className="n">{badges.reposOnGitHub.toLocaleString()}</div>
+            <div className="l">
+              badges in the wild — repos whose badge GitHub rendered, last {badges.windowDays}d
+              (origin hits only; CDN-cached serves not counted, so this is a floor)
+            </div>
+          </div>
+        )}
       </section>
 
       <section className="panel">

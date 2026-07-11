@@ -72,7 +72,8 @@ ${pc.bold("A local path may be a single skill or a folder of skills")} (every SK
 
 ${pc.bold("LLM-assisted checks (BYOK):")}
   Set ANTHROPIC_API_KEY to enable the triggering-quality check (TRIGGER-01).
-  Override the model with BEACON_MODEL. Verdicts are cached in .beacon-cache/.
+  Override the model with BEACON_MODEL. Verdicts are cached per-user (OS cache dir;
+  a legacy ./.beacon-cache in the current dir is used if one already exists).
 
 ${pc.bold("Examples:")}
   skillcrossroads ./my-skill

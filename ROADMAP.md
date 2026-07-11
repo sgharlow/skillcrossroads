@@ -279,6 +279,9 @@ user hits and repairs known warts on the core loop.*
 > invocation cues; avg 91.3 (agents) / 96.1 (commands). A 27-agent adversarial review of both
 > sprints found 10 verified defects (incl. reflected XSS on /s error pages and Pro scorecards
 > entering the shared CDN cache) — all fixed same-day with regressions. 409 tests.
+> **Not shipped from item 19's list: SAFETY-05 (MCP input-validation statics)** — deferred to
+> the check-cadence backlog; noting it here because this roadmap's own rule is announced,
+> never silent (flagged by the 2026-07-11 QA pass).
 > **The v2 roadmap is now fully shipped (Sprints 7–10). Everything below is demand-gated;
 > the launch send remains the binding constraint.**
 

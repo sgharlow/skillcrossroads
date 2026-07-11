@@ -221,6 +221,7 @@ export default function Home(): ReactElement {
           <a href="/report">Report</a>
           <a href="/report-agents">Agents report</a>
           <a href="/docs/checks">Check reference</a>
+          <a href="/docs/code-handling">Your code &amp; privacy</a>
           <a href="/dashboard">Ecosystem stats</a>
           <a href="https://github.com/sgharlow/skillcrossroads">GitHub</a>
           <span className="foot-dom mono">skillcrossroads.com</span>

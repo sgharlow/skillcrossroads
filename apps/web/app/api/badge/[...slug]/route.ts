@@ -3,6 +3,7 @@ import { renderBadge, type Scorecard } from "@beacon/core";
 import { parseSlug, scanTarget, averageGrade, type SlugTarget, type ScanOptions } from "@/lib/scan";
 import { resolveScanOptions } from "@/lib/pro-scan";
 import { badgeCache, isStale, isExpired } from "@/lib/badge-cache";
+import { badgeServes } from "@/lib/badge-serves";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -104,6 +105,11 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
   }
   const anonymous = !opts.token && !opts.ctx?.model;
   const key = cacheKey(target);
+
+  // Badges-in-the-wild instrumentation: a `github-camo` user-agent means this badge was just
+  // rendered on a GitHub page. Fire-and-forget — recording never delays or fails the <img>.
+  const ua = req.headers.get("user-agent");
+  background(() => badgeServes.record(`${target.owner.toLowerCase()}/${target.repo.toLowerCase()}`, ua));
 
   if (anonymous) {
     const hit = await badgeCache.get(key).catch(() => null);

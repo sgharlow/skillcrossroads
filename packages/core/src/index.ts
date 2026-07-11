@@ -26,7 +26,7 @@ export { score, letterGrade, gradeRank, meetsMinGrade, GRADE_ORDER } from "./sco
 export { renderMarkdown, mdCell, type MarkdownOptions } from "./render/markdown.js";
 export type { ModelClient, StructuredRequest, JsonSchema } from "./llm/types.js";
 export { createAnthropicClient, DEFAULT_MODEL, ModelError } from "./llm/anthropic.js";
-export { createFileCache, createMemoryCache, hashKey, type Cache } from "./llm/cache.js";
+export { createFileCache, createMemoryCache, defaultCacheDir, hashKey, type Cache } from "./llm/cache.js";
 export {
   estimateTokens,
   heuristicCounter,

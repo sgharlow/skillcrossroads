@@ -25,6 +25,11 @@
   "engines": {
     "node": ">=20"
   },
+  "overrides": {
+    "next": {
+      "postcss": ">=8.5.10"
+    }
+  },
   "devDependencies": {
     "@types/node": "^22.10.0",
     "typescript": "^5.7.0",
