@@ -50,9 +50,11 @@ function categorySummary(cat: CategoryScore): string {
 
 function categoryRow(cat: CategoryScore): string {
   if (!cat.evaluated) {
-    const content = `  ${padTo(cat.label, LABEL_W)}      ${pc.dim("not yet scored")}`;
+    // Structurally n/a for this kind vs a real coverage hole ("not yet scored").
+    const label = cat.applicable ? "not yet scored" : "n/a for this kind";
+    const content = `  ${padTo(cat.label, LABEL_W)}      ${pc.dim(label)}`;
     // pad using plain (uncolored) length
-    const plain = `  ${padTo(cat.label, LABEL_W)}      not yet scored`;
+    const plain = `  ${padTo(cat.label, LABEL_W)}      ${label}`;
     return `│${content}${" ".repeat(Math.max(0, INNER - vlen(plain)))}│`;
   }
   const s = cat.score as number;
@@ -147,7 +149,7 @@ export function renderTerminal(card: Scorecard, opts: RenderOptions = {}): strin
     lines.push("");
     lines.push(
       pc.dim(
-        "Partial grade: rubric categories with no applicable/scored checks for this scan are excluded from the overall.",
+        "Partial grade: applicable rubric categories that were not scored on this scan (e.g. keyless LLM checks) are excluded from the overall.",
       ),
     );
   }

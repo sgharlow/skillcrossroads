@@ -370,7 +370,7 @@ async function main(): Promise<void> {
             process.stderr.write(pc.dim(`  skipped "${s.server}" (url transport — stdio only)\n`));
           const live = gradeMcpLive(".mcp.json", intro);
           if (live.length > 0)
-            res = { ...res, scorecard: { ...score([...res.scorecard.results, ...live]), kind: "mcp" } };
+            res = { ...res, scorecard: { ...score([...res.scorecard.results, ...live], "mcp"), kind: "mcp" } };
         } else if (args.mcpLive) {
           process.stderr.write(pc.yellow("  --mcp-live ignored: the target is not a .mcp.json\n"));
         }

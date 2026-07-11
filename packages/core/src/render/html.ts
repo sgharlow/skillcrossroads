@@ -56,9 +56,11 @@ function gauge(card: Scorecard): string {
 
 function categoryRow(cat: CategoryScore): string {
   if (!cat.evaluated) {
+    // Structurally n/a for this kind (no check can ever score it) vs a real coverage hole.
+    const label = cat.applicable ? "not yet scored" : "n/a for this artifact kind";
     return `<div class="cat cat--na">
       <span class="cat-label">${esc(cat.label)}</span>
-      <span class="cat-na">not yet scored</span>
+      <span class="cat-na">${label}</span>
     </div>`;
   }
   const score = Math.round(cat.score as number);
@@ -210,7 +212,7 @@ export function renderHtml(card: Scorecard, opts: HtmlOptions = {}): string {
       : `<section class="clean">✓ No warnings or failures. Clean scan.</section>`;
 
   const partialNote = card.partial
-    ? `<div class="note">Partial grade — some rubric categories have no checks in this version and are excluded from the overall.</div>`
+    ? `<div class="note">Partial grade — some applicable rubric categories were not scored on this scan (e.g. LLM-assisted checks without a key) and are excluded from the overall.</div>`
     : "";
   // Ecosystem context on full-rubric SKILL scans only — the sample is 214 skills; ranking an
   // agent/command/mcp card against it would overstate (kind defaults to skill for legacy cards).

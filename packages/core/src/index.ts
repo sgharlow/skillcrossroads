@@ -93,7 +93,7 @@ function displayName(artifact: Artifact): string {
 /** Convenience: parse a skill directory and return its deterministic scorecard (no LLM). */
 export function audit(inputPath: string, type: ArtifactType = "skill"): AuditResult {
   const artifact = parse(inputPath, type);
-  const scorecard = { ...score(runChecks(artifact)), kind: artifact.type };
+  const scorecard = { ...score(runChecks(artifact), artifact.type), kind: artifact.type };
   return { artifact, scorecard, name: displayName(artifact) };
 }
 
@@ -112,7 +112,7 @@ export async function auditAsync(
     extra.unscannedFiles && extra.unscannedFiles.length > 0
       ? { ...base, unscannedFiles: extra.unscannedFiles }
       : base;
-  const scorecard = { ...score(await runChecksAsync(artifact, ctx)), kind: artifact.type };
+  const scorecard = { ...score(await runChecksAsync(artifact, ctx), artifact.type), kind: artifact.type };
   return { artifact, scorecard, name: displayName(artifact) };
 }
 

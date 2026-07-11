@@ -1,11 +1,13 @@
 import {
   CATEGORIES,
   RUBRIC_VERSION,
+  type ArtifactType,
   type Category,
   type CategoryScore,
   type CheckResult,
   type Scorecard,
 } from "./types.js";
+import { applicableCategories } from "./checks/index.js";
 
 /** Letter grades best → worst, for ranking/gating. */
 export const GRADE_ORDER = [
@@ -66,8 +68,13 @@ function categoryScore(results: CheckResult[]): number {
  * Overall is computed over **evaluated categories only**, with the rubric weights renormalized
  * across them. Categories with no checks are reported as `evaluated: false` / `score: null` and
  * excluded from the overall — an honest partial grade, never a faked zero or a full 100.
+ *
+ * When `kind` is given, categories no check in the catalog can score for that kind are marked
+ * `applicable: false` and never make the grade `partial` — a command's Triggering row is
+ * structurally n/a, not missing coverage. Without a kind every category counts as applicable
+ * (legacy behavior for hand-rolled results).
  */
-export function score(results: readonly CheckResult[]): Scorecard {
+export function score(results: readonly CheckResult[], kind?: ArtifactType): Scorecard {
   const byCategory = new Map<Category, CheckResult[]>();
   for (const r of results) {
     const list = byCategory.get(r.category) ?? [];
@@ -75,6 +82,7 @@ export function score(results: readonly CheckResult[]): Scorecard {
     byCategory.set(r.category, list);
   }
 
+  const canScore = kind ? applicableCategories(kind) : null;
   const categories: CategoryScore[] = CATEGORIES.map((meta) => {
     const list = byCategory.get(meta.key) ?? [];
     const evaluated = list.length > 0;
@@ -83,6 +91,8 @@ export function score(results: readonly CheckResult[]): Scorecard {
       label: meta.label,
       weight: meta.weight,
       evaluated,
+      // A category with actual results is applicable by definition (live/injected checks).
+      applicable: canScore ? canScore.has(meta.key) || evaluated : true,
       score: evaluated ? categoryScore(list) : null,
       results: list,
       warnCount: list.filter((r) => r.status === "warn").length,
@@ -105,6 +115,6 @@ export function score(results: readonly CheckResult[]): Scorecard {
     grade: letterGrade(shown),
     categories,
     results: [...results],
-    partial: evaluated.length < CATEGORIES.length,
+    partial: categories.some((c) => c.applicable && !c.evaluated),
   };
 }

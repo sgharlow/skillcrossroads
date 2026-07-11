@@ -48,7 +48,8 @@ function statusMark(status: string): string {
 
 function categoryRow(cat: CategoryScore): string {
   // cat.label is a fixed rubric label (trusted) — no escaping needed.
-  if (!cat.evaluated) return `| ${cat.label} | — | _not scored_ |`;
+  // Structurally n/a for this kind vs a real coverage hole ("not scored").
+  if (!cat.evaluated) return `| ${cat.label} | — | ${cat.applicable ? "_not scored_" : "_n/a_"} |`;
   const summary = cat.failCount > 0 ? `✗ ${cat.failCount}` : cat.warnCount > 0 ? `⚠ ${cat.warnCount}` : "✓";
   return `| ${cat.label} | ${Math.round(cat.score as number)} | ${summary} |`;
 }

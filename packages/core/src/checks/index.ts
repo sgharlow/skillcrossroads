@@ -1,4 +1,4 @@
-import type { Artifact, Check, CheckResult } from "../types.js";
+import type { Artifact, ArtifactType, Category, Check, CheckResult } from "../types.js";
 import type { AsyncCheck, CheckContext } from "./async.js";
 import { struct01 } from "./struct-01-frontmatter.js";
 import { struct02 } from "./struct-02-fields.js";
@@ -95,14 +95,44 @@ export type { AsyncCheck, CheckContext } from "./async.js";
  * explicitly, so frontmatter/prose checks can never mis-fire on a config file.
  */
 export function applicableChecks(artifact: Artifact): readonly Check[] {
-  if (artifact.type === "mcp") return CHECKS.filter((c) => c.appliesTo?.includes("mcp"));
-  return CHECKS.filter((c) => !c.appliesTo || c.appliesTo.includes(artifact.type));
+  return checksForKind(artifact.type);
 }
 
 /** Same applicability rule for the LLM-assisted set (mcp is whitelist-only there too). */
 export function applicableAsyncChecks(artifact: Artifact): readonly AsyncCheck[] {
-  if (artifact.type === "mcp") return ASYNC_CHECKS.filter((c) => c.appliesTo?.includes("mcp"));
-  return ASYNC_CHECKS.filter((c) => !c.appliesTo || c.appliesTo.includes(artifact.type));
+  return asyncChecksForKind(artifact.type);
+}
+
+function checksForKind(kind: ArtifactType): readonly Check[] {
+  if (kind === "mcp") return CHECKS.filter((c) => c.appliesTo?.includes("mcp"));
+  return CHECKS.filter((c) => !c.appliesTo || c.appliesTo.includes(kind));
+}
+
+function asyncChecksForKind(kind: ArtifactType): readonly AsyncCheck[] {
+  if (kind === "mcp") return ASYNC_CHECKS.filter((c) => c.appliesTo?.includes("mcp"));
+  return ASYNC_CHECKS.filter((c) => !c.appliesTo || c.appliesTo.includes(kind));
+}
+
+/**
+ * Categories the live `--mcp-live` checks (MCPT-01/02/03, `mcp-live.ts`) can score for an
+ * `mcp` config. Declared here (not imported) to keep the registry cycle-free; the mcp-live
+ * tests pin these against the real check results so drift fails loudly.
+ */
+const LIVE_MCP_CATEGORIES: readonly Category[] = ["correctness", "triggering", "clarity"];
+
+/**
+ * Every category that CAN be scored for an artifact kind — the union of the deterministic and
+ * LLM-assisted registries applicable to that kind, plus (for `mcp`) the live-introspection
+ * checks. `score()` uses this to separate "structurally n/a for this kind" (never a coverage
+ * hole) from "could have scored but didn't" (a genuinely partial grade — e.g. keyless LLM
+ * checks, a static-only mcp scan, or a suppression hole).
+ */
+export function applicableCategories(kind: ArtifactType): ReadonlySet<Category> {
+  const cats = new Set<Category>();
+  for (const c of checksForKind(kind)) cats.add(c.category);
+  for (const c of asyncChecksForKind(kind)) cats.add(c.category);
+  if (kind === "mcp") for (const c of LIVE_MCP_CATEGORIES) cats.add(c);
+  return cats;
 }
 
 /** Run every applicable deterministic check against an artifact. Sync, no network. `ctx` is optional. */

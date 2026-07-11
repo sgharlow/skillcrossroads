@@ -142,6 +142,14 @@ export interface CategoryScore {
   /** 0–100, or null when no checks evaluated this category (v0.1). */
   readonly score: number | null;
   readonly evaluated: boolean;
+  /**
+   * Whether ANY check in the catalog could score this category for the graded artifact's kind
+   * (see `applicableCategories`). `false` = structurally n/a (e.g. Triggering for an explicitly
+   * invoked command) — renderers label it "n/a", and it never makes a grade partial. `true` +
+   * `evaluated: false` = a real coverage hole (keyless LLM, static-only mcp, suppression).
+   * Always `true` when `score()` was called without a kind (legacy behavior).
+   */
+  readonly applicable: boolean;
   readonly results: readonly CheckResult[];
   readonly warnCount: number;
   readonly failCount: number;
@@ -172,7 +180,12 @@ export interface Scorecard {
   readonly grade: string;
   readonly categories: readonly CategoryScore[];
   readonly results: readonly CheckResult[];
-  /** True if at least one category had no checks (overall is a partial grade). */
+  /**
+   * True when at least one APPLICABLE category went unscored (keyless LLM checks, a static-only
+   * mcp scan, a suppression hole) — the grade covers less than the catalog could measure for
+   * this kind. Categories that are structurally n/a for the kind never make a grade partial.
+   * Without a kind (legacy `score(results)` calls), every category counts as applicable.
+   */
   readonly partial: boolean;
   /** Checks excluded from this grade by `.skillcrossroads.json` — always rendered, never silent. */
   readonly suppressed?: readonly Suppression[];
