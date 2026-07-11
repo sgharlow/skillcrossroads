@@ -196,7 +196,16 @@ plus evidence. Category scores roll up to an overall 0–100 and a letter grade.
 
 The rubric is **versioned** (`RUBRIC_VERSION` in `@beacon/core`); the implemented check catalog
 is [`packages/core/src/checks/index.ts`](./packages/core/src/checks/index.ts), with more checks
-on the roadmap.
+on the roadmap. **Every check has a reference page** — what it looks for, why it matters, and
+how to fix it, with examples — at
+[skillcrossroads.com/docs/checks](https://skillcrossroads.com/docs/checks); findings on every
+surface (scorecard, PR comment, annotations, terminal) link to their check's page.
+
+**Partial grades are kind-aware:** a grade is marked partial (`*` on the badge) only when a
+category that *could* score for that artifact kind went unscored — e.g. keyless LLM checks, or
+a `.mcp.json` scanned without `--mcp-live`. Categories that structurally don't apply to a kind
+(Triggering for an explicitly-invoked slash command) show as "n/a" and never mark the grade
+partial, so a fully-keyed command scan is a full grade.
 
 ## Configuration (`.skillcrossroads.json`)
 

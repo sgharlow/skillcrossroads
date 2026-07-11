@@ -118,10 +118,21 @@ token 15%, safety 15%, verifiability 10%. The rubric is **versioned** (`RUBRIC_V
 rubric bump is a content/announcement event, so never change weights silently.
 
 Under **rubric v1.1, keyless SKILL scans score all six categories** (Triggering via TRIGGER-02/03,
-Verifiability via VERIFY-01); agents/commands/mcp stay honestly partial where a category doesn't
-apply to that kind. Overall is computed over **evaluated categories only, with weights
-renormalized**, and any unevaluated category is shown as "not yet scored". This is deliberate
-honesty, not a bug — do not fake scores for categories without checks.
+Verifiability via VERIFY-01). Overall is computed over **evaluated categories only, with weights
+renormalized**. **Partial is kind-aware** (Sprint 7): `applicableCategories(kind)` in the check
+registry is the one authoritative answer to "what CAN score for this kind" (deterministic + LLM +
+live-MCPT for mcp), and a grade is `partial` only when an APPLICABLE category went unscored
+(keyless LLM checks, a static-only mcp scan, a suppression hole). Categories no check can ever
+score for the kind (e.g. Triggering for an explicitly-invoked command) are `applicable: false`,
+render as "n/a for this artifact kind", and never mark the grade partial — so a keyed command
+scan or a full `--mcp-live` scan carries no asterisk. This is deliberate honesty, not a bug —
+do not fake scores for categories without checks.
+
+**Check docs are part of the check** (Sprint 7): `docs: { why, fix, good?, bad? }` is a REQUIRED
+field on `Check`/`AsyncCheck` — a check without fix guidance cannot compile. `allCheckDocs()`
+feeds the hosted `/docs/checks` reference pages (statically generated, sitemapped), and every
+surface links findings to their page via `checkDocsUrl` (`badge-embed.ts`, alongside the badge
+URL contract).
 
 ### GitHub scanning (`github.ts`, `scanGitHubRepo`)
 
