@@ -99,9 +99,11 @@ The current catalog (rubric v1.2): **deterministic** — `STRUCT-01/02/05` front
 `TOKEN-01/02/03` budgets + disclosure · `TOKEN-04` recurring per-invocation cost estimate
 (informational; never fails — TOKEN-01 owns the budget gate) · `CLARITY-03` no filler · `SAFETY-01..04` secrets
 (incl. JSON env values)/least-privilege/auto-invoke/`!`-injection · `TRIGGER-02/03` description
-length + invocation cues · `TRIGGER-05` invocation-flag consistency (skills+agents+commands —
-commands score Triggering since v1.2) · `VERIFY-01` evals present (skills) · `VERIFY-03`
-version/changelog/readme hygiene (skills; warns, never fails) · `AGENT-01` model validity ·
+length + invocation cues · `TRIGGER-05` invocation-flag consistency (skills+agents ONLY —
+commands keep Triggering n/a: an explicitly-invoked command must not fill the rubric's largest
+category from mere flag-absence) · `VERIFY-01` evals present (skills) · `VERIFY-03`
+version/changelog/readme hygiene (skills; informational, always passes — a per-skill scan
+can't see repo-root hygiene) · `AGENT-01` model validity ·
 `CMD-01` argument-hint agreement · `MCP-01/02/03` config shape/pinning/TLS · `PLUGIN-01/02/03` manifest validity/component
 resolution/description · `HOOK-01` hooks destructive-command sweep. **LLM-assisted
 (BYOK, kind-scoped)** — `TRIGGER-01` (skills+agents) · `VERIFY-04` · `CLARITY-05` · `CLARITY-02`
@@ -123,8 +125,9 @@ token 15%, safety 15%, verifiability 10%. The rubric is **versioned** (`RUBRIC_V
 rubric bump is a content/announcement event, so never change weights silently.
 
 Under **rubric v1.2, keyless SKILL scans score all six categories** (Triggering via
-TRIGGER-02/03/05, Verifiability via VERIFY-01/03) — and since v1.2, keyless COMMAND scans score
-Triggering too (TRIGGER-05 invocation-flag consistency). Overall is computed over **evaluated
+TRIGGER-02/03/05, Verifiability via VERIFY-01/03). COMMANDS keep Triggering **n/a for the kind**
+(TRIGGER-05 is skills+subagents only — a command with no triggering affordances must not score
+the category from flag-absence). Overall is computed over **evaluated
 categories only, with weights renormalized**. **Partial is kind-aware** (Sprint 7):
 `applicableCategories(kind)` in the check
 registry is the one authoritative answer to "what CAN score for this kind" (deterministic + LLM +

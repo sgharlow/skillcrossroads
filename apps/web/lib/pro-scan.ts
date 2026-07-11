@@ -1,9 +1,16 @@
-import { createAnthropicClient, createAnthropicTokenCounter, type CheckContext } from "@beacon/core";
+import { createAnthropicClient, createAnthropicTokenCounter, createMemoryCache, type CheckContext } from "@beacon/core";
 import { readSession, trustLogin } from "./session";
 import { entitlements } from "./entitlements";
 import type { ScanOptions } from "./scan";
 
 let warnedMisconfig = false;
+
+/**
+ * Per-instance verdict/suggestion cache for the managed-LLM ctx (content-hash keyed, like the
+ * CLI's file cache). Module-level singleton: without it, every Pro ?suggest=1 reload of an
+ * UNCHANGED artifact re-runs full managed-key generations — uncached server-side LLM spend.
+ */
+const managedLlmCache = createMemoryCache();
 
 /**
  * Resolve scan options for a request:
@@ -37,6 +44,7 @@ export async function resolveScanOptions(req: Request): Promise<ScanOptions & { 
     const ctx: CheckContext = {
       model: createAnthropicClient({ apiKey: managedKey, model }),
       tokenCounter: createAnthropicTokenCounter({ apiKey: managedKey, model }),
+      cache: managedLlmCache,
     };
     opts.ctx = ctx;
   }

@@ -25,6 +25,11 @@ function flagEvidence(artifact: { raw: string }, file: string, key: string, rest
  * non-boolean value (the classic YAML string `"true"`) silently misconfigures the flag; the
  * combination `user-invocable: false` + `disable-model-invocation: true` means NOBODY can ever
  * invoke it — pure dead weight in every session.
+ *
+ * Skills + subagents ONLY. Commands are explicitly invoked (matching TRIGGER-01/02/03), so a
+ * command with no triggering affordances must not fill the rubric's largest category (22%)
+ * with a vacuous 100 from mere flag-absence — commands keep Triggering "n/a for this kind",
+ * the honest v1.1 semantics.
  */
 export const trigger05: Check = {
   id: "TRIGGER-05",
@@ -53,7 +58,7 @@ export const trigger05: Check = {
       "disable-model-invocation: \"true\"   # a string AND, with the line above, uninvocable by anyone\n" +
       "---",
   },
-  appliesTo: ["skill", "subagent", "command"],
+  appliesTo: ["skill", "subagent"],
   run(artifact): CheckResult {
     const file = entryRel(artifact);
     const fm = artifact.frontmatter;

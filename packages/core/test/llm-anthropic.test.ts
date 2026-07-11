@@ -51,6 +51,26 @@ describe("createAnthropicClient", () => {
     await expect(client.generateStructured(req)).rejects.toThrow(/refus/i);
   });
 
+  it("honors a per-request timeoutMs override (long generations outlast the verdict default)", async () => {
+    // A fetch that never resolves on its own — only the abort signal can end it.
+    const fetchImpl = ((_url: string, init: RequestInit) =>
+      new Promise((_resolve, reject) => {
+        init.signal?.addEventListener("abort", () => reject(new Error("This operation was aborted")));
+      })) as unknown as typeof fetch;
+    const client = createAnthropicClient({ apiKey: "x", fetchImpl, timeoutMs: 60_000 });
+    // req.timeoutMs (tiny) must win over the client default — the call aborts almost immediately.
+    await expect(client.generateStructured({ ...req, timeoutMs: 5 })).rejects.toBeInstanceOf(ModelError);
+  });
+
+  it("keeps the client-level timeout when the request sets none (additive default)", async () => {
+    const fetchImpl = ((_url: string, init: RequestInit) =>
+      new Promise((_resolve, reject) => {
+        init.signal?.addEventListener("abort", () => reject(new Error("This operation was aborted")));
+      })) as unknown as typeof fetch;
+    const client = createAnthropicClient({ apiKey: "x", fetchImpl, timeoutMs: 5 });
+    await expect(client.generateStructured(req)).rejects.toBeInstanceOf(ModelError);
+  });
+
   it("throws when no tool call is returned", async () => {
     const fetchImpl = (async () =>
       jsonResponse({ stop_reason: "end_turn", content: [{ type: "text", text: "hi" }] })) as unknown as typeof fetch;

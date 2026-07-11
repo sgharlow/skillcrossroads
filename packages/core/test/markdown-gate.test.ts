@@ -9,7 +9,9 @@ describe("renderMarkdown", () => {
   it("renders a grade header, category table, and top fixes", () => {
     const { scorecard, name } = audit(fixture("dangling-ref"));
     const md = renderMarkdown(scorecard, { name });
-    expect(md).toMatch(/^### .*Skill Crossroads: A− —/m); // v1.2: VERIFY-03 warn moves dangling-ref A → A−
+    // VERIFY-03 demoted to informational (repo-root hygiene is invisible to a per-skill scan),
+    // so dangling-ref is back to A — only the real STRUCT-05 failure moves the grade.
+    expect(md).toMatch(/^### .*Skill Crossroads: A —/m);
     expect(md).toContain("| Category | Score | |");
     expect(md).toContain("**Top fixes**");
     expect(md).toContain("**[STRUCT-05](https://skillcrossroads.com/docs/checks/struct-05)**");

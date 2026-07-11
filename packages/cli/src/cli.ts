@@ -7,9 +7,6 @@ import {
   scanLocalDir,
   isGitHubUrl,
   GitHubError,
-  renderTerminal,
-  renderHtml,
-  renderBadge,
   renderMarkdown,
   renderAnnotations,
   mdCell,
@@ -31,9 +28,11 @@ import {
   type CrossroadsConfig,
   type CheckContext,
   type AuditResult,
+  type FixSuggestion,
   type ScannedSkill,
 } from "@beacon/core";
 import { runInit } from "./init.js";
+import { emitSingle, emitSuggestions, kindLabel, type OptionalPath } from "./output.js";
 
 const USAGE = `${pc.bold("skillcrossroads")} — Skill Crossroads, the signpost for Claude Code artifacts
 
@@ -81,9 +80,6 @@ ${pc.bold("Examples:")}
   skillcrossroads init                                   # badge this repo's README
   ANTHROPIC_API_KEY=sk-... skillcrossroads ./my-skill
 `;
-
-/** A flag that takes an optional `=value`: undefined = absent, true = present (default path), string = explicit. */
-type OptionalPath = string | true | undefined;
 
 interface Args {
   path?: string;
@@ -162,29 +158,11 @@ function parseArgs(argv: readonly string[]): Args {
   return args;
 }
 
-/** Filesystem-safe slug for default output filenames. */
-function slug(name: string): string {
-  return name.replace(/[^a-z0-9._-]+/gi, "-").replace(/^-+|-+$/g, "") || "artifact";
-}
-
-function today(): string {
-  return new Date().toISOString().slice(0, 10);
-}
-
 /** CLI version — keep in sync with packages/cli/package.json on every `npm version` bump. */
-const VERSION = "0.10.0";
+const VERSION = "0.11.0";
 
 /** The site whose scorecards/badges the CLI points at (override for self-hosting). */
 const SITE_URL = process.env["BEACON_SITE_URL"] ?? DEFAULT_SITE_URL;
-
-function writeArtifact(kind: "html" | "svg", opt: OptionalPath, name: string, content: string): string {
-  const target = typeof opt === "string" ? opt : `${slug(name)}.beacon.${kind}`;
-  const abs = resolve(target);
-  writeFileSync(abs, content, "utf8");
-  // Diagnostics go to stderr so `--markdown`/`--json` stdout stays a clean report.
-  process.stderr.write(pc.dim(`  wrote ${kind.toUpperCase()} → ${abs}\n`));
-  return target;
-}
 
 /** Build the LLM check context from the environment, or an empty context (deterministic-only). */
 function buildContext(noLlm: boolean, warnings: string[]): CheckContext {
@@ -199,79 +177,6 @@ function buildContext(noLlm: boolean, warnings: string[]): CheckContext {
     cache,
     onError: (id, err) => warnings.push(`${id} skipped: ${err instanceof Error ? err.message : String(err)}`),
   };
-}
-
-/** Display label: name plus a kind tag for non-skill artifacts. */
-function kindLabel(r: AuditResult): string {
-  const t = r.artifact.type;
-  return t === "skill" ? r.name : `${r.name} [${t === "subagent" ? "agent" : t}]`;
-}
-
-/** Emit one artifact's report (terminal or markdown) + any requested HTML/badge artifacts. */
-function emitSingle(result: AuditResult, args: Args): void {
-  const { scorecard } = result;
-  const name = kindLabel(result);
-  if (args.markdown) {
-    process.stdout.write(`${renderMarkdown(scorecard, { name, siteUrl: SITE_URL })}\n`);
-  } else {
-    process.stdout.write(`\n${renderTerminal(scorecard, { name, siteUrl: SITE_URL })}\n`);
-  }
-  if (args.html !== undefined) {
-    writeArtifact("html", args.html, name, renderHtml(scorecard, { name, scannedAt: today(), homeUrl: SITE_URL, siteUrl: SITE_URL }));
-  }
-  if (args.badge !== undefined) {
-    const target = writeArtifact("svg", args.badge, name, renderBadge(scorecard));
-    // Emit the one copy-paste line an author needs — this is how the badge loop actually spreads.
-    // To stderr so it never pollutes a redirected `--markdown`/`--json` report.
-    const rel = target.startsWith(".") || target.startsWith("/") ? target : `./${target}`;
-    process.stderr.write(pc.dim(`  embed it:  `) + `![Skill Crossroads](${rel})\n`);
-    process.stderr.write(
-      pc.dim(`  or an always-fresh, linked badge from ${SITE_URL} once your repo is public:\n`) +
-        pc.dim(`    [![Skill Crossroads](${SITE_URL}/api/badge/OWNER/REPO.svg)](${SITE_URL}/s/OWNER/REPO)\n`),
-    );
-  }
-}
-
-/**
- * Print the `--suggest` section for a single artifact. Suggestions are PROPOSALS — this function
- * (and the CLI as a whole) never writes them anywhere; the human reviews and edits.
- */
-async function emitSuggestions(
-  result: AuditResult,
-  ctx: CheckContext,
-  max: number,
-  out: NodeJS.WriteStream,
-): Promise<void> {
-  const findings = result.scorecard.results.filter((r) => r.status !== "pass");
-  if (findings.length === 0) {
-    out.write(pc.dim("\n  clean scan — nothing to suggest\n"));
-    return;
-  }
-  if (!ctx.model) {
-    out.write(pc.yellow("\n  set ANTHROPIC_API_KEY to enable --suggest\n"));
-    return;
-  }
-  const suggestions = await suggestFixes(result.artifact, result.scorecard, ctx, { max });
-  if (suggestions.length === 0) {
-    out.write(pc.dim("\n  no suggestions produced for these findings\n"));
-    return;
-  }
-  out.write(`\n${pc.bold("SUGGESTED FIXES")} ${pc.dim("(review before applying — nothing is written)")}\n`);
-  for (const s of suggestions) {
-    out.write(`\n  ${pc.bold(s.checkId)}  ${s.summary}\n`);
-    if (s.current !== undefined || s.proposed !== undefined) {
-      if (s.current !== undefined) {
-        out.write(pc.dim("    current:\n"));
-        for (const line of s.current.split("\n")) out.write(pc.dim(`      ${line}\n`));
-      }
-      if (s.proposed !== undefined) {
-        out.write(pc.green("    proposed:\n"));
-        for (const line of s.proposed.split("\n")) out.write(pc.green(`      ${line}\n`));
-      }
-    } else if (s.steps && s.steps.length > 0) {
-      s.steps.forEach((step, i) => out.write(`    ${i + 1}. ${step}\n`));
-    }
-  }
 }
 
 function gradeColor(grade: string): (s: string) => string {
@@ -470,6 +375,18 @@ async function main(): Promise<void> {
     process.stderr.write(pc.dim(`  wrote ${lines.length} annotation(s) → ${resolve(args.annotations)}\n`));
   }
 
+  // Suggested fixes (--suggest) are computed BEFORE any rendering so the HTML scorecard can
+  // embed the section — generating them after the artifact files were written silently dropped
+  // them from --html output. Single-artifact scans with a model only; emitSuggestions handles
+  // the no-model / clean-scan messaging.
+  let suggestions: FixSuggestion[] | undefined;
+  if (args.suggest !== undefined && skills.length === 1 && ctx.model) {
+    const single = skills[0] as AuditResult;
+    if (single.scorecard.results.some((r) => r.status !== "pass")) {
+      suggestions = await suggestFixes(single.artifact, single.scorecard, ctx, { max: args.suggest });
+    }
+  }
+
   // Render
   if (args.json) {
     const body =
@@ -478,19 +395,26 @@ async function main(): Promise<void> {
         : { target: args.path, ...meta, skills: skills.map((s) => ({ repoPath: s.repoPath, name: s.name, kind: s.artifact.type, ...s.scorecard })), errors };
     process.stdout.write(`${JSON.stringify(body, null, 2)}\n`);
   } else if (skills.length === 1) {
-    emitSingle(skills[0] as AuditResult, args);
+    emitSingle(skills[0] as AuditResult, {
+      markdown: args.markdown,
+      html: args.html,
+      badge: args.badge,
+      siteUrl: SITE_URL,
+      ...(suggestions ? { suggestions } : {}),
+    });
   } else {
     emitBatch(skills, errors, args.path, args, meta);
   }
 
-  // Suggested fixes (--suggest): single-artifact scans only. Reports on stdout stay clean —
-  // in --json/--markdown mode the section goes to stderr like every other diagnostic.
+  // The terminal --suggest section: single-artifact scans only. Reports on stdout stay clean —
+  // in --json/--markdown mode the section goes to stderr like every other diagnostic. The
+  // precomputed suggestions are reused, so the model is never called twice.
   if (args.suggest !== undefined) {
     if (skills.length > 1) {
       process.stderr.write(pc.yellow("  suggest works on a single artifact — point it at one\n"));
     } else {
       const out = args.json || args.markdown ? process.stderr : process.stdout;
-      await emitSuggestions(skills[0] as AuditResult, ctx, args.suggest, out);
+      await emitSuggestions(skills[0] as AuditResult, ctx, args.suggest, out, suggestions);
     }
   }
 

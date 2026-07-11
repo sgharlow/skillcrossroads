@@ -114,17 +114,24 @@ describe("VERIFY-03 maintenance hygiene (skills only)", () => {
     expect(verify03.run(makeArtifact({ files: ["readme"] })).status).toBe("pass");
   });
 
-  it("a nested readme does not count", () => {
+  // INFORMATIONAL demotion: a skill's artifact.files can't see the repo root (hosted scans
+  // materialize only the skill dir), so absence must not accuse repos with root-level hygiene
+  // (anthropics/skills) falsely. Nothing found → still pass/100, with an honest evidence note.
+  it("a nested readme is not cited as maintenance hygiene, but the check still passes (informational)", () => {
     const r = verify03.run(makeArtifact({ files: ["docs/README.md"] }));
-    expect(r.status).toBe("warn");
+    expect(r.status).toBe("pass");
+    expect(r.score).toBe(100);
+    expect(r.evidence[0]?.message).toMatch(/repo-root hygiene isn't visible to a per-skill scan/);
   });
 
-  it("warns (score 60, never fail) when none of the three exist (dangling-ref fixture)", () => {
+  it("passes informationally (never warns) when none of the three exist (dangling-ref fixture)", () => {
     const { scorecard } = audit(fixture("dangling-ref"));
     const r = scorecard.results.find((x) => x.id === "VERIFY-03");
-    expect(r?.status).toBe("warn");
-    expect(r?.score).toBe(60);
-    expect(r?.evidence[0]?.verified).toMatch(/no `version` frontmatter, no CHANGELOG/);
+    expect(r?.status).toBe("pass");
+    expect(r?.score).toBe(100);
+    expect(r?.evidence[0]?.message).toMatch(/repo-root hygiene isn't visible to a per-skill scan/);
+    // Regression: the old warn dinged dangling-ref's grade for repo hygiene it couldn't see.
+    expect(scorecard.grade).toBe("A");
   });
 });
 
@@ -134,9 +141,8 @@ describe("rubric v1.2 kind scoping", () => {
   const idsFor = (type: "skill" | "subagent" | "command" | "mcp" | "plugin") =>
     applicableChecks(artifactOf(type)).map((c) => c.id);
 
-  it("TRIGGER-05 and TOKEN-04 run on skills, subagents, and commands — never mcp/plugin", () => {
+  it("TOKEN-04 runs on skills, subagents, and commands — never mcp/plugin", () => {
     for (const kind of ["skill", "subagent", "command"] as const) {
-      expect(idsFor(kind)).toContain("TRIGGER-05");
       expect(idsFor(kind)).toContain("TOKEN-04");
     }
     for (const kind of ["mcp", "plugin"] as const) {
@@ -144,6 +150,14 @@ describe("rubric v1.2 kind scoping", () => {
       expect(idsFor(kind)).not.toContain("TOKEN-04");
       expect(idsFor(kind)).not.toContain("VERIFY-03");
     }
+  });
+
+  it("TRIGGER-05 is skills+subagents ONLY — a command must not fill Triggering from flag-absence", () => {
+    expect(idsFor("skill")).toContain("TRIGGER-05");
+    expect(idsFor("subagent")).toContain("TRIGGER-05");
+    // Regression: registering TRIGGER-05 for commands handed every flag-less command a vacuous
+    // 100/100 on the rubric's largest category (22%). Commands keep Triggering n/a instead.
+    expect(idsFor("command")).not.toContain("TRIGGER-05");
   });
 
   it("VERIFY-03 is skills-only", () => {

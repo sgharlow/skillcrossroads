@@ -11,6 +11,14 @@ export const dynamic = "force-dynamic";
 
 const HTML = { "content-type": "text/html; charset=utf-8" } as const;
 
+/**
+ * Escape text for HTML error pages. Error messages (e.g. GitHubError) can embed raw slug
+ * segments straight from the request path — reflecting them unescaped is XSS.
+ */
+function esc(text: string): string {
+  return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
 /** GET /s/:owner/:repo[/...subpath] — shareable public scorecard (one skill) or repo summary. */
 export async function GET(req: Request, { params }: { params: Promise<{ slug: string[] }> }): Promise<Response> {
   const { slug } = await params;
@@ -28,14 +36,14 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
     scanOpts = await resolveScanOptions(req);
     scan = await scanTarget(target, scanOpts);
   } catch (err) {
-    return new Response(`<h1>Scan failed</h1><p>${err instanceof Error ? err.message : "error"}</p>`, {
+    return new Response(`<h1>Scan failed</h1><p>${esc(err instanceof Error ? err.message : "error")}</p>`, {
       status: 502,
       headers: HTML,
     });
   }
 
   if (scan.skills.length === 0) {
-    return new Response(`<h1>No skills found</h1><p>No SKILL.md under ${target.slug}.</p>`, {
+    return new Response(`<h1>No skills found</h1><p>No SKILL.md under ${esc(target.slug)}.</p>`, {
       status: 404,
       headers: HTML,
     });
@@ -74,9 +82,13 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
         })
       : renderRepoSummaryHtml(scan, target, { homeUrl: "/" });
 
-  // A suggestions response is per-user Pro output — it must never land in a shared cache.
-  const cacheControl = suggestWanted
-    ? "private, no-store"
-    : "public, max-age=0, s-maxage=300, stale-while-revalidate=600";
+  // Pro-optioned responses (private token / managed LLM — including ?suggest=1, which requires
+  // the managed model) must NEVER enter the shared CDN cache: the URL is the same as the public
+  // scorecard's and the edge cache does not vary on cookies, so a cached Pro page (private-repo
+  // content, keyed grades, suggestions) would serve to everyone. Mirrors the badge route.
+  const anonymous = !scanOpts.token && !scanOpts.ctx?.model;
+  const cacheControl = anonymous
+    ? "public, max-age=0, s-maxage=300, stale-while-revalidate=600"
+    : "private, no-store";
   return new Response(body, { headers: { ...HTML, "cache-control": cacheControl } });
 }

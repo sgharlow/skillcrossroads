@@ -32,6 +32,13 @@ export const CONTRADICTION_SCHEMA: JsonSchema = {
   required: ["score", "consistent", "contradictions", "suggestion"],
 };
 
+/**
+ * How much of the body the model judges. Large enough to cover almost every real SKILL.md in
+ * one pass; when the body exceeds it, the evidence discloses "first N chars evaluated" so a
+ * pass never claims whole-file consistency it didn't check.
+ */
+export const BODY_SLICE_CHARS = 24_000;
+
 const SYSTEM = `You are Beacon's consistency evaluator for Claude Code skills.
 Judge whether the instructions CONTRADICT THEMSELVES or have drifted: "always X" in one place and
 "never X" in another, steps that reference sections or files that no longer exist in the text,
@@ -52,18 +59,26 @@ ${bodyExcerpt}
 Do these instructions contradict themselves or show internal drift, or are they consistent?`;
 }
 
-function clampScore(n: unknown): number {
-  const v = typeof n === "number" && Number.isFinite(n) ? n : 0;
-  return Math.max(0, Math.min(100, Math.round(v)));
+function clampScore(n: number): number {
+  return Math.max(0, Math.min(100, Math.round(n)));
 }
 
-/** Validate raw model output into a ContradictionVerdict, or throw if unusable. */
+/**
+ * Validate raw model output into a ContradictionVerdict, or THROW if degenerate. A missing/
+ * non-numeric score or a non-boolean `consistent` is a model failure (e.g. a truncated tool
+ * call), not a verdict — coercing it to score 0 would tank the grade, violating
+ * runChecksAsync's onError-and-drop contract. Throwing lets the check be dropped honestly.
+ */
 export function parseContradictions(raw: unknown): ContradictionVerdict {
   if (typeof raw !== "object" || raw === null) throw new Error("verdict is not an object");
   const o = raw as Record<string, unknown>;
+  const score = o["score"];
+  if (typeof score !== "number" || !Number.isFinite(score)) throw new Error("verdict score is missing or not numeric");
+  const consistent = o["consistent"];
+  if (typeof consistent !== "boolean") throw new Error("verdict consistent flag is not a boolean");
   return {
-    score: clampScore(o["score"]),
-    consistent: Boolean(o["consistent"]),
+    score: clampScore(score),
+    consistent,
     contradictions: Array.isArray(o["contradictions"]) ? o["contradictions"].map((c) => String(c)) : [],
     suggestion: String(o["suggestion"] ?? ""),
   };
@@ -76,7 +91,11 @@ function statusForScore(score: number): CheckStatus {
 }
 
 /** Map a verdict to a CheckResult. Pure — the unit-testable core of the check. */
-export function mapContradictions(artifact: Artifact, verdict: ContradictionVerdict): CheckResult {
+export function mapContradictions(
+  artifact: Artifact,
+  verdict: ContradictionVerdict,
+  opts: { evaluatedChars?: number } = {},
+): CheckResult {
   const file = entryRel(artifact);
   const status = statusForScore(verdict.score);
   const evidence: Evidence[] = [
@@ -92,6 +111,15 @@ export function mapContradictions(artifact: Artifact, verdict: ContradictionVerd
     ...verdict.contradictions.slice(0, 5).map(
       (pair): Evidence => ({ file, snippet: pair, message: `Conflicting statements: ${pair}` }),
     ),
+    // Honesty note: a pass over a truncated body must never claim whole-file consistency.
+    ...(opts.evaluatedChars !== undefined
+      ? [
+          {
+            file,
+            message: `first ${opts.evaluatedChars.toLocaleString("en-US")} chars evaluated — the body exceeds the judged excerpt, so the remainder was not checked for consistency.`,
+          } satisfies Evidence,
+        ]
+      : []),
   ];
   return {
     id: "CLARITY-02",
@@ -156,20 +184,28 @@ export const clarity02: AsyncCheck = {
         ? (fm["name"] as string).trim()
         : basename(artifact.root);
     const description = typeof fm?.["description"] === "string" ? (fm["description"] as string) : "";
-    const bodyExcerpt = body.slice(0, 2500);
+    const bodyExcerpt = body.slice(0, BODY_SLICE_CHARS);
+    // Disclose truncation: a pass on an excerpt must never claim whole-file consistency.
+    const mapOpts = body.length > BODY_SLICE_CHARS ? { evaluatedChars: BODY_SLICE_CHARS } : {};
 
     const key = hashKey("CLARITY-02", RUBRIC_VERSION, SYSTEM, ctx.model.name, name, description, bodyExcerpt);
-    let raw = await ctx.cache?.get(key);
-    if (raw === undefined) {
-      raw = await ctx.model.generateStructured({
-        system: SYSTEM,
-        prompt: buildPrompt(name, description, bodyExcerpt),
-        toolName: "report_verdict",
-        toolDescription: "Report whether these instructions contradict themselves.",
-        schema: CONTRADICTION_SCHEMA,
-      });
-      await ctx.cache?.set(key, raw);
-    }
-    return mapContradictions(artifact, parseContradictions(raw));
+    const cached = await ctx.cache?.get(key);
+    if (cached !== undefined) return mapContradictions(artifact, parseContradictions(cached), mapOpts);
+
+    const raw = await ctx.model.generateStructured({
+      system: SYSTEM,
+      prompt: buildPrompt(name, description, bodyExcerpt),
+      toolName: "report_verdict",
+      toolDescription: "Report whether these instructions contradict themselves.",
+      schema: CONTRADICTION_SCHEMA,
+      // The default verdict-sized cap can truncate the tool call mid-JSON on long excerpts —
+      // which parses degenerate and must never be cached as a false FAIL.
+      maxTokens: 4096,
+    });
+    // Validate BEFORE caching: a degenerate verdict throws (runChecksAsync drops the check via
+    // onError) and nothing is cached — a transient model failure must never persist as a FAIL.
+    const verdict = parseContradictions(raw);
+    await ctx.cache?.set(key, raw);
+    return mapContradictions(artifact, verdict, mapOpts);
   },
 };

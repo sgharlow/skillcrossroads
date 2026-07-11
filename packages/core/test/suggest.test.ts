@@ -57,6 +57,10 @@ describe("suggestFixes", () => {
     expect(calls).toHaveLength(1);
     expect(calls[0]?.prompt).toContain("FAIL-01");
     expect(calls[0]?.prompt).not.toContain("WARN-01");
+    // 8192-token generations outlast the client's 30 s verdict timeout — the request must
+    // carry its own budget-matched timeout.
+    expect(calls[0]?.maxTokens).toBe(8192);
+    expect(calls[0]?.timeoutMs).toBe(120_000);
   });
 
   it("filters model-invented checkIds via parseSuggestions", async () => {

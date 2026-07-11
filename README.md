@@ -195,10 +195,12 @@ The voice is the product: **evidence-cited, "claimed vs. verified," no false con
 ## The scoring rubric (v1.2)
 
 > **v1.2 (2026-07):** adds TRIGGER-05 (invocation-flag consistency — flags must be real YAML
-> booleans, and an artifact nobody can invoke fails), TOKEN-04 (recurring per-invocation cost
-> estimate at a named reference rate), CLARITY-02 (internal contradictions, LLM-assisted), and
-> VERIFY-03 (maintenance hygiene: version/changelog/readme). Commands now score Triggering
-> deterministically via TRIGGER-05.
+> booleans, and an artifact nobody can invoke fails; skills + subagents), TOKEN-04 (recurring
+> per-invocation cost estimate at a named reference rate), CLARITY-02 (internal contradictions,
+> LLM-assisted), and VERIFY-03 (maintenance hygiene: version/changelog/readme; informational —
+> always passes, since a per-skill scan can't see repo-root hygiene). Commands keep Triggering
+> "n/a for this kind": an explicitly-invoked command must not score the rubric's largest
+> category from mere flag-absence.
 >
 > **v1.1 (2026-07):** deterministic Triggering (TRIGGER-02/03 description heuristics) and
 > Verifiability (VERIFY-01 evals-present) checks — **keyless skill scans now score all six
@@ -211,11 +213,11 @@ plus evidence. Category scores roll up to an overall 0–100 and a letter grade.
 | Category | Weight | Checks (rubric v1.2) |
 |---|---|---|
 | Correctness & Structure | 20% | valid frontmatter, recommended fields, references resolve; valid agent `model:` (AGENT-01); valid MCP config (MCP-01); plugin manifest validity + component resolution (PLUGIN-01/02) |
-| Triggering & Discoverability | 22% | description length + invocation cues (TRIGGER-02/03, deterministic); invocation-flag consistency (TRIGGER-05, deterministic); plugin marketplace description (PLUGIN-03); triggers reliably *(LLM-assisted, BYOK)* |
+| Triggering & Discoverability | 22% | description length + invocation cues (TRIGGER-02/03, deterministic); invocation-flag consistency (TRIGGER-05, deterministic; skills + subagents — commands are explicitly invoked, so Triggering is n/a for them); plugin marketplace description (PLUGIN-03); triggers reliably *(LLM-assisted, BYOK)* |
 | Clarity & Instruction Quality | 18% | no ASCII-art/persona filler; `argument-hint` agreement (CMD-01); no internal contradictions *(LLM, CLARITY-02)*; constraints & failure modes stated *(LLM)* |
 | Token & Context Cost | 15% | body budget, progressive disclosure, description footprint, recurring per-invocation cost estimate (TOKEN-04) (exact `count_tokens` with a key) |
 | Safety & Security | 15% | no hardcoded secrets (incl. JSON env values), `allowed-tools`/`tools` least-privilege, no destructive auto-invocation, no `!`-block shell injection, pinned MCP servers + TLS transports (MCP-02/03), hooks destructive-command sweep (HOOK-01) |
-| Verifiability & Maintainability | 10% | evals/tests present (VERIFY-01, deterministic); version/changelog/readme hygiene (VERIFY-03, deterministic); verification step quality *(LLM-assisted, BYOK)* |
+| Verifiability & Maintainability | 10% | evals/tests present (VERIFY-01, deterministic); version/changelog/readme hygiene (VERIFY-03, deterministic + informational — always passes; repo-root hygiene isn't visible to a per-skill scan); verification step quality *(LLM-assisted, BYOK)* |
 
 The rubric is **versioned** (`RUBRIC_VERSION` in `@beacon/core`); the implemented check catalog
 is [`packages/core/src/checks/index.ts`](./packages/core/src/checks/index.ts), with more checks
@@ -227,8 +229,8 @@ surface (scorecard, PR comment, annotations, terminal) link to their check's pag
 **Partial grades are kind-aware:** a grade is marked partial (`*` on the badge) only when a
 category that *could* score for that artifact kind went unscored — e.g. keyless LLM checks, or
 a `.mcp.json` scanned without `--mcp-live`. Categories that structurally don't apply to a kind
-(Token cost for a `.mcp.json` config) show as "n/a" and never mark the grade partial, so a
-fully-keyed command scan is a full grade.
+(Token cost for a `.mcp.json` config, Triggering for a slash command) show as "n/a" and never
+mark the grade partial, so a fully-keyed command scan is a full grade.
 
 ## Configuration (`.skillcrossroads.json`)
 

@@ -151,6 +151,8 @@ export async function suggestFixes(
       // Suggestions carry current/proposed text blocks — far bigger than a verdict. The default
       // 1024-token cap truncates the tool call, which silently parses to zero suggestions.
       maxTokens: 8192,
+      // An 8192-token generation can outlast the client's default 30 s verdict timeout.
+      timeoutMs: 120_000,
     });
     const suggestions = parseSuggestions(raw, allowed);
     await ctx.cache?.set(cacheKey, { suggestions });

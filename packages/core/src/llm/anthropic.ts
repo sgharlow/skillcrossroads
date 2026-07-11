@@ -27,11 +27,13 @@ export class ModelError extends Error {}
 export function createAnthropicClient(opts: AnthropicClientOptions): ModelClient {
   const model = opts.model ?? DEFAULT_MODEL;
   const doFetch = opts.fetchImpl ?? fetch;
-  const timeoutMs = opts.timeoutMs ?? 30_000;
+  const defaultTimeoutMs = opts.timeoutMs ?? 30_000;
 
   return {
     name: model,
     async generateStructured(req: StructuredRequest): Promise<unknown> {
+      // Per-request override (e.g. 8192-token suggestion generations outlast a verdict timeout).
+      const timeoutMs = req.timeoutMs ?? defaultTimeoutMs;
       const body = {
         model,
         max_tokens: req.maxTokens ?? 1024,

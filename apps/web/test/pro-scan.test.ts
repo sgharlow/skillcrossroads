@@ -52,3 +52,17 @@ describe("resolveScanOptions fails CLOSED when identity can't be verified but pr
     expect(opts.pro).toBe(true);
   });
 });
+
+describe("managed-LLM ctx carries a shared per-instance cache (uncached ?suggest=1 = raw key spend)", () => {
+  it("attaches the SAME cache object across requests so content-hash hits skip the model", async () => {
+    process.env.BEACON_SESSION_SECRET = "test-secret";
+    process.env.BEACON_MANAGED_ANTHROPIC_KEY = "sk-ant-managed-test";
+    await entitlements.setPro("prouser-d", true);
+    const first = await resolveScanOptions(req(`beacon_user=${signUserValue("prouser-d")}`));
+    const second = await resolveScanOptions(req(`beacon_user=${signUserValue("prouser-d")}`));
+    expect(first.ctx?.cache).toBeDefined();
+    // Module-level singleton: a fresh cache per request would never hit, re-spending the
+    // managed key on every reload of an unchanged artifact.
+    expect(second.ctx?.cache).toBe(first.ctx?.cache);
+  });
+});

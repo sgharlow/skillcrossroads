@@ -9,7 +9,13 @@ const README = /^readme(\.md)?$/i;
  * VERIFY-03 — Maintenance hygiene (deterministic; skills only — single-file artifacts have no
  * file tree, and their history lives in the repo around them). A skill with ANY of a `version`
  * frontmatter field, a CHANGELOG, or a README gives consumers a way to tell what changed
- * between the copy they installed and the copy upstream. None of the three → warn, never fail.
+ * between the copy they installed and the copy upstream.
+ *
+ * INFORMATIONAL — always passes. A skill's `artifact.files` cannot see the repo root (hosted
+ * scans materialize only the skill's own directory), so multi-skill repos that keep their
+ * version/CHANGELOG/README at the repo root — anthropics/skills is the canonical example —
+ * would be accused falsely by a warn. The evidence cites what was found, or honestly notes
+ * that repo-root hygiene isn't visible to a per-skill scan.
  */
 export const verify03: Check = {
   id: "VERIFY-03",
@@ -25,7 +31,9 @@ export const verify03: Check = {
     fix:
       "Add any one of the three (all is better): a `version:` field in the frontmatter, a " +
       "CHANGELOG.md listing what changed per version, or a README.md stating what the skill " +
-      "does and its current state. One line of `version: 1.2.0` is the cheapest fix.",
+      "does and its current state. One line of `version: 1.2.0` is the cheapest fix. This " +
+      "check is informational and never lowers the grade — a per-skill scan can't see " +
+      "repo-root hygiene, so absence in the skill's own directory proves nothing.",
     good:
       "---\n" +
       "name: sql-formatter\n" +
@@ -74,20 +82,20 @@ export const verify03: Check = {
       };
     }
 
+    // Informational pass: absence in the skill's own directory is NOT evidence of neglect —
+    // hosted scans materialize only the skill dir, so a repo-root CHANGELOG/README is invisible.
     return {
       ...base,
-      status: "warn",
-      score: 60,
+      status: "pass",
+      score: 100,
       evidence: [
         {
           file,
           line: 1,
-          claimed: "a maintained skill",
-          verified: "no `version` frontmatter, no CHANGELOG(.md), no README(.md)",
-          message: "No version/changelog/readme — consumers can't tell what changed between the copy they have and yours.",
+          message:
+            "No version/changelog/readme in the skill's own directory — repo-root hygiene isn't visible to a per-skill scan (informational; never penalized).",
         },
       ],
-      fix: "Add a `version:` frontmatter field (cheapest), a CHANGELOG.md, or a README.md.",
     };
   },
 };

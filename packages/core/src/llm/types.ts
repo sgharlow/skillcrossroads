@@ -24,6 +24,12 @@ export interface StructuredRequest {
    * where a truncated tool call silently parses to nothing.
    */
   readonly maxTokens?: number;
+  /**
+   * Per-request timeout in ms. Optional — implementations keep their default (client-level)
+   * timeout when unset. Long generations (e.g. 8192-token fix suggestions) need more than a
+   * verdict-sized timeout.
+   */
+  readonly timeoutMs?: number;
 }
 
 export interface ModelClient {
