@@ -207,7 +207,17 @@ a key). Each check is a ready-made evidence post for the content cadence. 227 te
 > verification; calendar assumes ≈1 sprint per week at evenings/weekends pace (the demonstrated
 > all-day pace has landed a sprint per day).
 
-### Sprint 7 — Fix-it floor + badge trust (launch-safe polish) · est. ~4 dev-days · 1 week
+### Sprint 7 — Fix-it floor + badge trust (launch-safe polish) · **SHIPPED 2026-07-10** (`live-proven`, owner override of G0 recorded — Steve approved "Sprint 7 now" same-day)
+
+> All three items `live-proven` in `skillcrossroads@0.9.0` + same-day deploy, plus an 8-finding
+> fix pass from a 19-agent adversarial review (CDN keyed-badge leak, badge 500 path, 7-day
+> staleness ceiling w/ delete-on-dead-repo, refresh dedup, case-insensitive cache key, bounded
+> growth, UTC timestamp correctness, `BEACON_SITE_URL` threading into all renderer docs links,
+> old-contract `applicable` guard). Live proofs: `/docs/checks` + per-check pages 200 (404 on
+> unknown); warm badge 289 ms vs ~5.6 s cold (DB stale-while-revalidate; prod `badge_cache`
+> migrated first); paste-scanned command shows docs links, "n/a for this artifact kind" on
+> Triggering, and an honest partial note. 317 tests. Dep hygiene same day: vitest 3.2.7 /
+> vite 7 / esbuild 0.25 cleared the critical+high Dependabot alerts.
 
 *Same class as Sprint 1/A1: not horizontal breadth — it upgrades the experience every first
 user hits and repairs known warts on the core loop.*
