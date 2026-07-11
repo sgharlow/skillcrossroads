@@ -1,7 +1,7 @@
 # Skill Crossroads — Codebase Guide (CLAUDE.md)
 
 > **The signpost for Claude Code artifacts** — live at [skillcrossroads.com](https://skillcrossroads.com).
-> Skill Crossroads audits a Claude Code artifact (Skill, subagent, MCP server, or plugin) and
+> Skill Crossroads audits a Claude Code artifact (Skill, subagent, slash command, MCP server, or plugin) and
 > returns an evidence-cited quality scorecard with a letter grade, plus an embeddable badge.
 > "Beacon" is the original internal codename — it survives in workspace package names
 > (`@beacon/*`), `BEACON_*` env vars, and cookie names by design; the product, domain, npm

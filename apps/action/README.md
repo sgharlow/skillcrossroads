@@ -42,7 +42,7 @@ That's it. Open a PR touching a skill and Skill Crossroads posts a scorecard com
 
 ## What it does
 
-1. **Report** — grades every skill, subagent, slash command, and `.mcp.json` under `path`,
+1. **Report** — grades every skill, subagent, slash command, `.mcp.json`, and plugin under `path`,
    writes the Markdown scorecard to the job summary, and (on PRs) posts it as a comment that
    updates in place on re-runs (no spam).
 2. **Inline annotations** — every warn/fail lands as a `::warning`/`::error` at the exact

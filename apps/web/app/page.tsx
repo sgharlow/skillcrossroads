@@ -29,8 +29,9 @@ export default function Home(): ReactElement {
           <p className="eyebrow">For people who build on Claude Code</p>
           <h1>Every skill hits a crossroads before you ship it.</h1>
           <p className="lede">
-            Skill Crossroads grades your Claude Code skills, agents, and MCP servers against an
-            evidence-based rubric — then points you one of three ways: ship, fix, or rethink.
+            Skill Crossroads grades your Claude Code skills, agents, slash commands, MCP configs,
+            and plugins against an evidence-based rubric — then points you one of three ways:
+            ship, fix, or rethink.
           </p>
           <div id="scan">
             <ScanForm />
@@ -172,7 +173,7 @@ export default function Home(): ReactElement {
         <div className="cards three">
           <article className="card price">
             <h3>Free</h3>
-            <p>Scan public artifacts and local files, full rubric, local badge. This is the whole tool, in the open.</p>
+            <p>Scan public artifacts and local files, full rubric, local badge, CI GitHub Action + PR gating. This is the whole tool, in the open.</p>
           </article>
           <article className="card price price-mid">
             <h3>Pro</h3>
@@ -180,7 +181,7 @@ export default function Home(): ReactElement {
           </article>
           <article className="card price">
             <h3>Team</h3>
-            <p>CI quality gate on pull requests, org rules, shared dashboard.</p>
+            <p>Org-wide custom rules, seats for your team, shared dashboards.</p>
           </article>
         </div>
         <p className="pricing-note">Free covers everything you need to grade and share a public skill.</p>
@@ -219,10 +220,12 @@ export default function Home(): ReactElement {
           <a href="/pricing">Pricing</a>
           <a href="/report">Report</a>
           <a href="/report-agents">Agents report</a>
+          <a href="/docs/checks">Check reference</a>
+          <a href="/dashboard">Ecosystem stats</a>
           <a href="https://github.com/sgharlow/skillcrossroads">GitHub</a>
           <span className="foot-dom mono">skillcrossroads.com</span>
         </div>
-        <p className="foot-line">Know before you ship. The signpost for Claude Code skills, agents, and MCP servers.</p>
+        <p className="foot-line">Know before you ship. The signpost for Claude Code skills, agents, slash commands, MCP configs, and plugins.</p>
       </footer>
 
       <style>{PAGE_CSS}</style>

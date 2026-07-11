@@ -1,13 +1,13 @@
 # Skill Crossroads
 
-**Know before you ship.** The signpost for Claude Code skills, agents, and MCP servers —
-live at [skillcrossroads.com](https://skillcrossroads.com).
+**Know before you ship.** The signpost for Claude Code skills, agents, slash commands, MCP
+configs, and plugins — live at [skillcrossroads.com](https://skillcrossroads.com).
 
 [![Skill Crossroads — live scorecard](https://img.shields.io/badge/skill%20crossroads-live%20scorecard-2ea043)](https://skillcrossroads.com/s/anthropics/skills) &nbsp; ![rubric v1.2](https://img.shields.io/badge/rubric-v1.2-555)
 
 Every skill hits a crossroads before you ship it. Skill Crossroads reads a Claude Code artifact — a
-**Skill**, subagent, MCP server, or plugin — against an evidence-based rubric and points you one of
-three ways: **ship, fix, or rethink**. You get a letter grade, an embeddable badge, and a fix list —
+**Skill**, subagent, slash command, `.mcp.json` config, or plugin — against an evidence-based
+rubric and points you one of three ways: **ship, fix, or rethink**. You get a letter grade, an embeddable badge, and a fix list —
 every finding cited to a file and line.
 
 - **Ship** — grade A/B. It is ready. Here is your badge.
@@ -158,11 +158,30 @@ BEACON_MODEL=claude-haiku-4-5 skillcrossroads ./my-skill   # cheaper model
 ```
 
 Verdicts are cached by content hash in `.beacon-cache/`, so re-scanning an unchanged skill is
-free. Without a key, Skill Crossroads runs deterministic-only and marks Triggering as "not yet scored."
+free. Without a key, Skill Crossroads runs deterministic-only — **skill scans still score all six
+categories** (rubric v1.1+; Triggering uses the deterministic heuristics, and a key upgrades it
+to the LLM verdict). Keyless agent scans leave Verifiability unscored; keyless command scans
+leave Verifiability unscored too (Triggering is n/a for commands either way).
 
 A key also switches the token estimate to an **exact `count_tokens`** figure — the same tokenizer
 Claude Code's `/context` uses, so it's the same number a skill actually costs. Offline, Skill Crossroads shows
 a clearly-labeled rough estimate (skill markdown tokenizes denser than prose, so it can be ~10–25% off).
+
+### Fix suggestions (`--suggest`, BYOK)
+
+Grading tells you *what's wrong*; `--suggest` proposes *how to fix it*. With your Anthropic key
+set, it asks the model for a concrete fix proposal for each of the top findings (top 3 by
+default), shown as a **current → proposed** diff grounded in the check's own fix docs:
+
+```bash
+skillcrossroads ./my-skill --suggest          # proposals for the top 3 findings
+skillcrossroads ./my-skill --suggest=5 --html # top 5, embedded in the HTML scorecard too
+```
+
+Suggestions are **proposals only — Skill Crossroads never edits your files**. You review, edit,
+and apply them yourself. Like the other LLM checks, results are cached by content hash, so
+re-running on an unchanged skill is free. On the hosted site, Pro single-artifact scans can
+request the same thing with `?suggest=1`.
 
 ## What a report looks like
 
@@ -248,9 +267,14 @@ scorecard, and `SAFETY-*` checks can never be suppressed**:
 `minGrade` sets the default CI gate when `--min-grade` isn't passed. Hosted scans on
 skillcrossroads.com never apply a repo's config — a public grade always reflects the full rubric.
 
-Full-rubric scorecards also show an ecosystem percentile — *"scores higher than ≈N% of 214
-public skills"* — derived from the published [State of Skills](https://skillcrossroads.com/report)
-grade distribution (an interpolated estimate, hence the ≈; partial/keyless grades don't show it).
+Full-rubric SKILL scorecards also show an ecosystem percentile — *"scores higher than ≈N% of
+214 public skills (deterministic rubric v1.2 sample, 2026-07)"*. The comparison sample is
+regenerated under the **current rubric** (deterministic edition, `scripts/percentile-sample.mjs`)
+on every rubric bump, so live scores are always ranked against like-for-like grades — a test
+pins the sample rubric to the engine's, and the label names the sample so drift stays visible.
+It is an interpolated estimate, hence the ≈. (The published
+[State of Skills](https://skillcrossroads.com/report) report is a separate pinned artifact —
+v1.0 LLM edition — and is deliberately *not* this sample.)
 
 ## Use it from inside Claude Code
 
@@ -274,6 +298,11 @@ The CLI is CI-native on its own, too:
 ```bash
 skillcrossroads ./skills --markdown          # a Markdown report (job summary / PR comment)
 skillcrossroads ./skills --min-grade B       # exit non-zero if any skill is below B (the gate)
+skillcrossroads ./skills --annotations=ann.txt   # ::warning/::error lines, file:line-anchored —
+                                                 # cat the file in a CI step for inline PR annotations
+skillcrossroads ./skills --json              # scorecard as JSON to stdout (--json=out.json for a
+                                             # sidecar file alongside the normal report)
+skillcrossroads ./skills --no-llm            # force deterministic-only, even if a key is set
 ```
 
 A local path may be a single skill or a **folder of skills** — every `SKILL.md` under it is scanned.

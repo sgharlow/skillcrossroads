@@ -34,6 +34,74 @@ describe("renderAnnotations (GitHub workflow commands)", () => {
     expect(line).not.toContain("bad-model.md/bad-model.md");
   });
 
+  // Single-target scans: the scan root IS the artifact, so pathPrefix (the CLI's args.path)
+  // already contains the repoPath (basename fallback) and/or the evidence file. Segment-aware
+  // dedup must collapse them — the QA-found doubled-path bug.
+  it("does not double the dir name when the scan target is the skill dir itself (repoPath = basename fallback)", () => {
+    const res = audit(fixture("vulnerable"));
+    const lines = renderAnnotations(
+      [{ repoPath: "vulnerable", name: res.name, scorecard: res.scorecard }],
+      "packages/core/test/fixtures/skills/vulnerable",
+    );
+    expect(lines.length).toBeGreaterThan(0);
+    for (const l of lines) {
+      expect(l).toContain("file=packages/core/test/fixtures/skills/vulnerable/SKILL.md,");
+      expect(l).not.toContain("vulnerable/vulnerable");
+    }
+  });
+
+  it("does not double the filename when the scan target is a single command file (repoPath '.')", () => {
+    const cmdPath = join(here, "fixtures", "artifacts", "commands", "deploy.md");
+    const res = audit(cmdPath, "command");
+    const lines = renderAnnotations(
+      [{ repoPath: ".", name: res.name, scorecard: res.scorecard }],
+      "packages/core/test/fixtures/artifacts/commands/deploy.md",
+    );
+    expect(lines.length).toBeGreaterThan(0);
+    for (const l of lines) {
+      expect(l).toContain("file=packages/core/test/fixtures/artifacts/commands/deploy.md,");
+      expect(l).not.toContain("deploy.md/deploy.md");
+    }
+  });
+
+  it("does not double the filename when the scan target is a single .mcp.json file (repoPath '.')", () => {
+    const mcpPath = join(here, "fixtures", "artifacts", "mcp", "risky.mcp.json");
+    const res = audit(mcpPath, "mcp");
+    const lines = renderAnnotations(
+      [{ repoPath: ".", name: res.name, scorecard: res.scorecard }],
+      "packages/core/test/fixtures/artifacts/mcp/risky.mcp.json",
+    );
+    expect(lines.length).toBeGreaterThan(0);
+    for (const l of lines) {
+      expect(l).toContain("file=packages/core/test/fixtures/artifacts/mcp/risky.mcp.json,");
+      expect(l).not.toContain("risky.mcp.json/risky.mcp.json");
+    }
+  });
+
+  it("keeps the batch (parent-dir) form byte-identical: prefix + repoPath + evidence file all join", () => {
+    const res = audit(fixture("vulnerable"));
+    const lines = renderAnnotations(
+      [{ repoPath: "skills/vulnerable", name: res.name, scorecard: res.scorecard }],
+      "packages/core/test/fixtures",
+    );
+    expect(lines.length).toBeGreaterThan(0);
+    for (const l of lines) {
+      expect(l).toContain("file=packages/core/test/fixtures/skills/vulnerable/SKILL.md,");
+    }
+  });
+
+  it("dedups WHOLE segments only — a same-name non-suffix prefix must not swallow repoPath", () => {
+    const res = audit(fixture("vulnerable"));
+    const lines = renderAnnotations(
+      [{ repoPath: "vulnerable", name: res.name, scorecard: res.scorecard }],
+      "a/vulnerable-old",
+    );
+    expect(lines.length).toBeGreaterThan(0);
+    for (const l of lines) {
+      expect(l).toContain("file=a/vulnerable-old/vulnerable/SKILL.md,");
+    }
+  });
+
   it("escapes newlines and commas per workflow-command rules", () => {
     const res = audit(fixture("dangling-ref"));
     const lines = renderAnnotations([{ repoPath: "x", name: "a,b\nc", scorecard: res.scorecard }]);

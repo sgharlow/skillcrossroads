@@ -42,7 +42,9 @@ ${pc.bold("Usage:")}
 
 ${pc.bold("Arguments:")}
   <path-to-skill>    A skill directory (containing SKILL.md), a subagent/command .md file
-                     (.claude/agents/*.md, .claude/commands/*.md), or a folder of any of them.
+                     (.claude/agents/*.md, .claude/commands/*.md), a .mcp.json config, a plugin
+                     directory (containing .claude-plugin/plugin.json), a folder of any of them,
+                     or a GitHub owner/repo shorthand or URL (scanned remotely, no clone).
   <github-url>       Public GitHub repo to scan by URL (no clone), e.g.
                      https://github.com/owner/repo  or  owner/repo
 
@@ -58,7 +60,7 @@ ${pc.bold("Options:")}
   --no-llm           Deterministic checks only; skip LLM-assisted triggering analysis.
   --suggest[=N]      propose fixes for the top N findings (needs ANTHROPIC_API_KEY; never auto-applies)
   --kind=<k>         Artifact kind for a bare file: skill | agent | command | mcp | plugin
-                     (auto-detected from agents//commands/ paths and .mcp.json when omitted).
+                     (auto-detected from agents/ or commands/ paths and .mcp.json when omitted).
   --mcp-live         With a .mcp.json: SPAWN each stdio server from YOUR config (explicit
                      consent), list its tools, and grade tool/param descriptions too.
   --max=<n>          Cap the number of skills scanned from a repo.
@@ -159,7 +161,7 @@ function parseArgs(argv: readonly string[]): Args {
 }
 
 /** CLI version — keep in sync with packages/cli/package.json on every `npm version` bump. */
-const VERSION = "0.11.0";
+const VERSION = "0.11.1";
 
 /** The site whose scorecards/badges the CLI points at (override for self-hosting). */
 const SITE_URL = process.env["BEACON_SITE_URL"] ?? DEFAULT_SITE_URL;

@@ -2,9 +2,9 @@ import SubscribeButton from "./subscribe-button";
 
 export const metadata = { title: "Pricing" };
 
-const FREE = ["CLI + public repo scans", "Full deterministic rubric", "Triggering & exact tokens (your own key)", "Local HTML report + SVG badge"];
+const FREE = ["CLI + public repo scans", "Full deterministic rubric", "CI GitHub Action + PR gating", "Triggering & exact tokens (your own key)", "Local HTML report + SVG badge"];
 const PRO = ["Everything in Free", "Private-repo scanning", "Managed LLM — no key needed", "Hosted scorecards + always-fresh badges", "Score history"];
-const TEAM = ["Everything in Pro", "CI GitHub Action + PR gating", "Org-wide custom rules", "Team dashboard", "Batch scan"];
+const TEAM = ["Everything in Pro", "Org-wide custom rules", "Seats for your team", "Shared team dashboard"];
 
 function Tier({ name, price, per, items, cta }: { name: string; price: string; per: string; items: string[]; cta: React.ReactNode }) {
   return (

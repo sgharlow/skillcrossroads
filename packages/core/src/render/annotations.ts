@@ -23,12 +23,38 @@ function propEscape(s: string): string {
   return cmdEscape(s).replace(/:/g, "%3A").replace(/,/g, "%2C");
 }
 
+/** Normalize one path segment to POSIX form (drops "./" and trailing slashes, keeps ".claude"). */
+function normalizeSeg(s: string): string {
+  return s.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/+$/, "");
+}
+
 /** Join path segments into a clean repo-relative POSIX path (drops "." segments, keeps ".claude"). */
 function joinRepoPath(...segs: string[]): string {
   return segs
-    .map((s) => s.replace(/\\/g, "/").replace(/^\.\//, "").replace(/\/+$/, ""))
+    .map(normalizeSeg)
     .filter((s) => s && s !== ".")
     .join("/");
+}
+
+/** True when `base` ends with `suffix` as WHOLE path segments (`foo/abar` never matches `bar`). */
+function endsWithSegments(base: string, suffix: string): boolean {
+  return base === suffix || base.endsWith(`/${suffix}`);
+}
+
+/**
+ * Join (pathPrefix, repoPath, evidenceFile) into a `file=` anchor with segment-aware dedup.
+ * When the scan TARGET is the artifact itself, the pieces overlap: a single-dir scan's repoPath
+ * falls back to the target's basename (already the prefix's last segment), and a single-file
+ * scan's evidence file IS the target file. Dedup drops a piece only when the joined base already
+ * ends with it as whole segments — `a/vulnerable-old` never dedups against `vulnerable`.
+ */
+function annotationFile(pathPrefix: string, repoPath: string, evidenceFile: string): string {
+  const prefix = normalizeSeg(pathPrefix);
+  const repo = normalizeSeg(repoPath);
+  const base =
+    prefix && repo && repo !== "." && endsWithSegments(prefix, repo) ? prefix : joinRepoPath(prefix, repo);
+  const evFile = normalizeSeg(evidenceFile);
+  return base && evFile && endsWithSegments(base, evFile) ? base : joinRepoPath(base, evFile);
 }
 
 /**
@@ -44,10 +70,7 @@ export function renderAnnotations(results: readonly AnnotatableResult[], pathPre
       const level = check.status === "fail" ? "error" : "warning";
       const ev = check.evidence[0];
       const evFile = ev?.file ?? "";
-      // repoPath may already end with the evidence file (single-file agents/commands).
-      const file = r.repoPath.endsWith(evFile) && evFile
-        ? joinRepoPath(pathPrefix, r.repoPath)
-        : joinRepoPath(pathPrefix, r.repoPath, evFile);
+      const file = annotationFile(pathPrefix, r.repoPath, evFile);
       const line = ev?.line ?? 1;
       // Ends with the check's reference page so the inline annotation carries its own fix guide.
       const msg = `[${check.id}] ${r.name}: ${ev?.message ?? check.title}${check.fix ? ` Fix: ${check.fix}` : ""} (${checkDocsUrl(check.id, siteUrl)})`;

@@ -1,7 +1,7 @@
 {
   "name": "skillcrossroads",
-  "version": "0.10.0",
-  "description": "Audit your Claude Code skills, agents, commands, and MCP configs from inside Claude Code: the audit-skill grades your artifact with the Skill Crossroads rubric (evidence-cited, file-and-line) and walks the ranked fix list until it grades A.",
+  "version": "0.11.1",
+  "description": "Audit your Claude Code skills from inside Claude Code: installs the audit-skill, which runs the skillcrossroads CLI (the grader for skills, subagents, slash commands, MCP configs, and plugins) to produce an evidence-cited, file-and-line scorecard and walk the ranked fix list until the grade stops improving.",
   "author": {
     "name": "Steve Harlow",
     "url": "https://github.com/sgharlow"

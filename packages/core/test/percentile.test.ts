@@ -1,10 +1,16 @@
 import { describe, it, expect } from "vitest";
-import { publicSkillPercentile, percentileLabel, STATE_OF_SKILLS } from "../src/percentile.js";
+import { publicSkillPercentile, percentileLabel, STATE_OF_SKILLS, sampleMatchesRubric } from "../src/percentile.js";
 
 describe("publicSkillPercentile (State of Skills CDF)", () => {
-  it("pins to the published 214-skill distribution", () => {
+  it("pins to the regenerated 214-skill distribution", () => {
     expect(STATE_OF_SKILLS.n).toBe(214);
     expect(STATE_OF_SKILLS.buckets.reduce((a, b) => a + b.count, 0)).toBe(214);
+  });
+
+  it("the sample rubric matches the LIVE rubric — regenerate via scripts/percentile-sample.mjs on every bump", () => {
+    // This is the comparability guard: a stale sample silently inflates (or deflates) every
+    // percentile on every scorecard. If this fails, run the sample script and paste the block.
+    expect(sampleMatchesRubric(), "STATE_OF_SKILLS.rubric must equal RUBRIC_VERSION").toBe(true);
   });
 
   it("is 0 at the floor and caps at 99 at the ceiling (can't beat a sample you belong to)", () => {
@@ -21,22 +27,23 @@ describe("publicSkillPercentile (State of Skills CDF)", () => {
     }
   });
 
-  it("places the published average (73.6) near the middle of the sample", () => {
-    const p = publicSkillPercentile(73.6);
-    expect(p).toBeGreaterThan(40);
-    expect(p).toBeLessThan(60);
+  it("reflects the v1.2 deterministic reality: most public skills grade A, so an A is unremarkable", () => {
+    // 168/214 of the sample are A-band — a 92 no longer claims "≈99%".
+    expect(publicSkillPercentile(92)).toBeLessThan(40);
+    expect(publicSkillPercentile(97)).toBeGreaterThan(60);
   });
 
-  it("interpolates within a band: 78 beats all F+D plus 80% of the C band", () => {
-    // below = 11 + 52 + 113 * (78-70)/10 = 153.4 → 153.4/214 ≈ 72%
-    expect(publicSkillPercentile(78)).toBe(72);
+  it("interpolates within a band: 85 beats F+D+C plus half the B band", () => {
+    // below = 0 + 6 + 2 + 38 * (85-80)/10 = 27 → 27/214 ≈ 13%
+    expect(publicSkillPercentile(85)).toBe(13);
   });
 
-  it("labels with the ≈ estimate marker and the pinned edition", () => {
+  it("labels with the ≈ marker, the pinned edition, AND the sample rubric (drift stays visible)", () => {
     const label = percentileLabel(90);
     expect(label).toContain("≈");
     expect(label).toContain("214 public skills");
     expect(label).toContain(STATE_OF_SKILLS.edition);
+    expect(label).toContain(`deterministic rubric v${STATE_OF_SKILLS.rubric} sample`);
   });
 
   it("clamps out-of-range scores instead of extrapolating", () => {

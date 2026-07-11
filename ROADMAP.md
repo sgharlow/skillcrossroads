@@ -77,7 +77,7 @@ demand amplifiers. No horizontal breadth.*
 > the Action emits inline PR annotations and a best-effort "Changes vs base" grade-delta section
 > (base-ref worktree scan + dependency-free delta.mjs, silent on base failure). 227 tests.
 
-### Sprint 4 — Moat cadence + MCP decision · **SHIPPED 2026-07-10** (owner override of the G1 gate)
+### Sprint 4 — Moat cadence + MCP decision · **SHIPPED 2026-07-10** (owner override of the G0 gate)
 
 **Item 9 — `live-proven` in `skillcrossroads@0.5.0` as RUBRIC v1.1** (versioned bump, announced
 here + README, never silent): TRIGGER-02 (description length bands — the deterministic floor
@@ -292,7 +292,9 @@ user hits and repairs known warts on the core loop.*
   source docs (Steve-court)**; once provided, ~1 sprint and the first differentiated Pro content
 - **Watch & alerts** — grade-regression email for repos you follow (Pro); first user asking for
   monitoring triggers it (email deliverability treated as day-1 infra when built)
-- **Public JSON API** for scores — first integration request triggers it
+- **Stable, documented JSON API** for scores — the raw `/api/scan` endpoint and CLI `--json`
+  already exist; a versioned, documented contract is what's deferred — first integration
+  request triggers it
 - **SARIF output** → GitHub code-scanning tab — first enterprise-ish request triggers it
 - **Team tier build-out** (org rules, seats, shared dashboard) — first real Team inquiry triggers it
 - **GitHub App / one-click badge PRs (Tier 3)** — first user asking "do all my repos" triggers it

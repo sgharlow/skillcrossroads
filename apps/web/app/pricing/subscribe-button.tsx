@@ -11,9 +11,15 @@ export default function SubscribeButton() {
     setState("loading");
     try {
       const res = await fetch("/api/checkout", { method: "POST" });
-      const data = (await res.json()) as { url?: string; error?: string };
+      const data = (await res.json()) as { url?: string; error?: string; signIn?: string };
       if (data.url) {
         window.location.href = data.url;
+        return;
+      }
+      // Signed-out: the API hands back the GitHub sign-in URL — follow it instead of stranding
+      // the buyer at error text (they return to /pricing after the OAuth round-trip).
+      if (data.signIn) {
+        window.location.href = data.signIn;
         return;
       }
       setState("error");

@@ -2,6 +2,12 @@
 
 *An evidence-based audit of 214 public Claude Code skills across 18 repositories, graded by **Skill Crossroads** — the signpost for Claude Code artifacts. Includes the LLM-assisted triggering check. Every figure is traceable to the pinned git trees in the methodology.*
 
+> **Edition & pinning.** Generated **2026-07-09** under **rubric v1.0, LLM (full) edition**. The
+> rubric is versioned and has since moved on (the live scanner runs a later rubric with more
+> deterministic checks, so scanning these same repos today produces different — generally
+> higher — deterministic figures). This report is a pinned snapshot: its numbers are exact for
+> the trees and rubric named here, and are not regenerated when the rubric changes.
+
 > **Scope.** A deliberately mixed sample: Anthropic's well-maintained `anthropics/skills` catalog alongside a spread of community-authored repos (up to 12 skills each). This is a read on skills people actually publish — not a curated best-of.
 
 ## The headline
@@ -78,7 +84,7 @@ Each is catchable **before** publishing, with `npx skillcrossroads ./your-skill`
 
 ## Methodology & reproducibility
 
-Skill Crossroads' deterministic checks (no LLM) plus the LLM-assisted triggering check (TRIGGER-01) were run against each repo's git tree at the sha below. Deterministic figures are bit-reproducible from those trees; LLM verdicts are content-hash cached and pinned to the same trees, but model output is not guaranteed bit-identical across runs.
+Skill Crossroads' deterministic checks (no LLM) plus the LLM-assisted triggering check (TRIGGER-01) were run against each repo's git tree at the sha below, under **rubric v1.0** (11 deterministic + 3 LLM checks — the catalog as of 2026-07-09). Deterministic figures are bit-reproducible from those trees **with the v1.0 engine**; LLM verdicts are content-hash cached and pinned to the same trees, but model output is not guaranteed bit-identical across runs.
 
 | Repo | Ref | Tree sha | Skills | Errors |
 |---|---|---|---|---|
@@ -101,4 +107,4 @@ Skill Crossroads' deterministic checks (no LLM) plus the LLM-assisted triggering
 | Sandeeprdy1729/skill_galaxy | main | `2dd36c8ab8f1` | 12 | 0 |
 | excatt/superclaude-plusplus | main | `9c36a87a9edc` | 12 | 0 |
 
-Reproduce: `npm run build && BEACON_LLM=1 ANTHROPIC_API_KEY=… node scripts/state-of-skills.mjs` (default repo set) — or pass `owner/repo …` to scan your own.
+Reproduce: check out the engine at rubric v1.0 (repo history, 2026-07-09), then `npm run build && BEACON_LLM=1 ANTHROPIC_API_KEY=… node scripts/state-of-skills.mjs` (default repo set). Running the CURRENT engine reproduces the scan but not these figures — later rubrics add checks, which shifts scores. Pass `owner/repo …` to scan your own repos with today's rubric instead.

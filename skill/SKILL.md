@@ -18,7 +18,10 @@ improving. Every finding is evidence-cited (file and line) — work from the rec
    npx skillcrossroads@latest <skill-dir> --markdown
    ```
 
-3. Read the **Top fixes** list (ranked by grade impact). For each fix, open the cited
+3. Read the **Top fixes** list (ranked by grade impact). Optionally, if `ANTHROPIC_API_KEY`
+   is set, run `npx skillcrossroads@latest <skill-dir> --suggest` to get proposed
+   current → proposed fixes for the top findings — treat them as proposals to review, never
+   apply one unread. For each fix, open the cited
    file:line, confirm the finding is real, and apply the smallest change that resolves it.
    Typical high-impact fixes: rewrite the frontmatter `description` to lead with the use case
    and include the phrases a user would actually say; add a verification step; state
@@ -36,8 +39,10 @@ improving. Every finding is evidence-cited (file and line) — work from the rec
   say so to the user instead of masking it.
 - If `npx` fails (offline, registry blocked), report the error verbatim and stop — do not
   hand-estimate a grade.
-- LLM-assisted checks (triggering quality) only run when `ANTHROPIC_API_KEY` is set; without
-  it the grade is partial and marked as such. Say which mode ran.
+- LLM-assisted checks only run when `ANTHROPIC_API_KEY` is set. Keyless skill grades are
+  still full — all six rubric categories score deterministically (rubric v1.1+); a key
+  upgrades Triggering to the LLM judge and adds VERIFY-04, CLARITY-02, and CLARITY-05.
+  Say which mode ran.
 
 ## Verify
 
