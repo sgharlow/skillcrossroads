@@ -39,3 +39,11 @@ ALTER TABLE scans ADD COLUMN IF NOT EXISTS login TEXT;
 CREATE INDEX IF NOT EXISTS scans_slug_time_idx ON scans (slug, scanned_at DESC);
 -- "Your scans" on /account: most-recent scans for one login.
 CREATE INDEX IF NOT EXISTS scans_login_time_idx ON scans (login, scanned_at DESC);
+
+-- Last-known-good badge SVG per slug (Sprint 7): anonymous badge requests serve this instantly
+-- (a cold repo scan can outlast GitHub camo's ~4s proxy timeout) and refresh in the background.
+CREATE TABLE IF NOT EXISTS badge_cache (
+  slug       TEXT PRIMARY KEY,   -- owner/repo[/subpath]
+  svg        TEXT NOT NULL,
+  scanned_at TIMESTAMPTZ NOT NULL DEFAULT now()
+);
