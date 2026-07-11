@@ -12,7 +12,62 @@
  */
 import { spawn } from "node:child_process";
 import { parseMcpConfig } from "./checks/mcp-config.js";
-import type { Category, CheckResult, Evidence } from "./types.js";
+import type { Category, CheckDocs, CheckResult, Evidence } from "./types.js";
+
+/**
+ * Category + docs metadata for the live checks — the one authoritative list of what
+ * `--mcp-live` can score. Consumed by `applicableCategories` (which categories the mcp kind
+ * can ever cover) and by the docs registry (`allCheckDocs`); `gradeMcpLive` below must only
+ * emit ids/categories listed here (pinned by test).
+ */
+export const LIVE_MCP_CHECK_META: readonly {
+  id: string;
+  category: Category;
+  title: string;
+  docs: CheckDocs;
+}[] = [
+  {
+    id: "MCPT-01",
+    category: "correctness",
+    title: "Servers answer tools/list",
+    docs: {
+      why:
+        "A configured server that can't complete the MCP handshake is dead weight: every session " +
+        "carries its config, but no tool ever becomes available — and the failure is usually silent.",
+      fix:
+        "Run the server's command by hand and fix what breaks (missing binary, bad args, missing env). " +
+        "It must complete initialize → initialized → tools/list over stdio.",
+    },
+  },
+  {
+    id: "MCPT-02",
+    category: "triggering",
+    title: "Tool descriptions anchor invocation",
+    docs: {
+      why:
+        "The model picks tools by their descriptions. A missing or title-length description means the " +
+        "tool loses to better-described alternatives — or gets called for the wrong jobs.",
+      fix:
+        "Give every tool a substantive description (a sentence or two): what it does, when to use it, " +
+        "and what it returns. Write it for the model choosing between twenty tools, not for a human reading docs.",
+      bad: `"description": "Search"`,
+      good: `"description": "Full-text search over the team's Confluence pages. Use when the user asks where something is documented. Returns the top 10 page titles with URLs."`,
+    },
+  },
+  {
+    id: "MCPT-03",
+    category: "clarity",
+    title: "Tool parameters documented",
+    docs: {
+      why:
+        "Undocumented parameters make the model guess formats and units — the classic source of " +
+        "silently-wrong tool calls (wrong date format, wrong ID namespace, wrong enum casing).",
+      fix:
+        "Add a description to every property in each tool's inputSchema: what it is, its format, and " +
+        "an example value where ambiguity is possible.",
+    },
+  },
+];
 
 export interface McpTool {
   name: string;

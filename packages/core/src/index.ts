@@ -6,7 +6,18 @@
  */
 export * from "./types.js";
 export { parse, splitFrontmatter, detectKind, ParseError } from "./parse.js";
-export { runChecks, runChecksAsync, CHECKS, ASYNC_CHECKS, trigger01, verify04, clarity05 } from "./checks/index.js";
+export {
+  runChecks,
+  runChecksAsync,
+  CHECKS,
+  ASYNC_CHECKS,
+  trigger01,
+  verify04,
+  clarity05,
+  applicableCategories,
+  allCheckDocs,
+  type CheckDocEntry,
+} from "./checks/index.js";
 export { parseVerdict, mapVerdict, type TriggerVerdict } from "./checks/trigger-01-triggering.js";
 export { parseVerify, mapVerify, type VerifyVerdict } from "./checks/verify-04-verification.js";
 export { parseConstraints, mapConstraints, type ConstraintVerdict } from "./checks/clarity-05-constraints.js";
@@ -32,6 +43,7 @@ export { renderAnnotations, type AnnotatableResult } from "./render/annotations.
 export {
   introspectMcpConfig,
   gradeMcpLive,
+  LIVE_MCP_CHECK_META,
   type McpTool,
   type McpServerIntrospection,
 } from "./mcp-live.js";
@@ -42,6 +54,8 @@ export {
   parseGitHubSlug,
   insertBadge,
   newReadme,
+  checkDocsUrl,
+  DEFAULT_SITE_URL,
   type BadgeMarkdownOptions,
   type InsertBadgeResult,
 } from "./badge-embed.js";

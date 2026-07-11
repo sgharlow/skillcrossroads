@@ -16,6 +16,17 @@ export const agent01: Check = {
   title: "Declared model is valid",
   weight: 1,
   appliesTo: ["subagent"],
+  docs: {
+    why:
+      "A typo'd `model:` value does not fail when you save the file — it fails at runtime, on " +
+      "every delegation, so the subagent you built simply never runs and the error surfaces " +
+      "far from its cause.",
+    fix:
+      "Set `model` to an alias (`sonnet`, `opus`, `haiku`, `inherit`) or a full `claude-*` " +
+      "model id — or delete the field to inherit the default model.",
+    good: "model: sonnet",
+    bad: "model: sonet-4",
+  },
   run(artifact): CheckResult {
     const file = entryRel(artifact);
     const model = artifact.frontmatter?.["model"];

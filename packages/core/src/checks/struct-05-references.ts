@@ -49,6 +49,18 @@ export const struct05: Check = {
   category: "correctness",
   title: "Supporting-file references resolve",
   weight: 1,
+  docs: {
+    why:
+      "SKILL.md is telling Claude to open files that are not in the skill directory — the model " +
+      "burns turns failing to read them, then improvises without the reference material you " +
+      "meant it to have. This is the “references a converter that does not exist” class of bug, " +
+      "and it breaks progressive disclosure entirely.",
+    fix:
+      "Ship the missing file, correct the path so it matches a file that is actually in the " +
+      "skill directory, or delete the dead reference. Only local relative paths are checked — " +
+      "external URLs, `#anchors`, absolute paths, and `../` escapes are out of scope.",
+    bad: "See [the converter](scripts/convert.py)  <- scripts/convert.py is not in the skill",
+  },
   run(artifact): CheckResult {
     const file = entryRel(artifact);
     const present = new Set(artifact.files.map((f) => f.toLowerCase()));

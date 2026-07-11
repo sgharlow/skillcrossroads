@@ -11,6 +11,24 @@ export const struct01: Check = {
   category: "correctness",
   title: "Valid YAML frontmatter",
   weight: 1,
+  docs: {
+    why:
+      "If the frontmatter is missing or fails to parse as YAML, Claude Code cannot read the " +
+      "skill's name or description — the skill loads incorrectly or not at all, and it will " +
+      "never fire. Everything else in the file is dead weight until this parses.",
+    fix:
+      "Start the file with a `---` fence on line 1, a valid `key: value` YAML mapping (at " +
+      "minimum a `description`), and a closing `---` fence. Slash commands are the one " +
+      "exception — frontmatter is optional there, but when present it must still parse.",
+    good:
+      "---\n" +
+      "description: Formats SQL files. Use when the user asks to format or lint SQL.\n" +
+      "---\n" +
+      "# SQL Formatter",
+    bad:
+      "description: Formats SQL files\n" +
+      "# SQL Formatter  <- no `---` fences, so nothing parses as frontmatter",
+  },
   run(artifact): CheckResult {
     const file = entryRel(artifact);
 

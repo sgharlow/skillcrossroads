@@ -1,4 +1,5 @@
 import type { MetadataRoute } from "next";
+import { allCheckDocs } from "@beacon/core";
 import { gallery } from "@/lib/gallery";
 
 export const dynamic = "force-dynamic";
@@ -14,12 +15,18 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     url: `${base}/s/${e.id}`,
     lastModified: e.scannedAt,
   }));
+  const checkUrls: MetadataRoute.Sitemap = allCheckDocs().map((e) => ({
+    url: `${base}/docs/checks/${e.id.toLowerCase()}`,
+    changeFrequency: "monthly",
+  }));
   return [
     { url: base, changeFrequency: "weekly" },
     { url: `${base}/report`, changeFrequency: "monthly" },
     { url: `${base}/paste`, changeFrequency: "monthly" },
     { url: `${base}/pricing`, changeFrequency: "monthly" },
     { url: `${base}/gallery`, changeFrequency: "daily" },
+    { url: `${base}/docs/checks`, changeFrequency: "monthly" },
+    ...checkUrls,
     ...skillUrls,
   ];
 }

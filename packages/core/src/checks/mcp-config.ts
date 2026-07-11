@@ -42,6 +42,21 @@ export const mcp01: Check = {
   title: "Valid MCP config",
   weight: 1,
   appliesTo: ["mcp"],
+  docs: {
+    why:
+      "An .mcp.json that fails to parse — or lacks a top-level `mcpServers` object — " +
+      "configures nothing: Claude Code loads zero servers and every tool the config promised " +
+      "is silently missing at runtime.",
+    fix:
+      "Make the file valid JSON with a top-level `mcpServers` object mapping each server name " +
+      "to its config, and define at least one server (an empty map only earns a warn).",
+    good:
+      `{\n` +
+      `  "mcpServers": {\n` +
+      `    "docs": { "command": "npx", "args": ["-y", "@example/mcp-server@1.2.3"] }\n` +
+      `  }\n` +
+      `}`,
+  },
   run(artifact): CheckResult {
     const file = entryRel(artifact);
     const base = { id: this.id, category: this.category, title: this.title, weight: this.weight };
@@ -77,6 +92,17 @@ export const mcp02: Check = {
   title: "Server packages version-pinned",
   weight: 1,
   appliesTo: ["mcp"],
+  docs: {
+    why:
+      "An unpinned npx server re-resolves `latest` on every launch, so a hijacked or breaking " +
+      "release ships straight into your session — with whatever credentials and tool access " +
+      "that server already holds. That is supply-chain drift you never get to review.",
+    fix:
+      "Pin an exact version after the package name (`npx -y some-server@1.2.3`) and bump " +
+      "deliberately, after reading the release.",
+    good: `"args": ["-y", "@example/mcp-server@1.2.3"]`,
+    bad: `"args": ["-y", "@example/mcp-server"]`,
+  },
   run(artifact): CheckResult {
     const file = entryRel(artifact);
     const base = { id: this.id, category: this.category, title: this.title, weight: this.weight };
@@ -114,6 +140,16 @@ export const mcp03: Check = {
   title: "Remote transports use TLS",
   weight: 1,
   appliesTo: ["mcp"],
+  docs: {
+    why:
+      "A plain http:// transport sends every tool call — arguments, results, and any tokens " +
+      "in headers — across the network unencrypted, readable and modifiable by anyone on the " +
+      "path. Loopback (localhost / 127.0.0.1) is exempt because that traffic never leaves " +
+      "the machine.",
+    fix: "Change the server `url` to https://. Only localhost/127.0.0.1 may stay on plain HTTP.",
+    good: `"url": "https://mcp.example.com/sse"`,
+    bad: `"url": "http://mcp.example.com/sse"`,
+  },
   run(artifact): CheckResult {
     const file = entryRel(artifact);
     const base = { id: this.id, category: this.category, title: this.title, weight: this.weight };

@@ -29,6 +29,19 @@ export const safety02: Check = {
   category: "safety",
   title: "allowed-tools least-privilege",
   weight: 1,
+  docs: {
+    why:
+      "A wildcard grant or bare `Bash` hands the artifact your entire toolbox — one " +
+      "prompt-injected instruction away from arbitrary shell commands running with your " +
+      "permissions. A subagent with no `tools` list is worse than it looks: it silently " +
+      "inherits every tool, including Bash.",
+    fix:
+      "List only the tools the work actually needs, and scope shell access to specific " +
+      "commands (`Bash(git status)`, `Bash(npm test)`). Never grant `*` or `all`; give every " +
+      "subagent an explicit `tools:` list.",
+    good: "allowed-tools: Read, Grep, Bash(git status)",
+    bad: "allowed-tools: Bash",
+  },
   run(artifact): CheckResult {
     const file = entryRel(artifact);
     const fm = artifact.frontmatter;

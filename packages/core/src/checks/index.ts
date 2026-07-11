@@ -1,5 +1,6 @@
-import type { Artifact, ArtifactType, Category, Check, CheckResult } from "../types.js";
+import type { Artifact, ArtifactType, Category, Check, CheckDocs, CheckResult } from "../types.js";
 import type { AsyncCheck, CheckContext } from "./async.js";
+import { LIVE_MCP_CHECK_META } from "../mcp-live.js";
 import { struct01 } from "./struct-01-frontmatter.js";
 import { struct02 } from "./struct-02-fields.js";
 import { struct05 } from "./struct-05-references.js";
@@ -114,11 +115,11 @@ function asyncChecksForKind(kind: ArtifactType): readonly AsyncCheck[] {
 }
 
 /**
- * Categories the live `--mcp-live` checks (MCPT-01/02/03, `mcp-live.ts`) can score for an
- * `mcp` config. Declared here (not imported) to keep the registry cycle-free; the mcp-live
- * tests pin these against the real check results so drift fails loudly.
+ * Categories the live `--mcp-live` checks (MCPT-01/02/03) can score for an `mcp` config —
+ * derived from the authoritative `LIVE_MCP_CHECK_META` so the two can never drift; a test
+ * additionally pins the meta against real `gradeMcpLive` output.
  */
-const LIVE_MCP_CATEGORIES: readonly Category[] = ["correctness", "triggering", "clarity"];
+const LIVE_MCP_CATEGORIES: readonly Category[] = LIVE_MCP_CHECK_META.map((m) => m.category);
 
 /**
  * Every category that CAN be scored for an artifact kind — the union of the deterministic and
@@ -133,6 +134,32 @@ export function applicableCategories(kind: ArtifactType): ReadonlySet<Category> 
   for (const c of asyncChecksForKind(kind)) cats.add(c.category);
   if (kind === "mcp") for (const c of LIVE_MCP_CATEGORIES) cats.add(c);
   return cats;
+}
+
+/** One check's reference-docs entry — everything the `/docs/checks/<id>` page renders. */
+export interface CheckDocEntry {
+  readonly id: string;
+  readonly category: Category;
+  readonly title: string;
+  readonly docs: CheckDocs;
+  /** Kinds the check applies to, as registered. Undefined = all markdown kinds. */
+  readonly appliesTo?: readonly ArtifactType[];
+  /** How the check runs: deterministic, LLM-assisted (BYOK/Pro), or live MCP introspection. */
+  readonly mode: "deterministic" | "llm" | "live";
+}
+
+/**
+ * The full check-docs registry: every deterministic, LLM-assisted, and live check, exactly as
+ * registered (kind scoping included). Feeds the hosted `/docs/checks` pages and the sitemap —
+ * a new check ships with its docs page automatically (docs are a required field, so a check
+ * without fix guidance cannot compile).
+ */
+export function allCheckDocs(): readonly CheckDocEntry[] {
+  return [
+    ...CHECKS.map((c): CheckDocEntry => ({ id: c.id, category: c.category, title: c.title, docs: c.docs, appliesTo: c.appliesTo, mode: "deterministic" })),
+    ...ASYNC_CHECKS.map((c): CheckDocEntry => ({ id: c.id, category: c.category, title: c.title, docs: c.docs, appliesTo: c.appliesTo, mode: "llm" })),
+    ...LIVE_MCP_CHECK_META.map((c): CheckDocEntry => ({ id: c.id, category: c.category, title: c.title, docs: c.docs, appliesTo: ["mcp"], mode: "live" })),
+  ];
 }
 
 /** Run every applicable deterministic check against an artifact. Sync, no network. `ctx` is optional. */

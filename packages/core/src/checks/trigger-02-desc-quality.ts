@@ -19,6 +19,20 @@ export const trigger02: Check = {
   category: "triggering",
   title: "Description long enough to anchor invocation",
   weight: 0.5,
+  docs: {
+    why:
+      "A description that reads like a title gives the model almost nothing to match user " +
+      "requests against — the skill installs fine and then never fires. Length is a crude but " +
+      "honest proxy: you cannot say what a skill does AND when to use it in a title.",
+    fix:
+      "Write past 100 characters with substance, not padding: what the artifact does, when to " +
+      "use it, and 2–3 phrases a user would actually say. The bands: under 40 chars fails " +
+      "(title-length), 40–99 warns (thin), 100+ passes.",
+    bad: "Formats spreadsheet data.",
+    good:
+      "Cleans and formats spreadsheet data — dedupes rows, normalizes dates, fixes number " +
+      "formats. Use when the user pastes messy CSV/Excel data or asks to \"clean up this sheet\".",
+  },
   appliesTo: ["skill", "subagent"],
   run(artifact): CheckResult {
     const file = entryRel(artifact);

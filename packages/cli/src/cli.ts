@@ -25,6 +25,7 @@ import {
   introspectMcpConfig,
   gradeMcpLive,
   score,
+  DEFAULT_SITE_URL,
   type ArtifactType,
   type CrossroadsConfig,
   type CheckContext,
@@ -168,7 +169,7 @@ function today(): string {
 const VERSION = "0.8.0";
 
 /** The site whose scorecards/badges the CLI points at (override for self-hosting). */
-const SITE_URL = process.env["BEACON_SITE_URL"] ?? "https://skillcrossroads.com";
+const SITE_URL = process.env["BEACON_SITE_URL"] ?? DEFAULT_SITE_URL;
 
 function writeArtifact(kind: "html" | "svg", opt: OptionalPath, name: string, content: string): string {
   const target = typeof opt === "string" ? opt : `${slug(name)}.beacon.${kind}`;

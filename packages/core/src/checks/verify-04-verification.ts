@@ -117,6 +117,21 @@ export const verify04: AsyncCheck = {
   category: "verifiability",
   title: "Verification step present",
   weight: 1,
+  docs: {
+    why:
+      "A skill that produces output and stops assumes the happy path succeeded — so the model " +
+      "ships its first attempt unchecked, and the failures land on the user instead of being " +
+      "caught in-session.",
+    fix:
+      "End the instructions with a concrete self-check before finishing: run the tests, re-read " +
+      "the output against the request, confirm the file parses — and say what to do when the " +
+      "check fails. An LLM judges the step (pass at 80/100); vague \"double-check your work\" " +
+      "scores low, actionable verification scores high.",
+    bad: "Generate the config file and tell the user it's ready.",
+    good:
+      "After writing the config, run `app validate config.yml`. If validation fails, fix the " +
+      "config and re-validate before reporting done.",
+  },
   async run(artifact: Artifact, ctx: CheckContext): Promise<CheckResult> {
     if (!ctx.model) throw new Error("VERIFY-04 requires a model client");
     const fm = artifact.frontmatter;

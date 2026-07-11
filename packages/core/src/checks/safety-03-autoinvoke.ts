@@ -21,6 +21,20 @@ export const safety03: Check = {
   category: "safety",
   title: "No destructive auto-invocation",
   weight: 1,
+  docs: {
+    why:
+      "Skills are auto-invocable by default — the model can decide to run this one without " +
+      "the user asking. When the skill deploys, deletes, force-pushes, or sends email, a " +
+      "wrong guess by the model becomes an irreversible action nobody requested.",
+    fix:
+      "Set `disable-model-invocation: true` in the frontmatter so the skill only runs when a " +
+      "user explicitly invokes it. Do this for any destructive or irreversible action.",
+    good:
+      "---\n" +
+      "name: deploy-prod\n" +
+      "disable-model-invocation: true\n" +
+      "---",
+  },
   run(artifact): CheckResult {
     const file = entryRel(artifact);
     const fm = artifact.frontmatter;

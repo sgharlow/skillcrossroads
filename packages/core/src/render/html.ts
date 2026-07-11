@@ -1,5 +1,6 @@
 import { percentileLabel } from "../percentile.js";
 import { CONFIG_FILENAME } from "../suppress.js";
+import { checkDocsUrl } from "../badge-embed.js";
 import { usedLlm, type CategoryScore, type CheckResult, type Evidence, type Scorecard } from "../types.js";
 import { PALETTE, gradeHex, statusHex } from "./theme.js";
 
@@ -101,10 +102,11 @@ function fixCard(r: CheckResult): string {
   const mark = isFail ? "✗" : "⚠";
   const ev = r.evidence.map(evidenceBlock).join("");
   const fix = r.fix ? `<div class="fix-do"><span>Fix</span> ${esc(r.fix)}</div>` : "";
+  // The check id links to its reference page (why it matters + how to fix, with examples).
   return `<article class="fix">
     <header class="fix-head">
       <span class="fix-mark" style="color:${color}">${mark}</span>
-      <span class="fix-id" style="color:${color}">${esc(r.id)}</span>
+      <a class="fix-id" style="color:${color}" href="${esc(checkDocsUrl(r.id))}">${esc(r.id)}</a>
       <span class="fix-title">${esc(r.title)}</span>
     </header>
     ${ev}
@@ -158,7 +160,8 @@ header.top::before{content:"";position:absolute;inset:0;pointer-events:none;
 .fix{background:${PALETTE.ink};border:1px solid ${PALETTE.ink3};border-radius:12px;padding:14px 16px;margin-bottom:12px}
 .fix-head{display:flex;align-items:baseline;gap:9px;flex-wrap:wrap}
 .fix-mark{font-weight:700}
-.fix-id{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;font-size:13px}
+.fix-id{font-family:ui-monospace,Menlo,Consolas,monospace;font-weight:700;font-size:13px;text-decoration:none}
+.fix-id:hover{text-decoration:underline}
 .fix-title{font-weight:600;font-size:14px}
 .ev{margin-top:10px;padding-left:12px;border-left:2px solid ${PALETTE.ink3}}
 .ev-head{display:flex;gap:10px;flex-wrap:wrap;align-items:baseline}

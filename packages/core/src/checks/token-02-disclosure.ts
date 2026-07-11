@@ -15,6 +15,16 @@ export const token02: Check = {
   category: "token",
   title: "Progressive disclosure",
   weight: 1,
+  docs: {
+    why:
+      "A SKILL.md over 200 body lines with zero supporting files means all of your reference " +
+      "material loads into context every single time the skill fires — whether or not that " +
+      "invocation needs it. You pay the full token bill on every trigger.",
+    fix:
+      "Split the heavy reference sections into supporting files inside the skill directory and " +
+      "link to them from SKILL.md, so the model pulls them in on demand. Either a lean body " +
+      "(200 lines or fewer) or at least one supporting file passes this check.",
+  },
   run(artifact): CheckResult {
     const file = entryRel(artifact);
     const bodyLines = artifact.body.split(/\r?\n/).length;

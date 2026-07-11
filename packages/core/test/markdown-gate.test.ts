@@ -12,7 +12,7 @@ describe("renderMarkdown", () => {
     expect(md).toMatch(/^### .*Skill Crossroads: A —/m); // v1.1: dangling-ref grades A (was A−)
     expect(md).toContain("| Category | Score | |");
     expect(md).toContain("**Top fixes**");
-    expect(md).toContain("**STRUCT-05**");
+    expect(md).toContain("**[STRUCT-05](https://skillcrossroads.com/docs/checks/struct-05)**");
     expect(md).toContain("`SKILL.md:10`");
   });
   it("shows a clean-scan line when nothing fails", () => {

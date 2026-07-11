@@ -4,6 +4,7 @@
  * https://docs.github.com/actions/reference/workflow-commands-for-github-actions
  */
 import type { Scorecard } from "../types.js";
+import { checkDocsUrl } from "../badge-embed.js";
 
 export interface AnnotatableResult {
   /** Path of the artifact inside the scanned root ("." for a single-artifact scan). */
@@ -48,7 +49,8 @@ export function renderAnnotations(results: readonly AnnotatableResult[], pathPre
         ? joinRepoPath(pathPrefix, r.repoPath)
         : joinRepoPath(pathPrefix, r.repoPath, evFile);
       const line = ev?.line ?? 1;
-      const msg = `[${check.id}] ${r.name}: ${ev?.message ?? check.title}${check.fix ? ` Fix: ${check.fix}` : ""}`;
+      // Ends with the check's reference page so the inline annotation carries its own fix guide.
+      const msg = `[${check.id}] ${r.name}: ${ev?.message ?? check.title}${check.fix ? ` Fix: ${check.fix}` : ""} (${checkDocsUrl(check.id)})`;
       lines.push(
         `::${level} file=${propEscape(file)},line=${line},title=${propEscape(`Skill Crossroads ${check.id}`)}::${cmdEscape(msg)}`,
       );

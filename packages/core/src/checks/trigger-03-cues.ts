@@ -22,6 +22,20 @@ export const trigger03: Check = {
   category: "triggering",
   title: "Invocation cues in the description",
   weight: 0.5,
+  docs: {
+    why:
+      "Pure what-it-does prose makes the model guess when to invoke your skill — and a guessing " +
+      "model usually guesses \"not now\". Descriptions that state the trigger explicitly " +
+      "reliably out-fire ones that only describe capability.",
+    fix:
+      "State the trigger in so many words. This check looks for explicit cues: \"use when/" +
+      "after/before/if/for …\", \"triggers on …\", \"when the user …\", or a quoted phrase a " +
+      "user would actually say. One cue passes; zero warns.",
+    bad: "A comprehensive formula generator supporting Excel and Google Sheets.",
+    good:
+      "Generates Excel/Sheets formulas. Use when the user asks \"what formula do I need\" or " +
+      "pastes a formula that returns an error.",
+  },
   appliesTo: ["skill", "subagent"],
   run(artifact): CheckResult {
     const file = entryRel(artifact);

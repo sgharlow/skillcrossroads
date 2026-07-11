@@ -18,6 +18,17 @@ export const cmd01: Check = {
   title: "Arguments and argument-hint agree",
   weight: 1,
   appliesTo: ["command"],
+  docs: {
+    why:
+      "A command that reads `$ARGUMENTS` without an `argument-hint` is undiscoverable — " +
+      "`/help` and the SlashCommand tool cannot tell anyone what to pass, so it gets invoked " +
+      "bare and runs on empty input. A hint for arguments the body never reads is the reverse " +
+      "lie: it advertises behavior the command does not have.",
+    fix:
+      "If the body reads `$ARGUMENTS` or `$1..$9`, add an `argument-hint` to the frontmatter " +
+      "describing the expected input; if it reads neither, remove the hint.",
+    good: `argument-hint: "[file] [message]"`,
+  },
   run(artifact): CheckResult {
     const file = entryRel(artifact);
     const hasHint =

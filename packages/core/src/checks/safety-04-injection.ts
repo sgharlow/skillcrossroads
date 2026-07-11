@@ -17,6 +17,18 @@ export const safety04: Check = {
   category: "safety",
   title: "No shell-injection in `!` blocks",
   weight: 1,
+  docs: {
+    why:
+      "A !`…` dynamic-context block runs a real shell command before the model sees anything. " +
+      "Interpolating `$ARGUMENTS` or `$1` into it means whoever invokes the command controls " +
+      "part of a shell line — a `; rm -rf ~` in an argument gets executed, not read.",
+    fix:
+      "Keep !`…` blocks static and let the prompt body handle the arguments. If the command " +
+      "truly needs user input, validate and quote it first — never splice `$ARGUMENTS`, " +
+      "`$1..$9`, or `${…}` in raw.",
+    good: "!`git log --oneline -20`",
+    bad: "!`git log --author=$ARGUMENTS`",
+  },
   run(artifact): CheckResult {
     const file = entryRel(artifact);
     const lines = artifact.raw.split(/\r?\n/);

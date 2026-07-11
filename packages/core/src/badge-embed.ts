@@ -12,6 +12,14 @@ function trimSite(siteUrl: string): string {
   return siteUrl.replace(/\/+$/, "");
 }
 
+/** The canonical hosted origin — the default everywhere a caller doesn't override the site URL. */
+export const DEFAULT_SITE_URL = "https://skillcrossroads.com";
+
+/** The per-check reference page (`/docs/checks/<id>`) — linked from every finding, every surface. */
+export function checkDocsUrl(checkId: string, siteUrl: string = DEFAULT_SITE_URL): string {
+  return `${trimSite(siteUrl)}/docs/checks/${checkId.toLowerCase()}`;
+}
+
 /** The hosted badge + scorecard URLs for a repo — the single source of the URL shapes. */
 export function badgeUrls(siteUrl: string, owner: string, repo: string): { badgeUrl: string; scorecardUrl: string } {
   const base = trimSite(siteUrl);

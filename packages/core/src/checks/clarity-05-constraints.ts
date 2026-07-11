@@ -121,6 +121,20 @@ export const clarity05: AsyncCheck = {
   category: "clarity",
   title: "Constraints & failure modes stated",
   weight: 1,
+  docs: {
+    why:
+      "A skill that only describes the happy path misbehaves the first time reality deviates — " +
+      "a missing input, an ambiguous request, a failing command. With no stated recovery plan, " +
+      "the model improvises, and improvisation is where skills go wrong.",
+    fix:
+      "State the preconditions, limits, and edge cases up front, and say what to do when each " +
+      "goes wrong: \"if X is missing, ask; if Y fails, do Z instead.\" An LLM judges the coverage " +
+      "(pass at 80/100) — concrete failure-mode handling scores highest, happy-path-only prose fails.",
+    bad: "Run the migration script and report success.",
+    good:
+      "Run the migration script. If it fails on a lock timeout, retry once. If the schema is " +
+      "already current, stop and say so — never re-run a completed migration.",
+  },
   async run(artifact: Artifact, ctx: CheckContext): Promise<CheckResult> {
     if (!ctx.model) throw new Error("CLARITY-05 requires a model client");
     const fm = artifact.frontmatter;

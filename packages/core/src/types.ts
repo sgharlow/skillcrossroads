@@ -123,6 +123,23 @@ export interface CheckContext {
   onError?(checkId: string, err: unknown): void;
 }
 
+/**
+ * Reference documentation for one check — rendered as its `/docs/checks/<id>` page and linked
+ * from every finding on every surface. REQUIRED on every check (a check without fix guidance
+ * is a grade without a path to improve it — structurally impossible here, not a convention).
+ * The check module is the one authoritative home of its own docs; nothing re-expresses them.
+ */
+export interface CheckDocs {
+  /** What failing this check costs the author — the consequence, not the mechanics. 1–3 sentences. */
+  readonly why: string;
+  /** How to fix it — imperative and concrete. 1–3 sentences. */
+  readonly fix: string;
+  /** A short passing example (markdown/code snippet), when one illuminates. */
+  readonly good?: string;
+  /** A short failing example. */
+  readonly bad?: string;
+}
+
 /** A check module. Deterministic checks ignore `ctx`; some read `ctx.accurateTokens`. */
 export interface Check {
   readonly id: string;
@@ -131,6 +148,8 @@ export interface Check {
   readonly weight: number;
   /** Artifact kinds this check applies to. Absent = all kinds. Non-applicable checks are skipped. */
   readonly appliesTo?: readonly ArtifactType[];
+  /** Reference docs — the `/docs/checks/<id>` page content. */
+  readonly docs: CheckDocs;
   run(artifact: Artifact, ctx?: CheckContext): CheckResult;
 }
 

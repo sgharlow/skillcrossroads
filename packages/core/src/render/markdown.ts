@@ -1,5 +1,6 @@
 import { percentileLabel } from "../percentile.js";
 import { CONFIG_FILENAME } from "../suppress.js";
+import { checkDocsUrl } from "../badge-embed.js";
 import { usedLlm, type CategoryScore, type CheckResult, type Scorecard } from "../types.js";
 
 export interface MarkdownOptions {
@@ -60,7 +61,8 @@ function fixLine(r: CheckResult): string {
   const loc = ev?.line ? `\`${mdCode(ev.file)}:${ev.line}\`` : ev?.file ? `\`${mdCode(ev.file)}\`` : "";
   const detail = ev?.message ? mdText(ev.message) : "";
   const fix = r.fix ? `\n  - _Fix:_ ${mdText(r.fix)}` : "";
-  return `- ${statusMark(r.status)} **${r.id}** ${r.title} — ${loc} ${detail}${fix}`;
+  // The check id links to its reference page (why it matters + how to fix, with examples).
+  return `- ${statusMark(r.status)} **[${r.id}](${checkDocsUrl(r.id)})** ${r.title} — ${loc} ${detail}${fix}`;
 }
 
 /** Render a Scorecard as a Markdown report — for PR comments and issues. */

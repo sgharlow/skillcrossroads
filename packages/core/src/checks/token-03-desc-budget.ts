@@ -15,6 +15,17 @@ export const token03: Check = {
   category: "token",
   title: "Description budget footprint",
   weight: 1,
+  docs: {
+    why:
+      "Unlike the body, the `description` is loaded into the model's skill listing on every " +
+      "turn — even when the skill never fires — so its length is an always-on context tax. " +
+      "Past the ~1,536-char listing cap it risks being truncated or dropped entirely, which " +
+      "can stop the skill from ever triggering.",
+    fix:
+      "Trim the `description` to the essential trigger phrases: this check warns above 1,024 " +
+      "chars and fails above 1,536. Move examples and detail into the SKILL.md body, which " +
+      "only loads when the skill actually fires.",
+  },
   run(artifact): CheckResult {
     const file = entryRel(artifact);
     const fm = artifact.frontmatter;

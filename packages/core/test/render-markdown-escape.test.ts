@@ -28,7 +28,7 @@ describe("markdown renderer escaping (untrusted skill content → PR comment)", 
 
   it("does NOT escape Beacon's own trusted ids/titles", () => {
     const md = renderMarkdown(scorecard([evilResult]));
-    expect(md).toContain("**STRUCT-05**");
+    expect(md).toContain("**[STRUCT-05](https://skillcrossroads.com/docs/checks/struct-05)**");
     expect(md).toContain("Supporting-file references resolve");
   });
 

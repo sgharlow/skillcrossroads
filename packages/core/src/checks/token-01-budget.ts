@@ -27,6 +27,18 @@ export const token01: Check = {
   category: "token",
   title: "Body under line/token budget",
   weight: 1,
+  docs: {
+    why:
+      "The full SKILL.md is injected into context every time the skill fires, so every line is " +
+      "a recurring token (and dollar) cost on every invocation — and a bloated file risks your " +
+      "actual instructions being diluted or truncated. The official guidance is ~500 lines; " +
+      "this check warns above 500 and fails above 750.",
+    fix:
+      "Cut SKILL.md to under 500 lines by moving heavy reference material into supporting " +
+      "files and linking to them (progressive disclosure), so the model loads that material " +
+      "only when it needs it. The evidence shows your estimated tokens and per-load cost at a " +
+      "$3/Mtok reference rate.",
+  },
   run(artifact, ctx): CheckResult {
     const file = entryRel(artifact);
     const lineCount = artifact.raw.split(/\r?\n/).length;

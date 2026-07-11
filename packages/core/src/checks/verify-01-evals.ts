@@ -16,6 +16,20 @@ export const verify01: Check = {
   category: "verifiability",
   title: "Evals or tests present",
   weight: 1,
+  docs: {
+    why:
+      "Without evals there is no way to prove the skill does what its description claims — " +
+      "every edit is a blind change, and regressions ship silently. \"It worked when I wrote " +
+      "it\" is not evidence.",
+    fix:
+      "Add an evals/ (or tests/) folder with 2–3 test prompts and their expected outcomes. " +
+      "The ladder of proof: runnable eval/test files pass; a prose \"## Verify\" section in the " +
+      "body only warns (manual verification); neither fails.",
+    good:
+      "evals/convert-invoice.md:\n" +
+      "  Prompt: \"Convert invoice.pdf to markdown\"\n" +
+      "  Expect: a Markdown table with one row per line item; totals match the PDF.",
+  },
   appliesTo: ["skill"],
   run(artifact): CheckResult {
     const file = entryRel(artifact);

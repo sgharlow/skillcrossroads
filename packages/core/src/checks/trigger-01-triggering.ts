@@ -175,6 +175,22 @@ export const trigger01: AsyncCheck = {
   category: "triggering",
   title: "Description triggers reliably",
   weight: 1,
+  docs: {
+    why:
+      "The description is the ONLY text the model reads when deciding whether to invoke your " +
+      "skill — if it doesn't match what users actually type, the skill silently never fires. " +
+      "This is the #1 real-world skill failure: our ecosystem scan found ~73% of public skills " +
+      "have descriptions unlikely to trigger reliably.",
+    fix:
+      "Lead with the concrete use case, then add 2–3 natural-language phrases a user would " +
+      "actually say. Keep the scope matched to what the body really does — over-broad " +
+      "descriptions misfire on unrelated prompts, which is just as fatal. An LLM judges the " +
+      "description against the body (pass at 80/100).",
+    bad: "Helps with documents.",
+    good:
+      "Converts Word and PDF files to clean Markdown. Use when the user says \"convert this " +
+      "doc\", \"extract the text from this PDF\", or attaches a .docx/.pdf they want as text.",
+  },
   async run(artifact: Artifact, ctx: CheckContext): Promise<CheckResult> {
     if (!ctx.model) throw new Error("TRIGGER-01 requires a model client");
     const fm = artifact.frontmatter;

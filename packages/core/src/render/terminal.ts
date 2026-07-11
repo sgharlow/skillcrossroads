@@ -1,6 +1,7 @@
 import pc from "picocolors";
 import { percentileLabel } from "../percentile.js";
 import { CONFIG_FILENAME } from "../suppress.js";
+import { checkDocsUrl } from "../badge-embed.js";
 import { usedLlm, type CategoryScore, type CheckResult, type Evidence, type Scorecard } from "../types.js";
 
 const INNER = 63;
@@ -87,6 +88,7 @@ function fixItem(r: CheckResult): string {
   for (const e of r.evidence.slice(0, 3)) lines.push(evidenceLine(e));
   if (r.evidence.length > 3) lines.push(`   ${pc.dim(`… and ${r.evidence.length - 3} more`)}`);
   if (r.fix) lines.push(`   ${pc.dim("Fix:")} ${r.fix}`);
+  lines.push(`   ${pc.dim(`Docs: ${checkDocsUrl(r.id)}`)}`);
   return lines.join("\n");
 }
 

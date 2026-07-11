@@ -45,6 +45,20 @@ export const clarity03: Check = {
   category: "clarity",
   title: "No ASCII-art / persona filler",
   weight: 1,
+  docs: {
+    why:
+      "Decorative banners and persona filler are paid for in context tokens on every single " +
+      "invocation and change model behavior not at all. Every token spent on a box-drawing banner " +
+      "or a \"10x ninja\" pep talk is a token not spent on instructions.",
+    fix:
+      "Delete banner lines and persona sentences; keep the instructions plain and imperative. " +
+      "Markdown headings give you structure for free — no ASCII art required.",
+    bad:
+      "═══════════════════════════════\n" +
+      "You are a world-class 10x ninja developer.\n" +
+      "═══════════════════════════════",
+    good: "## Steps\n1. Read the failing test.\n2. Fix the code, not the test.",
+  },
   run(artifact): CheckResult {
     const file = entryRel(artifact);
     const bodyLines = artifact.body.split(/\r?\n/);

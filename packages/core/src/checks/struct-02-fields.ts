@@ -11,6 +11,26 @@ export const struct02: Check = {
   category: "correctness",
   title: "Recommended fields present",
   weight: 1,
+  docs: {
+    why:
+      "The `description` is what the model reads when deciding whether to invoke your skill — " +
+      "without one the skill is effectively invisible and never triggers (for commands, /help " +
+      "and the SlashCommand tool show nothing). A missing `name` is softer: the skill silently " +
+      "falls back to its directory name.",
+    fix:
+      "Add a non-empty `description` that leads with the key use case and the phrases a user " +
+      "would actually say, plus an explicit `name`. Slash commands only need `description` — " +
+      "they are named by their filename.",
+    good:
+      "---\n" +
+      "name: sql-formatter\n" +
+      "description: Formats SQL files. Use when the user asks to format, lint, or clean up SQL.\n" +
+      "---",
+    bad:
+      "---\n" +
+      "name: sql-formatter\n" +
+      "---  <- no `description`, so the model has nothing to match against",
+  },
   run(artifact): CheckResult {
     const file = entryRel(artifact);
     const fm = artifact.frontmatter;

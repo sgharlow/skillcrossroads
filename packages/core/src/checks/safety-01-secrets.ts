@@ -86,6 +86,19 @@ export const safety01: Check = {
   category: "safety",
   title: "No hardcoded secrets",
   weight: 1,
+  docs: {
+    why:
+      "A credential shipped inside a skill is public the moment the repo is — scrapers find " +
+      "leaked key patterns on GitHub within minutes, and everyone who installs the skill gets " +
+      "a copy. Once published, deleting the line does not un-leak it.",
+    fix:
+      "Remove the literal from every file, rotate the credential (treat it as burned), and " +
+      "read it from an environment variable at runtime instead. The scan covers SKILL.md and " +
+      "every supporting text file: private key blocks, cloud/API tokens, JWTs, connection " +
+      "strings with passwords, and generic `key = \"value\"` assignments.",
+    good: `token = os.environ["SERVICE_TOKEN"]`,
+    bad: `token = "abc123fakevalue"`,
+  },
   run(artifact): CheckResult {
     const findings: Evidence[] = [];
     findings.push(...scanText(artifact.raw, entryRel(artifact)));
