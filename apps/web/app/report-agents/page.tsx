@@ -1,16 +1,16 @@
 import type { Metadata } from "next";
 import { Signpost } from "@/components/CrossroadsBadge";
-import { REPORT_MD } from "@/content/report";
+import { REPORT_AGENTS_MD } from "@/content/report-agents";
 import { markdownToHtml } from "@/lib/markdown-lite";
 
 export const metadata: Metadata = {
-  title: "The State of Claude Code Skills",
+  title: "The State of Claude Code Agents & Commands",
   description:
-    "An evidence-based audit of 214 public Claude Code skills across 18 repositories, graded by Skill Crossroads — every figure traceable to pinned git trees.",
-  alternates: { canonical: "/report" },
+    "An evidence-based audit of 85 public Claude Code subagents and slash commands across 9 repositories, graded by Skill Crossroads — every figure traceable to pinned git trees.",
+  alternates: { canonical: "/report-agents" },
 };
 
-export default function ReportPage() {
+export default function ReportAgentsPage() {
   return (
     <main className="wrap">
       <header className="nav">
@@ -19,22 +19,23 @@ export default function ReportPage() {
           <span>Skill Crossroads</span>
         </a>
         <nav className="rlinks">
-          <a className="rlink" href="/report-agents">Agents report</a>
+          <a className="rlink" href="/report">Skills report</a>
           <a className="rlink" href="/gallery">Gallery</a>
           <a className="rlink" href="/account">Account</a>
           <a className="btn-sm" href="/#scan">Scan a skill</a>
         </nav>
       </header>
 
-      <article className="report" dangerouslySetInnerHTML={{ __html: markdownToHtml(REPORT_MD) }} />
+      <p className="crossref">
+        Companion report: <a href="/report">The State of Claude Code Skills</a>.
+      </p>
+
+      <article className="report" dangerouslySetInnerHTML={{ __html: markdownToHtml(REPORT_AGENTS_MD) }} />
 
       <footer className="foot">
         <p>
-          Companion report: <a href="/report-agents">The State of Claude Code Agents &amp; Commands</a>.
-        </p>
-        <p>
-          Want your skill graded? <a href="/#scan">Scan it free</a> — or run{" "}
-          <code>npx skillcrossroads ./my-skill</code> locally.
+          Want your agents graded? <a href="/#scan">Scan a repo free</a> — or run{" "}
+          <code>npx skillcrossroads ./your-repo</code> locally.
         </p>
       </footer>
 
@@ -46,6 +47,8 @@ export default function ReportPage() {
         .rlinks{display:flex;gap:14px;align-items:center}
         .rlink{color:var(--fog);font-size:13.5px;text-decoration:none}
         .rlink:hover{color:var(--foam)}
+        .crossref{color:var(--muted);font-size:14px;margin-bottom:18px}
+        .crossref a{color:var(--accent)}
         .report h1{font-size:clamp(28px,5vw,40px);letter-spacing:-.02em;font-weight:800;margin-bottom:14px}
         .report h2{font-size:clamp(20px,3vw,26px);letter-spacing:-.015em;font-weight:750;margin:34px 0 12px}
         .report h3{font-size:17px;font-weight:650;margin:24px 0 10px}

@@ -17,7 +17,9 @@
     "eval:triggering": "node scripts/eval-triggering.mjs",
     "eval:tokens": "node scripts/eval-token-accuracy.mjs",
     "report:skills": "node scripts/state-of-skills.mjs",
+    "report:agents": "node scripts/state-of-agents.mjs",
     "report:web": "node -e \"const fs=require('fs');const md=fs.readFileSync('reports/state-of-claude-code-skills.md','utf8');fs.writeFileSync('apps/web/content/report.ts','// GENERATED - do not edit by hand. Source: reports/state-of-claude-code-skills.md\\n// Regenerate: npm run report:web   (after npm run report:skills regenerates the source)\\nexport const REPORT_MD: string = '+JSON.stringify(md)+';\\n')\"",
+    "report-agents:web": "node -e \"const fs=require('fs');const md=fs.readFileSync('reports/state-of-claude-code-agents.md','utf8');fs.writeFileSync('apps/web/content/report-agents.ts','// GENERATED - do not edit by hand. Source: reports/state-of-claude-code-agents.md\\n// Regenerate: npm run report-agents:web   (after npm run report:agents regenerates the source)\\nexport const REPORT_AGENTS_MD: string = '+JSON.stringify(md)+';\\n')\"",
     "beacon": "node packages/cli/dist/cli.js"
   },
   "engines": {

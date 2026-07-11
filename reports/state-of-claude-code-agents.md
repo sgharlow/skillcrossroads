@@ -1,0 +1,122 @@
+# The State of Claude Code Agents & Commands
+
+*An evidence-based audit of 85 public Claude Code artifacts — 65 subagents and 20 slash commands across 9 repositories — graded by **Skill Crossroads** (rubric v1.2), the signpost for Claude Code artifacts. Every figure below comes from this run and is traceable to the pinned git trees in the methodology. Generated 2026-07-10.*
+
+> **Edition disclosure — deterministic only.** No LLM-assisted checks ran in this edition. Every figure is from Skill Crossroads' pure, bit-reproducible deterministic checks. The triggering figures come from the deterministic description-quality checks (TRIGGER-02 description length, TRIGGER-03 invocation cues, TRIGGER-05 invocation-flag consistency) — **not** the LLM triggering judge (TRIGGER-01), which was excluded for cost and reproducibility.
+
+> **Scope.** A curated sample of community subagent and command collections (up to 15 artifacts each, 250 total). Only `subagent` and `command` artifacts are graded — skills, MCP configs, and plugin manifests in the same repos are out of scope for this report. Repos whose layout Skill Crossroads cannot discover (agents at the repo root or in category directories instead of an `agents/` or `commands/` parent dir) are disclosed in the methodology table rather than silently dropped.
+
+## The headline
+
+Across 65 subagents, the average Skill Crossroads score is **91.3/100**. The single most common subagent problem in this run is **invocation cues in description** (TRIGGER-03): **94%** don't cleanly pass it (61 of 65).
+
+Across 20 slash commands, the average score is **96.1/100**. The most common command problem is **recommended fields present** (STRUCT-02): **65%** don't cleanly pass it (13 of 20).
+
+**43% of subagents (28 of 65) declare no `tools` list at all** — which means each one silently inherits *every* tool, including unrestricted Bash. Add 29 more granting bare `Bash`, and **88%** of the subagent sample is not least-privilege (SAFETY-02).
+
+## Grade distribution
+
+| Grade | Subagents | Share | Commands | Share |
+|---|---|---|---|---|
+| A | 57 | 88% | 20 | 100% |
+| B | 2 | 3% | 0 | 0% |
+| C | 0 | 0% | 0 | 0% |
+| D | 6 | 9% | 0 | 0% |
+| F | 0 | 0% | 0 | 0% |
+
+Average overall: **subagents 91.3/100**, **commands 96.1/100**. Deterministic grades are computed over the evaluated categories with weights renormalized — LLM-only categories (e.g. Verifiability for agents/commands) stay honestly unscored in this edition.
+
+## How 65 subagents do on each check
+
+Share of the 65 subagents that **pass cleanly** (higher is better):
+
+```
+STRUCT-01 valid YAML frontmatter              ██████████████████░░  91%   n=65 (0 warn, 6 fail)
+STRUCT-02 recommended fields present          █████████████████░░░  86%   n=65 (3 warn, 6 fail)
+TOKEN-01 under the line/token budget          ██████████████████░░  88%   n=65 (8 warn, 0 fail)
+TOKEN-03 description budget footprint         ████████████████████ 100%   n=65 (0 warn, 0 fail)
+TOKEN-04 recurring per-invocation cost        ███████████████████░  97%   n=65 (2 warn, 0 fail)
+CLARITY-03 no ASCII-art / persona filler      ████████████████████  98%   n=65 (0 warn, 1 fail)
+SAFETY-01 no hardcoded secrets                ████████████████████ 100%   n=65 (0 warn, 0 fail)
+SAFETY-02 tools least-privilege               ██░░░░░░░░░░░░░░░░░░  12%   n=65 (57 warn, 0 fail)
+SAFETY-03 no destructive auto-invocation      ███████████████░░░░░  77%   n=65 (15 warn, 0 fail)
+SAFETY-04 no shell-injection in ! blocks      ████████████████████ 100%   n=65 (0 warn, 0 fail)
+AGENT-01 declared model is valid              ████████████████████ 100%   n=65 (0 warn, 0 fail)
+TRIGGER-02 description long enough to anchor  ███████████████░░░░░  77%   n=65 (9 warn, 6 fail)
+TRIGGER-03 invocation cues in description     █░░░░░░░░░░░░░░░░░░░   6%   n=65 (55 warn, 6 fail)
+TRIGGER-05 invocation flags consistent        ████████████████████ 100%   n=65 (0 warn, 0 fail)
+```
+
+## How 20 slash commands do on each check
+
+Share of the 20 commands that **pass cleanly** (higher is better):
+
+```
+STRUCT-01 valid YAML frontmatter              ████████████████████ 100%   n=20 (0 warn, 0 fail)
+STRUCT-02 recommended fields present          ███████░░░░░░░░░░░░░  35%   n=20 (13 warn, 0 fail)
+TOKEN-01 under the line/token budget          ███████████████████░  95%   n=20 (1 warn, 0 fail)
+TOKEN-03 description budget footprint         ████████████████████ 100%   n=20 (0 warn, 0 fail)
+TOKEN-04 recurring per-invocation cost        ████████████████████ 100%   n=20 (0 warn, 0 fail)
+CLARITY-03 no ASCII-art / persona filler      ███████████████████░  95%   n=20 (1 warn, 0 fail)
+SAFETY-01 no hardcoded secrets                ████████████████████ 100%   n=20 (0 warn, 0 fail)
+SAFETY-02 tools least-privilege               ███████████████████░  95%   n=20 (1 warn, 0 fail)
+SAFETY-03 no destructive auto-invocation      ██████████████████░░  90%   n=20 (2 warn, 0 fail)
+SAFETY-04 no shell-injection in ! blocks      ████████████████████ 100%   n=20 (0 warn, 0 fail)
+CMD-01 arguments and argument-hint agree      ██████████████░░░░░░  70%   n=20 (6 warn, 0 fail)
+TRIGGER-05 invocation flags consistent        ████████████████████ 100%   n=20 (0 warn, 0 fail)
+```
+
+## Findings
+
+- **The no-`tools` inherits-everything trap (SAFETY-02).** 28 of 65 subagents (43%) omit the `tools` field. That reads like a safe default but is the opposite: a subagent without a `tools` list inherits the caller's entire toolbox — Bash included — so a delegated worker meant to "just read code" can run arbitrary shell commands. 29 more grant bare `Bash` outright.
+- **Model declarations are clean (AGENT-01).** 0 of 65 subagents have a typo'd `model:` value — every declared model is a recognized alias (`sonnet`/`opus`/`haiku`/`inherit`) or `claude-*` id. The runtime-failure trap this check exists for did not appear in this sample.
+- **Descriptions too thin to trigger delegation (TRIGGER-02/03).** 23% of subagent descriptions (15 of 65) are too short to anchor automatic delegation, and 94% (61 of 65) lack the invocation cues ("use when…", "use PROACTIVELY…") Claude matches on. An agent whose description doesn't say when to use it is an agent that never fires. (Deterministic proxies — the LLM triggering judge did not run in this edition.)
+- **`$ARGUMENTS` vs `argument-hint` drift (CMD-01).** 6 of 20 commands (30%) use arguments without declaring `argument-hint` (or declare a hint they never use) — the user gets no signature hint at the prompt, or a misleading one.
+- **Hardcoded secrets (SAFETY-01).** 0 of 85 artifacts (0%) tripped the secret scan — the one check this sample passes across the board.
+
+## What this means
+
+**0 of 65 subagents (0%)** and **3 of 20 commands (15%)** pass every deterministic check cleanly.
+
+The most common defects across the sample:
+
+- subagents — invocation cues in description (TRIGGER-03): 61 of 65
+- subagents — tools least-privilege (SAFETY-02): 57 of 65
+- subagents — no destructive auto-invocation (SAFETY-03): 15 of 65
+- subagents — description long enough to anchor (TRIGGER-02): 15 of 65
+- subagents — recommended fields present (STRUCT-02): 9 of 65
+- commands — recommended fields present (STRUCT-02): 13 of 20
+- commands — arguments and argument-hint agree (CMD-01): 6 of 20
+- commands — no destructive auto-invocation (SAFETY-03): 2 of 20
+- commands — under the line/token budget (TOKEN-01): 1 of 20
+- commands — no ASCII-art / persona filler (CLARITY-03): 1 of 20
+
+Each is catchable **before** publishing, with `npx skillcrossroads ./your-repo` — the same engine grades agents, commands, skills, MCP configs, and plugins.
+
+## Methodology & reproducibility
+
+Skill Crossroads' **deterministic checks only** (rubric v1.2, no LLM) were run 2026-07-10 against each repo's git tree at the sha below — the engine's own discovery (`findArtifactFiles`) and grading (`auditAsync`) pipeline, identical to what the hosted scanner runs on these kinds. Deterministic checks are pure, so re-scanning the same tree reproduces these figures exactly. The LLM-assisted checks (TRIGGER-01 triggering judge, VERIFY-04, CLARITY-05, CLARITY-02) were excluded from this edition for cost and reproducibility — triggering figures above are the deterministic TRIGGER-02/03/05 proxies.
+
+Caps: up to 15 artifacts per repo (`BEACON_MAX_PER_REPO`), 250 total (`BEACON_MAX_TOTAL`). Discovery finds `.md` files whose parent directory is `agents/` or `commands/` at any depth; each kind is sampled alphabetically, and when a repo ships both kinds the per-repo cap is split between them so neither crowds the other out of the sample. "Discovered" below is everything in the tree matching that layout; "graded" is the capped sample this report aggregates. A repo where discovery finds nothing is marked "no discoverable agent/command layout".
+
+| Repo | Ref | Tree sha | Agents graded | Commands graded | Discovered (agents+cmds) | Errors | Note |
+|---|---|---|---|---|---|---|---|
+| VoltAgent/awesome-claude-code-subagents | main | `947b44ca0c58` | 0 | 0 | 0+0 | 0 | no discoverable agent/command layout |
+| 0xfurai/claude-code-subagents | main | `9236d10702cd` | 15 | 0 | 138+0 | 0 |  |
+| rahulvrane/awesome-claude-agents | main | `513ad8345465` | 0 | 0 | 0+0 | 0 | no discoverable agent/command layout |
+| NicholasSpisak/claude-code-subagents | main | `1a16f36820d5` | 0 | 1 | 0+1 | 0 |  |
+| rubenzantingh/claude-code-magento-agents | master | `faa1aac58266` | 0 | 0 | 0+0 | 0 | no discoverable agent/command layout |
+| rshah515/claude-code-subagents | main | `872758205aa8` | 0 | 0 | 0+0 | 0 | no discoverable agent/command layout |
+| sanghun0724/awesome-swift-claude-code-subagents | main | `e2546ed4de02` | 0 | 0 | 0+0 | 0 | no discoverable agent/command layout |
+| CoderMageFox/claudecode-codex-subagents | main | `572b6c64d51f` | 0 | 2 | 0+2 | 0 |  |
+| iSerter/laravel-claude-agents | main | `8868214ee3fe` | 10 | 0 | 10+0 | 0 |  |
+| mylee04/claude-code-subagents | main | `9e1667ad54d6` | 0 | 0 | 0+0 | 0 | no discoverable agent/command layout |
+| gensecaihq/Claude-Code-Subagents-Collection | main | `62605aa9a029` | 0 | 0 | 0+0 | 0 | no discoverable agent/command layout |
+| danielrosehill/Claude-Slash-Commands | main | `cf3644b4890d` | 0 | 6 | 0+6 | 0 |  |
+| Dlaby23/claude-agents-ultimate-collection | main | `410d6e073b8b` | 15 | 0 | 31+0 | 0 |  |
+| snapper-ai/claude-code-workflows | main | `6aab465267a5` | 2 | 4 | 2+4 | 0 |  |
+| wshobson/agents | main | `d7cf7dca8c4c` | 8 | 7 | 199+106 | 0 |  |
+| wshobson/commands | main | `27d3e77b1a84` | 0 | 0 | 0+0 | 0 | no discoverable agent/command layout |
+| qdhenry/Claude-Command-Suite | main | `e89b2f0b54f5` | 15 | 0 | 20+0 | 0 |  |
+
+Reproduce: `npm run build && node scripts/state-of-agents.mjs` (default repo set; set `GITHUB_TOKEN` for rate limits) — or pass `owner/repo …` to scan your own.
