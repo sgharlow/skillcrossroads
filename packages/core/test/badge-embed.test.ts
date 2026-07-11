@@ -95,6 +95,30 @@ describe("insertBadge", () => {
     const readme = "# Title\n\n![logo](./assets/logo.svg)\n";
     expect(insertBadge(readme, block).changed).toBe(true);
   });
+
+  it("ignores a badge URL inside a fenced code block (docs example, not an embedded badge)", () => {
+    const readme =
+      "# Title\n\nEmbed the hosted badge:\n\n```markdown\n" +
+      "[![Skill Crossroads](https://skillcrossroads.com/api/badge/OWNER/REPO.svg)](https://skillcrossroads.com/s/OWNER/REPO)\n" +
+      "```\n\nBody\n";
+    const { changed, reason } = insertBadge(readme, block);
+    expect(changed).toBe(true);
+    expect(reason).toBe("inserted");
+  });
+
+  it("ignores a badge URL inside an inline code span", () => {
+    const readme = "# Title\n\nUse `https://skillcrossroads.com/api/badge/o/r.svg` as the image URL.\n";
+    expect(insertBadge(readme, block).changed).toBe(true);
+  });
+
+  it("still detects a real badge when a docs example is ALSO present in a code fence", () => {
+    const readme =
+      `# Title\n\n${block}\n\n` +
+      "```markdown\n[![Skill Crossroads](https://skillcrossroads.com/api/badge/OWNER/REPO.svg)](https://skillcrossroads.com/s/OWNER/REPO)\n```\n";
+    const { changed, reason } = insertBadge(readme, block);
+    expect(changed).toBe(false);
+    expect(reason).toBe("already-present");
+  });
 });
 
 describe("newReadme", () => {

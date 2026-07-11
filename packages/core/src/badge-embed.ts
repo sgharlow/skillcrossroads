@@ -81,12 +81,36 @@ export interface InsertBadgeResult {
 const HOSTED_BADGE_RX = /\/api\/badge\/[^\s)]+\.svg/i;
 
 /**
+ * Markdown with fenced code blocks and inline code spans removed. A badge URL inside code is a
+ * documentation example (it doesn't render as an image), not an embedded badge — detection must
+ * only see prose, or a README that merely *documents* the embed snippet reads as already badged.
+ */
+function stripCode(md: string): string {
+  const kept: string[] = [];
+  let fence: string | null = null;
+  for (const line of md.split("\n")) {
+    const open = /^ {0,3}(`{3,}|~{3,})/.exec(line);
+    if (fence === null && open?.[1] !== undefined) {
+      fence = open[1][0] as string;
+      continue;
+    }
+    if (fence !== null) {
+      if (open?.[1] !== undefined && open[1].startsWith(fence)) fence = null;
+      continue;
+    }
+    kept.push(line);
+  }
+  return kept.join("\n").replace(/`[^`\n]*`/g, "");
+}
+
+/**
  * Insert a badge block just under the README's first level-1 heading (idempotent).
- * If the README already has a hosted badge, it's returned unchanged. If there's no H1, the block
- * is prepended. Never commits — the caller writes the file and the user reviews the diff.
+ * If the README already has a hosted badge (outside code blocks/spans), it's returned unchanged.
+ * If there's no H1, the block is prepended. Never commits — the caller writes the file and the
+ * user reviews the diff.
  */
 export function insertBadge(readme: string, block: string): InsertBadgeResult {
-  if (HOSTED_BADGE_RX.test(readme)) return { content: readme, changed: false, reason: "already-present" };
+  if (HOSTED_BADGE_RX.test(stripCode(readme))) return { content: readme, changed: false, reason: "already-present" };
   const lines = readme.split("\n");
   const h1 = lines.findIndex((l) => /^#\s+\S/.test(l));
   if (h1 === -1) {
