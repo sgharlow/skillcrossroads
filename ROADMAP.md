@@ -228,7 +228,19 @@ user hits and repairs known warts on the core loop.*
 | 12 | **Kind-aware partial semantics** — distinguish "no check *can* apply to this kind" (full grade over applicable categories, **no asterisk**) from "a check could run but didn't (keyless LLM)" (true partial) | Command/agent-only repos badge `A*` forever; "partial" reads as *incomplete work* on repos that scored everything applicable — a standing trust wart logged in the 2026-07-10 badge dogfood | 1d |
 | 13 | **Badge cold-start fix** — serve the last-known SVG instantly from the DB (stale-while-revalidate) and refresh in the background | Cold render ≈5.6 s vs GitHub camo's ≈4 s timeout: embedded badges intermittently break at cache expiry. The badge is the growth loop; it must never flicker | 1d |
 
-### Sprint 8 — Plugins: the last tagline kind · est. ~4.5 dev-days · 1 week
+### Sprint 8 — Plugins: the last tagline kind · **SHIPPED 2026-07-10** (`live-proven`, owner-approved "go ahead with sprint 8")
+
+> All three items shipped in `skillcrossroads@0.10.0` + same-day deploy (npx-verified; commits
+> through ecb4bf3+). FIVE kinds now grade. New checks (whitelist-scoped): PLUGIN-01 manifest
+> validity, PLUGIN-02 component resolution (segment-level `..` traversal), PLUGIN-03 marketplace
+> description, HOOK-01 hooks destructive-command sweep (order-insensitive rm flags, token-exact
+> force-push — `--force-with-lease` safe, pathed/env piped shells). Local scans discover plugin
+> roots (manifest row + member roll-up); hosted scans materialize plugins with the full capped
+> text budget (SAFETY-01 parity) and link plugin rows to their manifest deep link (exactly one
+> row — live-verified). Plugin parse honors the plugin-root .gitignore (local .env files never
+> enter the grade). Item 16: this repo ships .claude-plugin/plugin.json (skills: ./skill),
+> dogfooded. A 25-agent adversarial review found 10 verified defects — all fixed same-day with
+> regressions pinned. 350 tests. Remaining honest gap: marketplace.json grading (deferred).
 
 | # | Item | Why now | Est. |
 |---|------|---------|------|
