@@ -189,12 +189,70 @@ a key). Each check is a ready-made evidence post for the content cadence. 227 te
   ~2/7 artifact-repos had no README — **addressed by `init` (Sprint A1)**, which creates a minimal
   README when one is missing so the badge loop can seed there too.
 
+## Ranked roadmap v2 (2026-07-10) — from *grading* to *fixing*
+
+> v1 closed the grading surface: four artifact kinds, ~25 checks, CLI + CI + hosted + badge +
+> report + live billing, all `live-proven` or better (run `npm test` for the current count).
+> The product now tells an author *what's wrong* with file:line receipts. The assessed biggest
+> missing value, in rank order: **helping the author make it right** (fix docs, then fix
+> suggestions), **plugins** (the one tagline kind still ungraded — and the ecosystem's actual
+> distribution unit), and **two trust warts on the badge loop itself** (the `A*` partial
+> asterisk on agent/command-only repos; the cold-badge render that can outlast GitHub's camo
+> timeout). Ranking = (developer value × demand-loop leverage) ÷ effort, same formula as v1.
+>
+> **G0 (the launch send, Steve-court) remains the binding constraint** — nothing below creates
+> users; it improves what the first users find. Sprints 7+ are nominally demand-gated behind a
+> G0 signal; building ahead of it requires the same explicit owner override recorded on
+> Sprints 2–6. Estimates are focused Claude-assisted dev-days including tests, deploy, and live
+> verification; calendar assumes ≈1 sprint per week at evenings/weekends pace (the demonstrated
+> all-day pace has landed a sprint per day).
+
+### Sprint 7 — Fix-it floor + badge trust (launch-safe polish) · est. ~4 dev-days · 1 week
+
+*Same class as Sprint 1/A1: not horizontal breadth — it upgrades the experience every first
+user hits and repairs known warts on the core loop.*
+
+| # | Item | Why now | Est. |
+|---|------|---------|------|
+| 11 | **Check reference docs** — a `/docs/checks/<ID>` page per check (what it checks, why it matters, how to fix, a good/bad example), generated from metadata declared **in each check module** (one authoritative definition, no second copy); every finding on the scorecard / markdown / annotations links its rule page | The first question after any grade is "how do I fix it" — ESLint-style rule pages are the proven shape. Also the only marketing surface that is simultaneously product: ~25 SEO landing pages from content that already exists in the checks | 2d |
+| 12 | **Kind-aware partial semantics** — distinguish "no check *can* apply to this kind" (full grade over applicable categories, **no asterisk**) from "a check could run but didn't (keyless LLM)" (true partial) | Command/agent-only repos badge `A*` forever; "partial" reads as *incomplete work* on repos that scored everything applicable — a standing trust wart logged in the 2026-07-10 badge dogfood | 1d |
+| 13 | **Badge cold-start fix** — serve the last-known SVG instantly from the DB (stale-while-revalidate) and refresh in the background | Cold render ≈5.6 s vs GitHub camo's ≈4 s timeout: embedded badges intermittently break at cache expiry. The badge is the growth loop; it must never flicker | 1d |
+
+### Sprint 8 — Plugins: the last tagline kind · est. ~4.5 dev-days · 1 week
+
+| # | Item | Why now | Est. |
+|---|------|---------|------|
+| 14 | **Plugin grading** — `plugin.json` / marketplace-manifest validity (STRUCT-06 from the v1 catalog), declared-component resolution, and a **roll-up scorecard** aggregating the contained skills/agents/commands/MCP grades; hosted + CLI + badge | The tagline has claimed plugins since day one (same integrity logic that drove Sprints 2/5); plugins are how the ecosystem actually distributes (425+ in one marketplace), and a plugin audit is mostly composition of kinds already graded | 3d |
+| 15 | **Hooks safety sweep** — hooks (in plugins and `.claude/settings.json`) run arbitrary shell on events; SAFETY checks for injection surface, destructive commands, inline secrets | The riskiest artifact surface nobody grades — pure differentiation for the evidence-cited safety brand | 1d |
+| 16 | **Ship Skill Crossroads as a plugin** (packaging the existing `audit-skill` + a command), self-graded via item 14 | Distribution inside the marketplaces being audited; dogfoods the new kind | 0.5d |
+
+### Sprint 9 — `--suggest`: close the loop from graded to fixed · est. ~3 dev-days · 1 week
+
+| # | Item | Why now | Est. |
+|---|------|---------|------|
+| 17 | **LLM fix suggestions** — CLI `--suggest` (BYOK) + a Pro hosted "Suggest fixes": a rewritten description / frontmatter patch / token-trim plan per failing check, presented as a reviewable diff; **never auto-applies**; content-hash cached like the other LLM checks | The audit's endgame — the fastest path from C to A. Its v1 precondition (suppression shipped first) is met; sequenced after rule docs so suggestions can cite them | 2.5d |
+| 18 | **CLI remote scan** — `skillcrossroads owner/repo` (reuses `scanGitHubRepo`) so "check it before you install it" works in the terminal | The consumer-side use case with near-zero marginal cost; rounds out the CLI | 0.5d |
+
+### Sprint 10 — Moat cadence: rubric v1.2 + State of Agents · est. ~3 dev-days · 1 week
+
+| # | Item | Why now | Est. |
+|---|------|---------|------|
+| 19 | **Check batch from the v1 catalog remainder** — TRIGGER-05 invocation-flag consistency (D), CLARITY-02 internal-contradiction drift (L), TOKEN-04 recurring $-cost estimate (D), SAFETY-05 MCP input-validation statics; shipped as **rubric v1.2** (versioned, announced, never silent) | The "one new check every 1–2 weeks" cadence *is* the moat, and each check is a ready-made content post | 2d |
+| 20 | **"State of Claude Code Agents & Commands" report edition** — curated repo list through the existing report pipeline | The data-report loop is the proven no-video marketing engine; nobody has published ecosystem data on agents. Do alongside (or as fuel for) the launch | 1d |
+
 ### Deferred (build only on explicit demand evidence)
-- **MCP server grading (full)** — pending the Sprint-4 spike gate
-- **`--suggest`** LLM fix-generation (rewrite the failing description, BYOK) — after suppression
-  ships and TRIGGER data shows which fixes users actually apply
+- **"Agentic Patterns" Pro rule pack** (Build Bible C.1) — **blocked on the 12 anti-pattern
+  source docs (Steve-court)**; once provided, ~1 sprint and the first differentiated Pro content
+- **Watch & alerts** — grade-regression email for repos you follow (Pro); first user asking for
+  monitoring triggers it (email deliverability treated as day-1 infra when built)
+- **Public JSON API** for scores — first integration request triggers it
 - **SARIF output** → GitHub code-scanning tab — first enterprise-ish request triggers it
 - **Team tier build-out** (org rules, seats, shared dashboard) — first real Team inquiry triggers it
+- **GitHub App / one-click badge PRs (Tier 3)** — first user asking "do all my repos" triggers it
+- **agentskills.io cross-tool breadth** — grade the open Agent Skills standard beyond Claude
+  Code; real TAM expansion but horizontal breadth until demand exists
+- **Marketplace grade-listing partnerships** (grades shown in community marketplace indexes) —
+  BD/outreach, Steve-court, post-launch
 
 ### Rejected (anti-bloat, with reasons)
 - **VS Code extension** — a second surface to maintain; the CLI + `audit-skill` Skill cover the workflow
@@ -203,10 +261,17 @@ a key). Each check is a ready-made evidence post for the content cadence. 227 te
   weights fork the meaning of a grade
 - **Web user accounts/profiles** — no users to profile; OAuth exists solely to gate Pro
 - **Marketplace/site redesigns** — the funnel converts or it doesn't; measure first
+- **Skill scaffolder (`skillcrossroads new`)** — Anthropic's `skill-creator` owns creation; we
+  own the grade. Competing with the platform vendor on authoring is a losing lane
+- **Non-consent public directory of scanned repos** — the opt-in gallery is the right shape;
+  publicizing grades of repos whose authors never asked is hostile marketing
+- **Auto-apply fixes** — `--suggest` proposes, the human applies; the tool never edits a repo
+  beyond `init`'s reviewed README insert
 
 ## Post-launch branch plan
-- **Win** (G0 passes): proceed Sprint 2 → 3 → G1 review.
+- **Win** (G0 passes): proceed down the v2 ranking — Sprint 7 → 8 → 9 → 10, re-ranked against
+  what the first real users actually ask for.
 - **Flat** (some readers, no scans): one positioning iteration + a second channel post; no code
-  beyond Sprint 1 until a scan happens.
+  beyond Sprint 7's trust fixes until a scan happens.
 - **Zombie** (G0 fail threshold hit): stop feature work; site stays up (hosting ≈ $0, monitoring
   in place), npm stays published; quarterly re-review. No teardown needed — but no further build.
