@@ -85,6 +85,23 @@ and grades what comes back: servers answer `tools/list` (MCPT-01), **tool descri
 invocation** — the "will the model ever pick this tool?" floor (MCPT-02), and input parameters
 are documented (MCPT-03). URL transports are skipped; the hosted site never spawns servers.
 
+### Plugins (`.claude-plugin/plugin.json`)
+
+A **plugin** scan grades the manifest itself *plus* every artifact it contains — one batch,
+one roll-up:
+
+```bash
+skillcrossroads ./my-plugin          # auto-detected via .claude-plugin/plugin.json
+```
+
+Checks: manifest validity — `name` present and kebab-case, known fields correctly typed; a
+string `keywords` is a load error (PLUGIN-01); **declared component paths resolve** — `../`
+traversal is dead after the install-cache copy (PLUGIN-02); a substantive marketplace
+`description` (PLUGIN-03); and the **hooks safety sweep** (HOOK-01): hook commands run
+automatically on every installer's machine, so `rm -rf`, `sudo`, `curl | sh`, force-pushes, and
+unquoted `${CLAUDE_PLUGIN_ROOT}` get flagged with file-level evidence. Contained skills,
+agents, commands, and `.mcp.json` are graded as their own rows. Hosted scans include plugins.
+
 ### Scan a whole GitHub repo (no clone)
 
 Point Skill Crossroads at a public repo and it grades every skill it finds — fetched via the GitHub API,
