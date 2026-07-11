@@ -21,7 +21,7 @@
   "comment": "@beacon/core is a private workspace package (never published). It is BUNDLED into dist/cli.js at publish time (prepublishOnly → esbuild), so the published package is self-contained and has zero runtime deps — that is what makes `npx skillcrossroads` and the GitHub Action work.",
   "devDependencies": {
     "@beacon/core": "*",
-    "esbuild": "^0.24.0",
+    "esbuild": "^0.25.12",
     "picocolors": "^1.1.0"
   },
   "keywords": [
