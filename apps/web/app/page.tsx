@@ -12,6 +12,7 @@ export default function Home(): ReactElement {
           <span>Skill Crossroads</span>
         </a>
         <nav className="nav-links">
+          <a href="/guide">Guide</a>
           <a href="/scorecard">Sample scorecard</a>
           <a href="/gallery">Gallery</a>
           <a href="/pricing">Pricing</a>
@@ -215,6 +216,7 @@ export default function Home(): ReactElement {
           </a>
         </div>
         <div className="foot-meta">
+          <a href="/guide">Guide</a>
           <a href="/scorecard">Sample scorecard</a>
           <a href="/gallery">Gallery</a>
           <a href="/pricing">Pricing</a>

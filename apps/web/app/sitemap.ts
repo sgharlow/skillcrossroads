@@ -21,6 +21,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
   }));
   return [
     { url: base, changeFrequency: "weekly" },
+    { url: `${base}/guide`, changeFrequency: "monthly" },
     { url: `${base}/report`, changeFrequency: "monthly" },
     { url: `${base}/report-agents`, changeFrequency: "monthly" },
     { url: `${base}/paste`, changeFrequency: "monthly" },
