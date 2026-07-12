@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { gradeHex, gradeRank } from "@beacon/core";
 import { scanHistory } from "@/lib/scans";
 import { badgeServes, type BadgeServeStats } from "@/lib/badge-serves";
+import { SiteNav, SiteFooter } from "@/components/SiteNav";
 
 export const dynamic = "force-dynamic";
 
@@ -24,16 +25,7 @@ export default async function Dashboard() {
 
   return (
     <main className="wrap">
-      <header className="nav">
-        <a className="brand" href="/">
-          <span className="lamp" aria-hidden />
-          Skill Crossroads
-        </a>
-        <nav className="rlinks">
-          <a className="link" href="/gallery">Gallery</a>
-          <a className="link" href="/account">Account</a>
-        </nav>
-      </header>
+      <SiteNav />
 
       <h1>Metrics</h1>
 
@@ -49,9 +41,9 @@ export default async function Dashboard() {
         {badges !== null && (
           <div className="tile">
             <div className="n">{badges.reposOnGitHub.toLocaleString()}</div>
-            <div className="l">
-              badges in the wild — repos whose badge GitHub rendered, last {badges.windowDays}d
-              (origin hits only; CDN-cached serves not counted, so this is a floor)
+            <div className="l">badges in the wild ({badges.windowDays}d floor)</div>
+            <div className="l sub">
+              distinct repos whose badge GitHub rendered; CDN-cached serves aren&apos;t counted
             </div>
           </div>
         )}
@@ -101,19 +93,17 @@ export default async function Dashboard() {
         )}
       </section>
 
+      <SiteFooter />
+
       <style>{`
         .wrap{max-width:820px;margin:0 auto;padding:26px 20px 60px}
-        .nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-        .brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:15px;text-decoration:none}
-        .lamp{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 50% 40%,var(--beam),#b9791f);box-shadow:0 0 14px #ffc24b99}
-        .link{color:var(--aqua);font-size:13.5px;text-decoration:none}
-        .rlinks{display:flex;gap:16px;align-items:center}
         h1{font-size:clamp(26px,5vw,38px);font-weight:800;margin:24px 0 18px}
         h2{font-size:14px;color:var(--fog);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px}
-        .tiles{display:grid;grid-template-columns:repeat(2,1fr);gap:14px;margin-bottom:24px}
+        .tiles{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px;margin-bottom:24px}
         .tile{background:var(--ink2);border:1px solid var(--ink3);border-radius:14px;padding:22px}
         .tile .n{font-size:38px;font-weight:800;font-variant-numeric:tabular-nums}
         .tile .l{color:var(--fog);font-size:13px;margin-top:4px}
+        .tile .sub{font-size:11.5px;margin-top:6px;line-height:1.45}
         .panel{background:var(--ink2);border:1px solid var(--ink3);border-radius:14px;padding:20px;margin-bottom:16px}
         .muted{color:var(--fog)}
         .bars{display:flex;flex-direction:column;gap:8px}

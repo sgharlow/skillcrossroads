@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Signpost } from "@/components/CrossroadsBadge";
+import { SiteNav, SiteFooter } from "@/components/SiteNav";
 import { REPORT_AGENTS_MD } from "@/content/report-agents";
 import { markdownToHtml } from "@/lib/markdown-lite";
 
@@ -13,18 +13,7 @@ export const metadata: Metadata = {
 export default function ReportAgentsPage() {
   return (
     <main className="wrap">
-      <header className="nav">
-        <a className="brand" href="/">
-          <Signpost size={22} />
-          <span>Skill Crossroads</span>
-        </a>
-        <nav className="rlinks">
-          <a className="rlink" href="/report">Skills report</a>
-          <a className="rlink" href="/gallery">Gallery</a>
-          <a className="rlink" href="/account">Account</a>
-          <a className="btn-sm" href="/#scan">Scan a skill</a>
-        </nav>
-      </header>
+      <SiteNav />
 
       <p className="crossref">
         Companion report: <a href="/report">The State of Claude Code Skills</a>.
@@ -39,14 +28,10 @@ export default function ReportAgentsPage() {
         </p>
       </footer>
 
+      <SiteFooter />
+
       <style>{`
         .wrap{max-width:820px;margin:0 auto;padding:26px 20px 60px}
-        .nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}
-        .brand{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:17px;text-decoration:none;color:var(--fg)}
-        .btn-sm{display:inline-block;background:var(--accent);color:var(--accent-ink);font-weight:600;border-radius:9px;padding:8px 14px;text-decoration:none;font-size:14px}
-        .rlinks{display:flex;gap:14px;align-items:center}
-        .rlink{color:var(--fog);font-size:13.5px;text-decoration:none}
-        .rlink:hover{color:var(--foam)}
         .crossref{color:var(--muted);font-size:14px;margin-bottom:18px}
         .crossref a{color:var(--accent)}
         .report h1{font-size:clamp(28px,5vw,40px);letter-spacing:-.02em;font-weight:800;margin-bottom:14px}

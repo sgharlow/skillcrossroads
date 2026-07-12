@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { gradeHex } from "@beacon/core";
 import { scanHistory } from "@/lib/scans";
 import { trendChartSvg } from "@/lib/chart";
+import { SiteNav, SiteFooter } from "@/components/SiteNav";
 
 export const dynamic = "force-dynamic";
 
@@ -21,15 +22,8 @@ export default async function TrendsPage({ params }: { params: Promise<{ slug: s
 
   return (
     <main className="wrap">
-      <header className="nav">
-        <a className="brand" href="/">
-          <span className="lamp" aria-hidden />
-          Skill Crossroads
-        </a>
-        <a className="link" href={`/s/${key}`}>
-          View scorecard →
-        </a>
-      </header>
+      <SiteNav />
+      <p className="ctx-link"><a className="link" href={`/s/${key}`}>View scorecard →</a></p>
 
       <section className="head">
         <p className="eyebrow">Score history</p>
@@ -78,11 +72,11 @@ export default async function TrendsPage({ params }: { params: Promise<{ slug: s
         </>
       )}
 
+      <SiteFooter />
+
       <style>{`
         .wrap{max-width:760px;margin:0 auto;padding:26px 20px 60px}
-        .nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-        .brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:15px;text-decoration:none}
-        .lamp{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 50% 40%,var(--beam),#b9791f);box-shadow:0 0 14px #ffc24b99}
+        .ctx-link{text-align:right;margin-bottom:6px}
         .link{color:var(--aqua);font-size:13.5px;text-decoration:none}
         .head{padding:30px 0 16px}
         .eyebrow{color:var(--beam);font-size:12px;letter-spacing:.14em;text-transform:uppercase;font-weight:600}

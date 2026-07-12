@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Signpost } from "@/components/CrossroadsBadge";
+import { SiteNav, SiteFooter } from "@/components/SiteNav";
 
 export const metadata: Metadata = {
   title: "Guide — five journeys from first scan to shipped badge",
@@ -19,6 +19,8 @@ interface Journey {
   shotUrl: string;
   shotSrc: string;
   shotAlt: string;
+  /** When the screenshot was taken — disclosed in the frame so drift is visible, never silent. */
+  shotDate: string;
   cap?: React.ReactNode;
 }
 
@@ -51,6 +53,7 @@ const JOURNEYS: Journey[] = [
       </>
     ),
     shotUrl: "skillcrossroads.com",
+    shotDate: "2026-07-12",
     shotSrc: "/guide/j1-homepage.png",
     shotAlt:
       "Skill Crossroads homepage: headline 'Every skill hits a crossroads before you ship it', a scan form accepting owner/repo, and the ship / fix / rethink signpost",
@@ -91,6 +94,7 @@ const JOURNEYS: Journey[] = [
       </>
     ),
     shotUrl: "skillcrossroads.com/s/sgharlow/skillcrossroads/skill",
+    shotDate: "2026-07-11",
     shotSrc: "/guide/j2-scorecard.png",
     shotAlt:
       "A live scorecard: overall grade A 96.3, six category bars, and a Top Fixes list where each finding cites SKILL.md line numbers with quoted evidence and a fix",
@@ -129,6 +133,7 @@ const JOURNEYS: Journey[] = [
       </>
     ),
     shotUrl: "github.com/sgharlow/claude-code-recipes",
+    shotDate: "2026-07-11",
     shotSrc: "/guide/j3-badge-readme2.png",
     shotAlt:
       "A GitHub README titled 'Top 100 Claude Code Recipes' with the Skill Crossroads A+ badge rendered directly under the heading",
@@ -155,6 +160,7 @@ const JOURNEYS: Journey[] = [
       <><em>Nothing recorded: paste-to-scan keeps no copy</em></>,
     ],
     shotUrl: "skillcrossroads.com/paste",
+    shotDate: "2026-07-11",
     shotSrc: "/guide/j4-paste.png",
     shotAlt:
       "The paste-to-scan page: 'Paste, scan, fix.' with a file-contents textarea, an artifact-kind selector, and a Scan It button",
@@ -193,6 +199,7 @@ const JOURNEYS: Journey[] = [
       </>
     ),
     shotUrl: "github.com/sgharlow/skillcrossroads/pull/1",
+    shotDate: "2026-07-11",
     shotSrc: "/guide/j5-ci-pr-comment.png",
     shotAlt:
       "A merged pull request where the Skill Crossroads Action posted a scorecard comment: overall 100/100, per-category table, 'Clean scan — no warnings or failures', 3 checks passed",
@@ -216,19 +223,7 @@ const TOC: Array<{ id: string; title: string; when: string }> = [
 export default function GuidePage() {
   return (
     <main className="wrap">
-      <header className="nav">
-        <a className="brand" href="/">
-          <Signpost size={22} />
-          <span>Skill Crossroads</span>
-        </a>
-        <nav className="rlinks">
-          <a className="rlink" href="/scorecard">Sample scorecard</a>
-          <a className="rlink" href="/gallery">Gallery</a>
-          <a className="rlink" href="/pricing">Pricing</a>
-          <a className="rlink" href="https://github.com/sgharlow/skillcrossroads">GitHub</a>
-          <a className="btn-sm" href="/#scan">Scan a skill</a>
-        </nav>
-      </header>
+      <SiteNav current="/guide" />
 
       <p className="kicker">New-user guide</p>
       <h1>Five journeys from first scan to shipped badge.</h1>
@@ -279,6 +274,7 @@ export default function GuidePage() {
             <div className="bar" aria-hidden="true">
               <span className="dot" /><span className="dot" /><span className="dot" />
               <span className="url">{j.shotUrl}</span>
+              <span className="shot-date">captured {j.shotDate}</span>
             </div>
             {/* Real product screenshots, captured 2026-07-11. */}
             <img src={j.shotSrc} alt={j.shotAlt} width={1280} height={800} />
@@ -302,15 +298,10 @@ export default function GuidePage() {
         </nav>
       </footer>
 
+      <SiteFooter />
+
       <style>{`
         .wrap{max-width:900px;margin:0 auto;padding:26px 20px 60px}
-        .nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:34px}
-        .brand{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:17px;text-decoration:none;color:var(--fg)}
-        .btn-sm{display:inline-block;background:var(--accent);color:var(--accent-ink);font-weight:600;border-radius:9px;padding:8px 14px;text-decoration:none;font-size:14px}
-        .rlinks{display:flex;gap:14px;align-items:center}
-        .rlink{color:var(--faint);font-size:13.5px;text-decoration:none}
-        .rlink:hover{color:var(--fg)}
-        @media(max-width:640px){.rlink{display:none}}
         .kicker{color:var(--faint);font-size:12.5px;letter-spacing:.14em;text-transform:uppercase;font-weight:700;margin-bottom:10px}
         h1{font-size:clamp(30px,5.5vw,46px);letter-spacing:-.025em;font-weight:800;line-height:1.08;text-wrap:balance;margin-bottom:14px;max-width:16ch}
         .lede{color:var(--muted);font-size:16.5px;line-height:1.6;max-width:60ch;margin-bottom:18px}
@@ -347,6 +338,7 @@ export default function GuidePage() {
         .bar{display:flex;align-items:center;gap:7px;background:var(--surface-2);border-bottom:1px solid var(--line);padding:9px 14px}
         .dot{width:9px;height:9px;border-radius:50%;background:var(--line)}
         .url{margin-left:8px;font-size:12px;color:var(--faint);font-family:var(--mono)}
+        .shot-date{margin-left:auto;font-size:11px;color:var(--faint)}
         .shot img{display:block;width:100%;height:auto}
         .cap{color:var(--faint);font-size:13px;margin-top:10px}
         .cap a{color:var(--accent)}

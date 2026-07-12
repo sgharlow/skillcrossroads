@@ -86,6 +86,13 @@ Each is catchable **before** publishing, with `npx skillcrossroads ./your-skill`
 
 Skill Crossroads' deterministic checks (no LLM) plus the LLM-assisted triggering check (TRIGGER-01) were run against each repo's git tree at the sha below, under **rubric v1.0** (11 deterministic + 3 LLM checks — the catalog as of 2026-07-09). Deterministic figures are bit-reproducible from those trees **with the v1.0 engine**; LLM verdicts are content-hash cached and pinned to the same trees, but model output is not guaranteed bit-identical across runs.
 
+> **Discovery update (v0.11.2, 2026-07-11):** this edition ran with discovery that included
+> skills found inside `test/` and `fixtures/` trees. Discovery now excludes them — a repo's
+> public grade should describe what it ships, not its test data. Re-running against the same
+> pinned trees with current discovery can therefore yield slightly lower per-repo skill counts
+> (fixture skills dropped); artifact-level grades are unaffected. The next edition will use the
+> new rule throughout.
+
 | Repo | Ref | Tree sha | Skills | Errors |
 |---|---|---|---|---|
 | anthropics/skills | main | `9d2f1ae18723` | 12 | 0 |

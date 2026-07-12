@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Signpost } from "@/components/CrossroadsBadge";
+import { SiteNav, SiteFooter } from "@/components/SiteNav";
 
 export const metadata: Metadata = {
   title: "How Skill Crossroads handles your code",
@@ -11,17 +11,7 @@ export const metadata: Metadata = {
 export default function CodeHandlingPage() {
   return (
     <main className="wrap">
-      <header className="nav">
-        <a className="brand" href="/">
-          <Signpost size={22} />
-          <span>Skill Crossroads</span>
-        </a>
-        <nav className="rlinks">
-          <a className="rlink" href="/docs/checks">Check reference</a>
-          <a className="rlink" href="/pricing">Pricing</a>
-          <a className="btn-sm" href="/#scan">Scan a skill</a>
-        </nav>
-      </header>
+      <SiteNav />
 
       <h1>How Skill Crossroads handles your code</h1>
       <p className="lede">
@@ -105,14 +95,10 @@ export default function CodeHandlingPage() {
         if the code and this page ever disagree, that is a bug; please open an issue.
       </p>
 
+      <SiteFooter />
+
       <style>{`
         .wrap{max-width:820px;margin:0 auto;padding:26px 20px 60px}
-        .nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}
-        .brand{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:17px;text-decoration:none;color:var(--fg)}
-        .btn-sm{display:inline-block;background:var(--accent);color:var(--accent-ink);font-weight:600;border-radius:9px;padding:8px 14px;text-decoration:none;font-size:14px}
-        .rlinks{display:flex;gap:14px;align-items:center}
-        .rlink{color:var(--fog);font-size:13.5px;text-decoration:none}
-        .rlink:hover{color:var(--foam)}
         h1{font-size:clamp(28px,5vw,40px);letter-spacing:-.02em;font-weight:800;margin-bottom:10px}
         .lede{color:var(--muted);font-size:15.5px;line-height:1.6;margin-bottom:28px;max-width:640px}
         h2{font-size:19px;font-weight:700;margin:30px 0 10px}

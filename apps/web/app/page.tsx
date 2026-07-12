@@ -1,28 +1,15 @@
 import type { ReactElement } from "react";
 import { CrossroadsBadge, Signpost } from "@/components/CrossroadsBadge";
+import { SiteNav, FOOTER_LINKS } from "@/components/SiteNav";
 import ScanForm from "./scan-form";
 
 export default function Home(): ReactElement {
   return (
     <main>
       {/* ── Nav ───────────────────────────────────────────────────────────── */}
-      <header className="nav wrap">
-        <a className="brand" href="/">
-          <Signpost size={22} />
-          <span>Skill Crossroads</span>
-        </a>
-        <nav className="nav-links">
-          <a href="/guide">Guide</a>
-          <a href="/scorecard">Sample scorecard</a>
-          <a href="/gallery">Gallery</a>
-          <a href="/pricing">Pricing</a>
-          <a href="/account">Account</a>
-          <a href="https://github.com/sgharlow/skillcrossroads">GitHub</a>
-          <a className="btn btn-sm" href="#scan">
-            Scan a skill
-          </a>
-        </nav>
-      </header>
+      <div className="wrap top-nav">
+        <SiteNav current="/" />
+      </div>
 
       {/* ── Hero ──────────────────────────────────────────────────────────── */}
       <section className="wrap hero">
@@ -216,16 +203,9 @@ export default function Home(): ReactElement {
           </a>
         </div>
         <div className="foot-meta">
-          <a href="/guide">Guide</a>
-          <a href="/scorecard">Sample scorecard</a>
-          <a href="/gallery">Gallery</a>
-          <a href="/pricing">Pricing</a>
-          <a href="/report">Report</a>
-          <a href="/report-agents">Agents report</a>
-          <a href="/docs/checks">Check reference</a>
-          <a href="/docs/code-handling">Your code &amp; privacy</a>
-          <a href="/dashboard">Ecosystem stats</a>
-          <a href="https://github.com/sgharlow/skillcrossroads">GitHub</a>
+          {FOOTER_LINKS.map((l) => (
+            <a key={l.href} href={l.href}>{l.label}</a>
+          ))}
           <span className="foot-dom mono">skillcrossroads.com</span>
         </div>
         <p className="foot-line">Know before you ship. The signpost for Claude Code skills, agents, slash commands, MCP configs, and plugins.</p>
@@ -296,12 +276,10 @@ function HeroSignpost(): ReactElement {
 
 const PAGE_CSS = `
 .wrap{max-width:var(--maxw);margin:0 auto;padding-left:22px;padding-right:22px}
-.nav{display:flex;align-items:center;justify-content:space-between;padding-top:22px;padding-bottom:22px}
+.top-nav{padding-top:22px}
+.top-nav .site-nav{margin-bottom:8px}
 .brand{display:inline-flex;align-items:center;gap:9px;font-weight:700;letter-spacing:-.01em;font-size:17px;text-decoration:none;color:var(--fg)}
 .brand span{font-size:17px}
-.nav-links{display:flex;align-items:center;gap:22px}
-.nav-links a{color:var(--muted);text-decoration:none;font-size:14.5px}
-.nav-links a:hover{color:var(--fg)}
 .btn{display:inline-block;background:var(--accent);color:var(--accent-ink);font-weight:600;border-radius:9px;padding:11px 18px;text-decoration:none;font-size:15px;border:1px solid transparent;transition:filter .15s}
 .btn:hover{filter:brightness(1.06)}
 .btn-sm{padding:8px 14px;font-size:14px}
@@ -381,7 +359,6 @@ h1{font-size:clamp(32px,5vw,52px);line-height:1.06;letter-spacing:-.025em;font-w
   .hero{grid-template-columns:1fr;gap:28px}
   .hero-visual{order:-1}
   .three,.rubric,.receipts,.badge-loop{grid-template-columns:1fr}
-  .nav-links a:not(.btn){display:none}
   .foot-dom{margin-left:0}
 }
 `;

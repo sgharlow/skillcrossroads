@@ -1,5 +1,5 @@
 import type { Metadata } from "next";
-import { Signpost } from "@/components/CrossroadsBadge";
+import { SiteNav, SiteFooter } from "@/components/SiteNav";
 
 export const metadata: Metadata = {
   title: "Paste-to-scan — grade a skill instantly",
@@ -12,12 +12,7 @@ export const metadata: Metadata = {
 export default function PastePage() {
   return (
     <main className="wrap">
-      <header className="nav">
-        <a className="brand" href="/">
-          <Signpost size={22} />
-          <span>Skill Crossroads</span>
-        </a>
-      </header>
+      <SiteNav />
 
       <section className="head">
         <h1>Paste, scan, fix.</h1>
@@ -52,10 +47,10 @@ export default function PastePage() {
         </div>
       </form>
 
+      <SiteFooter />
+
       <style>{`
         .wrap{max-width:760px;margin:0 auto;padding:26px 20px 60px}
-        .nav{margin-bottom:8px}
-        .brand{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:17px;text-decoration:none;color:var(--fg)}
         .head{padding:30px 0 18px}
         .head h1{font-size:clamp(26px,5vw,38px);font-weight:800;letter-spacing:-.02em;margin-bottom:10px}
         .head p{color:var(--muted);max-width:60ch}

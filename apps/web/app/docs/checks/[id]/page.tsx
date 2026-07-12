@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { allCheckDocs, CATEGORIES, type CheckDocEntry } from "@beacon/core";
-import { Signpost } from "@/components/CrossroadsBadge";
+import { SiteNav, SiteFooter } from "@/components/SiteNav";
 import { MODE_LABELS, kindsLabel } from "../labels";
 
 export function generateStaticParams(): { id: string }[] {
@@ -38,16 +38,7 @@ export default async function CheckDocPage({ params }: { params: Promise<{ id: s
 
   return (
     <main className="wrap">
-      <header className="nav">
-        <a className="brand" href="/">
-          <Signpost size={22} />
-          <span>Skill Crossroads</span>
-        </a>
-        <nav className="rlinks">
-          <a className="rlink" href="/docs/checks">All checks</a>
-          <a className="btn-sm" href="/#scan">Scan a skill</a>
-        </nav>
-      </header>
+      <SiteNav />
 
       <p className="crumb">
         <a href="/docs/checks">Check reference</a> / {cat.label}
@@ -100,14 +91,10 @@ export default async function CheckDocPage({ params }: { params: Promise<{ id: s
         </p>
       </footer>
 
+      <SiteFooter />
+
       <style>{`
         .wrap{max-width:820px;margin:0 auto;padding:26px 20px 60px}
-        .nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:26px}
-        .brand{display:inline-flex;align-items:center;gap:9px;font-weight:700;font-size:17px;text-decoration:none;color:var(--fg)}
-        .btn-sm{display:inline-block;background:var(--accent);color:var(--accent-ink);font-weight:600;border-radius:9px;padding:8px 14px;text-decoration:none;font-size:14px}
-        .rlinks{display:flex;gap:14px;align-items:center}
-        .rlink{color:var(--fog);font-size:13.5px;text-decoration:none}
-        .rlink:hover{color:var(--foam)}
         .crumb{font-size:13px;color:var(--fog);margin-bottom:8px}
         .crumb a{color:var(--fog)}
         h1{font-size:clamp(24px,4.5vw,34px);letter-spacing:-.02em;font-weight:800;margin-bottom:8px;display:flex;align-items:baseline;gap:12px;flex-wrap:wrap}

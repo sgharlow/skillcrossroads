@@ -334,6 +334,26 @@ user hits and repairs known warts on the core loop.*
 > (segment-aware dedup) and the gallery seeded with real graded artifacts. 415 tests.
 > **Ship-ready. The launch send is the only remaining action.**
 
+### Post-QA fix rounds · **SHIPPED 2026-07-11/12** (`live-proven`, npm 0.11.2 → 0.11.3)
+
+> A second QA pass (2026-07-11, prompted by the GitHub brand-profiling session) found 3 pre-launch
+> blockers + 6 moderates; all fixed, published, and live-verified same-session.
+> **0.11.2** — `init` badge detection no longer false-positives on a docs example inside a code
+> fence (found by dogfooding init on this repo); hosted SKILL discovery applies the test/fixture
+> exclusion (the flagship repo's public scorecard stopped listing its own fixture skills, and its
+> badge self-healed B+ → A+); nested `agents/<category>/*.md` and namespaced `commands/git/*.md`
+> layouts discover on every surface (hosted + local + kind detection) — several "no discoverable
+> layout" repos in the agents-report table now grade (disclosed in that report's methodology).
+> **0.11.3** — LLM verdict cache moved to a per-user OS cache dir (never pollutes the scanned
+> repo; legacy `./.beacon-cache` honored); `/docs/code-handling` trust page (code-verified claims);
+> **badges-in-the-wild instrumentation** (badge serves recorded; `github-camo` UA = rendered on
+> GitHub; /dashboard tile with an honest CDN-undercount label — the launch metric is now
+> measurable, and registered its first repo within hours); next's nested postcss pinned ≥8.5.10
+> via npm overrides (audit: 0 vulnerabilities, no Next major bump); FUNDING.yml (Sponsors
+> enrollment itself Steve-court). Same window: **/guide** shipped (five-journeys new-user page,
+> top nav) and a shared SiteNav/SiteFooter replaced 13 hand-rolled per-page headers (they had
+> drifted — one authoritative nav contract now). Run `npm test` for the current count.
+
 ## Post-launch branch plan
 - **Win** (G0 passes): proceed down the v2 ranking — Sprint 7 → 8 → 9 → 10, re-ranked against
   what the first real users actually ask for.

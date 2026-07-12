@@ -4,6 +4,7 @@ import { gradeHex } from "@beacon/core";
 import { readSessionFromCookieHeader, trustLogin } from "@/lib/session";
 import { entitlements } from "@/lib/entitlements";
 import { scanHistory } from "@/lib/scans";
+import { SiteNav, SiteFooter } from "@/components/SiteNav";
 
 export const dynamic = "force-dynamic";
 
@@ -28,15 +29,7 @@ export default async function Account() {
 
   return (
     <main className="wrap">
-      <header className="nav">
-        <a className="brand" href="/">
-          <span className="lamp" aria-hidden />
-          Skill Crossroads
-        </a>
-        <a className="link" href="/gallery">
-          Gallery →
-        </a>
-      </header>
+      <SiteNav current="/account" />
 
       <h1>Your account</h1>
 
@@ -128,12 +121,10 @@ export default async function Account() {
         </>
       )}
 
+      <SiteFooter />
+
       <style>{`
         .wrap{max-width:640px;margin:0 auto;padding:26px 20px 60px}
-        .nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-        .brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:15px;text-decoration:none}
-        .lamp{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 50% 40%,var(--beam),#b9791f);box-shadow:0 0 14px #ffc24b99}
-        .link{color:var(--aqua);font-size:13.5px;text-decoration:none}
         h1{font-size:clamp(26px,5vw,38px);font-weight:800;margin:24px 0 18px}
         .panel{background:var(--ink2);border:1px solid var(--ink3);border-radius:14px;padding:20px;margin-bottom:16px}
         .panel h2{font-size:13px;color:var(--fog);text-transform:uppercase;letter-spacing:.1em;margin-bottom:14px}

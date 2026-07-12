@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { gradeHex } from "@beacon/core";
+import { SiteNav, SiteFooter } from "@/components/SiteNav";
 import { gallery, type GallerySort } from "@/lib/gallery";
 import OptInForm from "./opt-in-form";
 
@@ -43,17 +44,7 @@ export default async function GalleryPage({
 
   return (
     <main className="wrap">
-      <header className="nav">
-        <a className="brand" href="/">
-          <span className="lamp" aria-hidden />
-          Skill Crossroads
-        </a>
-        <nav className="rlinks">
-          <a className="plink" href="/#scan">Scan a skill</a>
-          <a className="plink" href="/pricing">Pricing</a>
-          <a className="plink" href="/account">Account</a>
-        </nav>
-      </header>
+      <SiteNav current="/gallery" />
 
       <section className="head">
         <h1>Gallery</h1>
@@ -111,14 +102,10 @@ export default async function GalleryPage({
 
       <footer className="foot">{total} skills listed · anyone can add a public skill</footer>
 
+      <SiteFooter />
+
       <style>{`
         .wrap{max-width:820px;margin:0 auto;padding:26px 20px 60px}
-        .nav{display:flex;align-items:center;justify-content:space-between;margin-bottom:8px}
-        .brand{display:inline-flex;align-items:center;gap:10px;font-weight:800;letter-spacing:.14em;text-transform:uppercase;font-size:15px;text-decoration:none}
-        .lamp{width:20px;height:20px;border-radius:50%;background:radial-gradient(circle at 50% 40%,var(--beam),#b9791f);box-shadow:0 0 14px #ffc24b99}
-        .plink{color:var(--fog);font-size:13.5px;text-decoration:none}
-        .plink:hover{color:var(--foam)}
-        .rlinks{display:flex;gap:16px;align-items:center;flex-wrap:wrap}
         .head{padding:34px 0 18px}
         .head h1{font-size:clamp(28px,5vw,42px);font-weight:800;letter-spacing:-.02em}
         .head p{color:var(--fog);margin:6px 0 18px;max-width:560px}
