@@ -64,10 +64,10 @@ appended live key silently wins).
    `npm publish -w skillcrossroads --access public`, or the release goes out restricted.
 4. **Version bumps**: `npm version patch -w skillcrossroads` then publish per (3). The publish
    bundle (`prepublishOnly` → esbuild) inlines `@beacon/core`, so the package stays standalone.
-5. **`npm audit` PostCSS advisory (GHSA-qx2v-qp2m-jg93) — accepted, not a real vuln.** `next`
-   pins `postcss@8.4.31` (below the advisory's `<8.5.10` range) as a nested dep; `@vercel/analytics`'
-   peer range on `next` makes audit surface it. It is **build-time only** (postcss stringify during
-   `next build`) and this app never processes untrusted CSS, so it is not exploitable. An
-   `overrides` pin does **not** take (npm won't override Next's exact nested pin); the npm-suggested
-   `next@9` "fix" is a nonsensical downgrade. It clears when Next bumps its bundled postcss upstream
-   — do not chase it or destabilize the tree over it.
+5. **`npm audit` PostCSS advisory (GHSA-qx2v-qp2m-jg93) — resolved via `overrides`.** `next` used
+   to pin a nested `postcss@8.4.31` (below the advisory's `<8.5.10` range); root `package.json` now
+   carries `"overrides": { "next": { "postcss": ">=8.5.10" } }`, which resolves to `postcss@8.5.17`
+   and `npm audit` reports **0 vulnerabilities**. The override exists purely to silence a build-time-
+   only advisory (postcss stringify during `next build`; this app never processes untrusted CSS) —
+   it was never exploitable, but a clean audit is worth keeping. If a future `next` upgrade bundles
+   a compliant postcss on its own, this override becomes a no-op and can be dropped.

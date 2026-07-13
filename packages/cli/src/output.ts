@@ -11,6 +11,8 @@ import {
   renderBadge,
   renderMarkdown,
   suggestFixes,
+  badgeUrls,
+  badgeMarkdownLine,
   type AuditResult,
   type CheckContext,
   type FixSuggestion,
@@ -102,7 +104,7 @@ export function emitSingle(result: AuditResult, opts: SingleOutputOptions): void
     process.stderr.write(pc.dim(`  embed it:  `) + `![Skill Crossroads](${rel})\n`);
     process.stderr.write(
       pc.dim(`  or an always-fresh, linked badge from ${siteUrl} once your repo is public:\n`) +
-        pc.dim(`    [![Skill Crossroads](${siteUrl}/api/badge/OWNER/REPO.svg)](${siteUrl}/s/OWNER/REPO)\n`),
+        pc.dim(`    ${badgeMarkdownLine(badgeUrls(siteUrl, "OWNER", "REPO"))}\n`),
     );
   }
 }

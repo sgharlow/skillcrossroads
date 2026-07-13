@@ -51,6 +51,7 @@ export { publicSkillPercentile, percentileLabel, STATE_OF_SKILLS, type Percentil
 export {
   badgeUrls,
   badgeMarkdown,
+  badgeMarkdownLine,
   parseGitHubSlug,
   insertBadge,
   newReadme,

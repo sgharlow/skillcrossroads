@@ -124,3 +124,25 @@ describe("GET /s/[...slug] — Pro responses never enter the shared CDN cache", 
     expect(res.headers.get("cache-control")).toBe("private, no-store");
   });
 });
+
+describe("GET /s/[...slug] — embed badge URLs use the badge-embed.ts URL contract (byte-identical)", () => {
+  // Pinned before centralizing the hand-built badgeUrl/scorecardUrl template literals onto
+  // badgeUrls() from @beacon/core/badge-embed.ts — must stay byte-identical after.
+  it("plain owner/repo slug", async () => {
+    scanTargetMock.mockResolvedValue(goodScan());
+    const res = await get(["o", "r"]);
+    const html = await res.text();
+    expect(html).toContain(
+      "[![Skill Crossroads](https://skillcrossroads.com/api/badge/o/r.svg)](https://skillcrossroads.com/s/o/r)",
+    );
+  });
+
+  it("deep-link slug with a subpath (single-skill scan restricted to a subtree)", async () => {
+    scanTargetMock.mockResolvedValue(goodScan());
+    const res = await get(["o", "r", "good-skill"]);
+    const html = await res.text();
+    expect(html).toContain(
+      "[![Skill Crossroads](https://skillcrossroads.com/api/badge/o/r/good-skill.svg)](https://skillcrossroads.com/s/o/r/good-skill)",
+    );
+  });
+});

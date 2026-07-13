@@ -119,3 +119,15 @@ describe("emitSingle — the --html artifact includes the suggestions section", 
     expect(readFileSync(htmlPath, "utf8")).not.toContain("Suggested fixes");
   });
 });
+
+describe("emitSingle — --badge stderr doc line uses the badge-embed.ts URL contract (byte-identical)", () => {
+  it("prints the always-fresh linked-badge example via badgeUrls(siteUrl, 'OWNER', 'REPO')", () => {
+    const result = audit(DANGLING_REF) as AuditResult;
+    const badgePath = join(dir, "card.beacon.svg");
+    emitSingle(result, { markdown: false, html: undefined, badge: badgePath, siteUrl: SITE });
+    // Pinned before the badge-embed.ts centralization refactor — must stay byte-identical after.
+    expect(err).toContain(
+      `[![Skill Crossroads](${SITE}/api/badge/OWNER/REPO.svg)](${SITE}/s/OWNER/REPO)`,
+    );
+  });
+});

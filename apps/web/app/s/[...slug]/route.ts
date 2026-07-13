@@ -1,5 +1,5 @@
 import { after } from "next/server";
-import { renderHtml, suggestFixes, PALETTE, type FixSuggestion } from "@beacon/core";
+import { renderHtml, suggestFixes, badgeUrls, PALETTE, type FixSuggestion } from "@beacon/core";
 import { parseSlug, scanTarget, isRepoNotFoundError } from "@/lib/scan";
 import { resolveScanOptions } from "@/lib/pro-scan";
 import { renderRepoSummaryHtml } from "@/lib/summary";
@@ -126,10 +126,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
       ? renderHtml(scan.skills[0]!.scorecard, {
           name: scan.skills[0]!.name,
           homeUrl: "/",
-          embed: {
-            badgeUrl: `${origin}/api/badge/${target.slug}.svg`,
-            scorecardUrl: `${origin}/s/${target.slug}`,
-          },
+          embed: badgeUrls(origin, target.owner, target.repo, target.subpath),
           ...(suggestions ? { suggestions } : {}),
         })
       : renderRepoSummaryHtml(scan, target, { homeUrl: "/" });

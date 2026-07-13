@@ -1,6 +1,6 @@
 import { percentileLabel } from "../percentile.js";
 import { CONFIG_FILENAME } from "../suppress.js";
-import { checkDocsUrl } from "../badge-embed.js";
+import { checkDocsUrl, badgeMarkdownLine } from "../badge-embed.js";
 import { usedLlm, type CategoryScore, type CheckResult, type Evidence, type Scorecard } from "../types.js";
 import type { FixSuggestion } from "../suggest.js";
 import { PALETTE, gradeHex, statusHex } from "./theme.js";
@@ -298,7 +298,7 @@ export function renderHtml(card: Scorecard, opts: HtmlOptions = {}): string {
         <a href="${esc(opts.embed.scorecardUrl)}"><img src="${esc(opts.embed.badgeUrl)}" alt="Skill Crossroads grade ${esc(card.grade)}" height="20"></a>
         <span class="cta-blurb">Always-fresh — it re-scans and updates on its own.</span>
       </div>
-      <pre class="embed-code">[![Skill Crossroads](${esc(opts.embed.badgeUrl)})](${esc(opts.embed.scorecardUrl)})</pre>
+      <pre class="embed-code">${esc(badgeMarkdownLine(opts.embed))}</pre>
     </section>`
     : "";
 

@@ -20,11 +20,29 @@ export function checkDocsUrl(checkId: string, siteUrl: string = DEFAULT_SITE_URL
   return `${trimSite(siteUrl)}/docs/checks/${checkId.toLowerCase()}`;
 }
 
-/** The hosted badge + scorecard URLs for a repo — the single source of the URL shapes. */
-export function badgeUrls(siteUrl: string, owner: string, repo: string): { badgeUrl: string; scorecardUrl: string } {
+/**
+ * The hosted badge + scorecard URLs for a repo — the single source of the URL shapes. `subpath`
+ * carries a deep-link slug (`/s/owner/repo/path/to/skill`, restricting a scan to one skill inside
+ * a repo) through to both URLs; omit it for the plain owner/repo shape.
+ */
+export function badgeUrls(
+  siteUrl: string,
+  owner: string,
+  repo: string,
+  subpath?: string,
+): { badgeUrl: string; scorecardUrl: string } {
   const base = trimSite(siteUrl);
-  const slug = `${owner}/${repo}`;
+  const slug = subpath ? `${owner}/${repo}/${subpath}` : `${owner}/${repo}`;
   return { badgeUrl: `${base}/api/badge/${slug}.svg`, scorecardUrl: `${base}/s/${slug}` };
+}
+
+/**
+ * The bare linked-badge markdown line from a pre-built `{ badgeUrl, scorecardUrl }` pair — shared
+ * by `badgeMarkdown()` (caption:false) and any surface that already has the URLs (the hosted
+ * scorecard's "Embed this badge" snippet) so the `[![...]](...)` shape is never re-typed.
+ */
+export function badgeMarkdownLine(urls: { badgeUrl: string; scorecardUrl: string }): string {
+  return `[![Skill Crossroads](${urls.badgeUrl})](${urls.scorecardUrl})`;
 }
 
 export interface BadgeMarkdownOptions {
@@ -41,8 +59,7 @@ export interface BadgeMarkdownOptions {
  * page tells authors to copy.
  */
 export function badgeMarkdown(opts: BadgeMarkdownOptions): string {
-  const { badgeUrl, scorecardUrl } = badgeUrls(opts.siteUrl, opts.owner, opts.repo);
-  const line = `[![Skill Crossroads](${badgeUrl})](${scorecardUrl})`;
+  const line = badgeMarkdownLine(badgeUrls(opts.siteUrl, opts.owner, opts.repo));
   if (opts.caption === false) return line;
   return (
     `${line}\n\n` +

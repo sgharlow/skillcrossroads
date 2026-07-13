@@ -1,5 +1,12 @@
 import { describe, it, expect } from "vitest";
-import { badgeUrls, badgeMarkdown, parseGitHubSlug, insertBadge, newReadme } from "../src/badge-embed.js";
+import {
+  badgeUrls,
+  badgeMarkdown,
+  badgeMarkdownLine,
+  parseGitHubSlug,
+  insertBadge,
+  newReadme,
+} from "../src/badge-embed.js";
 
 const SITE = "https://skillcrossroads.com";
 
@@ -13,6 +20,30 @@ describe("badgeUrls", () => {
   it("tolerates a trailing slash on the site URL", () => {
     const { badgeUrl } = badgeUrls("https://skillcrossroads.com/", "a", "b");
     expect(badgeUrl).toBe("https://skillcrossroads.com/api/badge/a/b.svg");
+  });
+
+  // Deep-link slugs (e.g. /s/owner/repo/path/to/skill) restrict a scan to one skill inside a repo
+  // — the hosted /s route needs the badge+scorecard URLs to carry that subpath too.
+  it("appends an optional subpath segment for deep-link slugs", () => {
+    expect(badgeUrls(SITE, "o", "r", "path/to/skill")).toEqual({
+      badgeUrl: "https://skillcrossroads.com/api/badge/o/r/path/to/skill.svg",
+      scorecardUrl: "https://skillcrossroads.com/s/o/r/path/to/skill",
+    });
+  });
+  it("matches the plain owner/repo shape when subpath is omitted or empty", () => {
+    expect(badgeUrls(SITE, "o", "r", undefined)).toEqual(badgeUrls(SITE, "o", "r"));
+    expect(badgeUrls(SITE, "o", "r", "")).toEqual(badgeUrls(SITE, "o", "r"));
+  });
+});
+
+describe("badgeMarkdownLine", () => {
+  it("builds the bare linked-badge markdown line from a pre-built {badgeUrl, scorecardUrl} pair", () => {
+    expect(
+      badgeMarkdownLine({
+        badgeUrl: "https://skillcrossroads.com/api/badge/o/r.svg",
+        scorecardUrl: "https://skillcrossroads.com/s/o/r",
+      }),
+    ).toBe("[![Skill Crossroads](https://skillcrossroads.com/api/badge/o/r.svg)](https://skillcrossroads.com/s/o/r)");
   });
 });
 
