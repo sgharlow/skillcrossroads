@@ -100,8 +100,12 @@ export function createPgGallery(pool: import("pg").Pool): GalleryStore {
   };
 }
 
-/** A starter leaderboard (real Beacon scores) — only for the in-memory dev store, never the DB. */
-const SEED: Omit<GalleryEntry, "id">[] = [
+/**
+ * A starter leaderboard (real Beacon scores) — only for the in-memory dev store, never the DB.
+ * Exported so tests can assert the seed contract directly (no test/fixtures paths, no
+ * near-duplicate demo-recipe spam) without depending on process.env.DATABASE_URL at import time.
+ */
+export const SEED: Omit<GalleryEntry, "id">[] = [
   { owner: "anthropics", repo: "skills", path: "skills/algorithmic-art", name: "algorithmic-art", grade: "A+", overall: 100, scannedAt: "2026-07-08" },
   { owner: "anthropics", repo: "skills", path: "skills/canvas-design", name: "canvas-design", grade: "A+", overall: 100, scannedAt: "2026-07-08" },
   { owner: "anthropics", repo: "skills", path: "skills/brand-guidelines", name: "brand-guidelines", grade: "A+", overall: 100, scannedAt: "2026-07-08" },
