@@ -37,6 +37,8 @@ import {
   findArtifactFiles,
   fetchArtifactFile,
   auditAsync,
+  badgeUrls,
+  DEFAULT_SITE_URL,
 } from "../packages/core/dist/index.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -66,6 +68,26 @@ const posNum = (v, d) => {
   const n = Number(v);
   return Number.isFinite(n) && n > 0 ? n : d;
 };
+
+/**
+ * Deep-link a cited repo: the hosted scorecard (primary click target for the demand loop) plus a
+ * small GitHub source link. Uses the one authoritative badge/URL contract (`badge-embed.ts`) —
+ * never re-expresses the `/s/owner/repo` shape here.
+ */
+function repoLinks(repo) {
+  const [owner, name] = repo.split("/");
+  if (!owner || !name) return repo; // defensive — REPOS entries are always "owner/repo"
+  const { scorecardUrl } = badgeUrls(DEFAULT_SITE_URL, owner, name);
+  return `[${repo}](${scorecardUrl}) ([source](https://github.com/${repo}))`;
+}
+
+/** Link a pinned tree sha to its GitHub tree view (short-sha display text). */
+function shaLink(repo, ref, treeSha) {
+  const sha = String(treeSha);
+  const short = sha.slice(0, 12);
+  if (sha === "?" || !ref || ref === "?") return `\`${short}\``;
+  return `[\`${short}\`](https://github.com/${repo}/tree/${sha})`;
+}
 const REPOS = process.argv.slice(2).length ? process.argv.slice(2) : DEFAULT_REPOS;
 const token = process.env.GITHUB_TOKEN;
 const maxPerRepo = posNum(process.env.BEACON_MAX_PER_REPO, 15);
@@ -409,7 +431,7 @@ lines.push("| Repo | Ref | Tree sha | Agents graded | Commands graded | Discover
 lines.push("|---|---|---|---|---|---|---|---|");
 for (const s of scanned) {
   if (!s.scan) {
-    lines.push(`| ${s.repo} | — | — | 0 | 0 | — | — | ${s.failure} |`);
+    lines.push(`| ${repoLinks(s.repo)} | — | — | 0 | 0 | — | — | ${s.failure} |`);
     continue;
   }
   const discovered = s.scan.discovered.agents + s.scan.discovered.commands;
@@ -417,7 +439,7 @@ for (const s of scanned) {
     (discovered === 0 ? "no discoverable agent/command layout" : "") +
     (s.scan.truncated ? (discovered === 0 ? "; tree truncated" : "tree truncated (very large repo)") : "");
   lines.push(
-    `| ${s.repo} | ${s.scan.ref} | \`${String(s.scan.treeSha).slice(0, 12)}\` | ${s.agents.length} | ${s.commands.length} | ${s.scan.discovered.agents}+${s.scan.discovered.commands} | ${s.scan.errors.length} | ${note} |`,
+    `| ${repoLinks(s.repo)} | ${s.scan.ref} | ${shaLink(s.repo, s.scan.ref, s.scan.treeSha)} | ${s.agents.length} | ${s.commands.length} | ${s.scan.discovered.agents}+${s.scan.discovered.commands} | ${s.scan.errors.length} | ${note} |`,
   );
 }
 lines.push("");

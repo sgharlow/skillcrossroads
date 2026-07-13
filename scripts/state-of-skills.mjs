@@ -24,6 +24,8 @@ import {
   createAnthropicClient,
   createAnthropicTokenCounter,
   createFileCache,
+  badgeUrls,
+  DEFAULT_SITE_URL,
 } from "../packages/core/dist/index.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -54,6 +56,29 @@ const posNum = (v, d) => {
   const n = Number(v);
   return Number.isFinite(n) && n > 0 ? n : d;
 };
+
+/**
+ * Deep-link a cited repo: the hosted scorecard (primary click target for the demand loop) plus a
+ * small GitHub source link. Uses the one authoritative badge/URL contract (`badge-embed.ts`) —
+ * never re-expresses the `/s/owner/repo` shape here.
+ */
+function repoLinks(repo) {
+  const [owner, name] = repo.split("/");
+  if (!owner || !name) return repo; // defensive — REPOS entries are always "owner/repo"
+  const { scorecardUrl } = badgeUrls(DEFAULT_SITE_URL, owner, name);
+  return `[${repo}](${scorecardUrl}) ([source](https://github.com/${repo}))`;
+}
+
+/**
+ * Link a pinned tree sha to its GitHub tree view (short-sha display text). A scan failure records
+ * `ref`/`treeSha` as `"?"` — in that case there's no real tree to link, so fall back to plain code.
+ */
+function shaLink(repo, ref, treeSha) {
+  const sha = String(treeSha);
+  const short = sha.slice(0, 12);
+  if (sha === "?" || !ref || ref === "?") return `\`${short}\``;
+  return `[\`${short}\`](https://github.com/${repo}/tree/${sha})`;
+}
 const REPOS = process.argv.slice(2).length ? process.argv.slice(2) : DEFAULT_REPOS;
 const token = process.env.GITHUB_TOKEN;
 const maxPerRepo = posNum(process.env.BEACON_MAX_PER_REPO, 12);
@@ -284,7 +309,9 @@ lines.push("");
 lines.push("| Repo | Ref | Tree sha | Skills | Errors |");
 lines.push("|---|---|---|---|---|");
 for (const { repo, scan } of scanned) {
-  lines.push(`| ${repo} | ${scan.ref} | \`${String(scan.treeSha).slice(0, 12)}\` | ${scan.skills.length} | ${scan.errors.length} |`);
+  lines.push(
+    `| ${repoLinks(repo)} | ${scan.ref} | ${shaLink(repo, scan.ref, scan.treeSha)} | ${scan.skills.length} | ${scan.errors.length} |`,
+  );
 }
 lines.push("");
 lines.push(
