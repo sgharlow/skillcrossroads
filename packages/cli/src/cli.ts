@@ -1,5 +1,6 @@
 import { writeFileSync, existsSync, statSync } from "node:fs";
 import { resolve, dirname } from "node:path";
+import { createRequire } from "node:module";
 import pc from "picocolors";
 import {
   auditAsync,
@@ -53,7 +54,7 @@ ${pc.bold("Options:")}
   --badge[=<file>]   Also write an SVG grade badge (default: <name>.beacon.svg).
   --json[=<file>]    Emit the scorecard as JSON (bare: to stdout, replacing the report;
                      with =<file>: written alongside whatever report mode is active).
-  --markdown         Emit a Markdown report (for CI / PR comments).
+  --markdown (--md)  Emit a Markdown report (for CI / PR comments).
   --annotations=<f>  Write GitHub ::warning/::error annotation lines (file:line-anchored)
                      to <f> — cat it in a CI step to get inline PR annotations.
   --min-grade=<G>    Exit non-zero if any scanned skill grades below <G> (CI gate), e.g. B or C-.
@@ -161,8 +162,23 @@ function parseArgs(argv: readonly string[]): Args {
   return args;
 }
 
-/** CLI version — keep in sync with packages/cli/package.json on every `npm version` bump. */
-const VERSION = "0.11.1";
+/**
+ * CLI version, read from packages/cli/package.json at runtime — package.json is the single
+ * source of truth (never hand-copy it into a second place). Works from both the plain `tsc`
+ * build (dist/cli.js sits in dist/, package.json one level up) and the esbuild-bundled publish
+ * artifact (esbuild leaves this `require()` as a runtime call rather than inlining the JSON —
+ * verified by inspecting the bundle output — and npm always ships package.json regardless of
+ * the "files" allowlist, so the published layout resolves the same relative path).
+ */
+const VERSION: string = (() => {
+  // Module-level, so a resolution failure would otherwise kill EVERY invocation — degrade to
+  // "unknown" instead (an exotic layout without package.json still gets a working CLI).
+  try {
+    return (createRequire(import.meta.url)("../package.json") as { version?: string }).version ?? "unknown";
+  } catch {
+    return "unknown";
+  }
+})();
 
 /** The site whose scorecards/badges the CLI points at (override for self-hosting). */
 const SITE_URL = process.env["BEACON_SITE_URL"] ?? DEFAULT_SITE_URL;
@@ -335,6 +351,11 @@ async function main(): Promise<void> {
         }
         skills = [{ ...res, repoPath: "." }];
       } else {
+        // --mcp-live only applies to a single .mcp.json target (handled above); a directory scan
+        // never yields one, so warn the same way the bare-file path does instead of staying silent.
+        if (args.mcpLive) {
+          process.stderr.write(pc.yellow("  --mcp-live ignored: the target is not a .mcp.json\n"));
+        }
         const local = await scanLocalDir(args.path, ctx);
         skills = [...local.skills];
         errors = [...local.errors];
@@ -352,6 +373,11 @@ async function main(): Promise<void> {
     if (errors.length > 0) {
       process.stderr.write(pc.red(`All ${errors.length} skill(s) failed to scan:\n`));
       for (const e of errors) process.stderr.write(pc.red(`  ✗ ${e.repoPath}: ${e.message}\n`));
+    } else if (!remote && !existsSync(resolve(args.path))) {
+      // Distinguish "you typo'd the path" from "the path exists but has nothing gradeable in it" —
+      // both used to say "No SKILL.md found", which reads as a scan result either way. A remote
+      // GitHub target never exists locally, so this only applies to local scans.
+      process.stderr.write(pc.yellow(`Path does not exist: ${args.path}\n`));
     } else {
       process.stderr.write(pc.yellow(`No SKILL.md found in ${args.path}\n`));
     }

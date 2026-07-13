@@ -3,7 +3,7 @@
  * Split from cli.ts so it is importable in tests (cli.ts runs `main()` on import).
  */
 import { writeFileSync } from "node:fs";
-import { resolve } from "node:path";
+import { isAbsolute, resolve } from "node:path";
 import pc from "picocolors";
 import {
   renderTerminal,
@@ -100,7 +100,8 @@ export function emitSingle(result: AuditResult, opts: SingleOutputOptions): void
     const target = writeArtifact("svg", opts.badge, name, renderBadge(scorecard));
     // Emit the one copy-paste line an author needs — this is how the badge loop actually spreads.
     // To stderr so it never pollutes a redirected `--markdown`/`--json` report.
-    const rel = target.startsWith(".") || target.startsWith("/") ? target : `./${target}`;
+    // Absolute paths (incl. Windows drive letters) must never get a "./" prefix.
+    const rel = isAbsolute(target) || target.startsWith(".") || target.startsWith("/") ? target : `./${target}`;
     process.stderr.write(pc.dim(`  embed it:  `) + `![Skill Crossroads](${rel})\n`);
     process.stderr.write(
       pc.dim(`  or an always-fresh, linked badge from ${siteUrl} once your repo is public:\n`) +

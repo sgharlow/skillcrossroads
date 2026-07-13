@@ -130,4 +130,13 @@ describe("emitSingle — --badge stderr doc line uses the badge-embed.ts URL con
       `[![Skill Crossroads](${SITE}/api/badge/OWNER/REPO.svg)](${SITE}/s/OWNER/REPO)`,
     );
   });
+
+  it("never prefixes './' onto an absolute --badge path in the embed hint", () => {
+    const result = audit(DANGLING_REF) as AuditResult;
+    const badgePath = join(dir, "card.beacon.svg"); // mkdtemp path — absolute on every OS
+    emitSingle(result, { markdown: false, html: undefined, badge: badgePath, siteUrl: SITE });
+    const local = err.split("\n").find((l) => l.includes("embed it:"));
+    expect(local).toBeDefined();
+    expect(local).not.toContain("(./"); // no "(./C:/…" style mangling of an absolute path
+  });
 });

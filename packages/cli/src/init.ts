@@ -46,6 +46,7 @@ function parseInitArgs(argv: readonly string[]): InitArgs {
     if (a === "-h" || a === "--help") args.help = true;
     else if (a === "--dry-run") args.dryRun = true;
     else if (a === "--no-create") args.create = false;
+    else if (a === "--no-color") continue; // general flag (documented top-level); picocolors reads the env
     else if (a === "--repo" || a.startsWith("--repo=")) {
       const v = a.startsWith("--repo=") ? a.slice("--repo=".length) : argv[++i];
       if (!v || v.startsWith("-")) {
