@@ -46,7 +46,7 @@ describe("/report page metadata", () => {
 
   it("has a canonical URL and a twitter card", () => {
     expect(reportMetadata.alternates?.canonical).toBe("/report");
-    expect(reportMetadata.twitter?.card).toBe("summary_large_image");
+    expect((reportMetadata.twitter as { card?: string } | undefined)?.card).toBe("summary_large_image");
   });
 
   it("title uses absolute form to bypass layout template", () => {
@@ -73,7 +73,7 @@ describe("/report-agents page metadata", () => {
 
   it("has a canonical URL and a twitter card", () => {
     expect(reportAgentsMetadata.alternates?.canonical).toBe("/report-agents");
-    expect(reportAgentsMetadata.twitter?.card).toBe("summary_large_image");
+    expect((reportAgentsMetadata.twitter as { card?: string } | undefined)?.card).toBe("summary_large_image");
   });
 
   it("title uses absolute form to bypass layout template", () => {
