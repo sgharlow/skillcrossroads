@@ -4,6 +4,7 @@ import { parseSlug, scanTarget, averageGrade, type SlugTarget, type ScanOptions 
 import { resolveScanOptions } from "@/lib/pro-scan";
 import { badgeCache, isStale, isExpired } from "@/lib/badge-cache";
 import { badgeServes } from "@/lib/badge-serves";
+import { rateLimit } from "@/lib/rate-limit";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
@@ -42,6 +43,29 @@ async function computeBadge(target: SlugTarget, opts: ScanOptions): Promise<{ sv
 /** In-flight background refreshes (per instance) — a burst of stale hits must not fan out N scans. */
 const refreshing = new Set<string>();
 
+/**
+ * Global (not per-IP — camo has few distinct IPs) cap on brand-new cold-scan badge renders per
+ * instance: the FIRST-ever anonymous request for a given slug has no cache entry to serve, so it
+ * scans inline. A flood of distinct never-seen repo slugs (each a cache miss) would each burn a
+ * GitHub scan against the shared server token. Serving badges must never break, so once the cap
+ * is hit we serve an honest "n/a" placeholder with a short cache instead of refusing outright —
+ * the next request (once the window rolls, or a legit repeat hits the now-warm cache) gets a
+ * real scan.
+ */
+const COLD_BADGE_KEY = "badge:cold-scan";
+const COLD_BADGE_LIMIT = { limit: 30, windowMs: 5 * 60 * 1000 };
+
+/** Never persisted to badgeCache (no scan happened, so there's no grade to persist). */
+function placeholderBadgeResponse(): Response {
+  const svg = renderBadge({ grade: "?" } as Scorecard, { value: "n/a" });
+  return new Response(svg, {
+    headers: {
+      "content-type": "image/svg+xml; charset=utf-8",
+      "cache-control": "public, max-age=0, s-maxage=30, stale-while-revalidate=60",
+    },
+  });
+}
+
 /** Recompute an anonymous badge and store it — the background half of stale-while-revalidate. */
 async function refreshBadge(target: SlugTarget, key: string): Promise<void> {
   if (refreshing.has(key)) return;
@@ -70,8 +94,11 @@ function svgResponse(svg: string, anonymous: boolean): Response {
       // Anonymous badges: CDN layer on top of the DB cache. Pro-optioned responses must NEVER
       // enter the shared CDN cache — the URL is the same as the public badge's, and an edge
       // cache does not vary on cookies, so a cached keyed grade would serve to everyone.
+      // max-age=300 (not 0): matches s-maxage so a browser that already has a fresh badge doesn't
+      // revalidate on every README render — the CDN layer (s-maxage) was already doing the real
+      // freshness work; browser max-age=0 just forced needless revalidation traffic.
       "cache-control": anonymous
-        ? "public, max-age=0, s-maxage=300, stale-while-revalidate=600"
+        ? "public, max-age=300, s-maxage=300, stale-while-revalidate=600"
         : "private, no-store",
     },
   });
@@ -124,6 +151,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
       background(() => (ok ? badgeCache.put(key, svg) : badgeCache.delete(key)));
       return svgResponse(svg, anonymous);
     }
+    // No cache entry at all: a brand-new slug this instance has never scanned. Cap the global
+    // rate of these cold scans before falling through to the inline computeBadge() below.
+    const cold = rateLimit(COLD_BADGE_KEY, COLD_BADGE_LIMIT);
+    if (!cold.allowed) return placeholderBadgeResponse();
   }
 
   const { svg, ok } = await computeBadge(target, opts);

@@ -1,4 +1,5 @@
 import { scanGitHubRepo, letterGrade, GitHubError, type RepoScanResult, type CheckContext } from "@beacon/core";
+import { createTokenFallbackFetch } from "./github-token";
 
 export interface SlugTarget {
   owner: string;
@@ -43,6 +44,8 @@ export async function scanTarget(t: SlugTarget, opts: ScanOptions = {}): Promise
     token: opts.token ?? process.env.GITHUB_TOKEN,
     subpath: t.subpath,
     max: 25,
+    // No-op pass-through when GITHUB_TOKEN_FALLBACK is unset — see github-token.ts.
+    fetchImpl: createTokenFallbackFetch(process.env.GITHUB_TOKEN_FALLBACK),
   });
 
   if (cacheable) cache.set(t.slug, { at: Date.now(), result });

@@ -2,12 +2,21 @@ import { mkdtempSync, writeFileSync, rmSync } from "node:fs";
 import { join } from "node:path";
 import { tmpdir } from "node:os";
 import { auditAsync, renderHtml, type ArtifactType } from "@beacon/core";
+import { rateLimit, clientIp } from "@/lib/rate-limit";
+import { resolveScanOptions } from "@/lib/pro-scan";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 /** Paste size cap — a SKILL.md is prose, not a payload. */
 const MAX_BYTES = 200_000;
+
+/** Anonymous per-IP window: 10 pastes / 5 min — enough for normal use, not enough to fan out a scrape. */
+const ANON_LIMIT = { limit: 10, windowMs: 5 * 60 * 1000 };
+/** Signed-in Pro requests (resolved via resolveScanOptions/trust-login) get a higher ceiling — the
+ * anonymous cap exists to protect shared server compute from an anonymous flood, not to throttle
+ * paying users. The paste audit itself stays deterministic-only regardless of pro status. */
+const PRO_LIMIT = { limit: 60, windowMs: 5 * 60 * 1000 };
 
 const HTML = { "content-type": "text/html; charset=utf-8", "cache-control": "no-store" };
 
@@ -20,12 +29,26 @@ function errorPage(status: number, message: string): Response {
   );
 }
 
+/** A 429 must never enter the CDN cache — HTML matches the route's normal content type, plus `Retry-After`. */
+function tooManyRequests(retryAfterSec: number): Response {
+  return new Response(
+    `<!doctype html><html lang="en"><body style="font-family:sans-serif;max-width:600px;margin:80px auto;padding:0 20px">
+<h1>Slow down</h1><p>Too many pastes from this connection — try again in about ${retryAfterSec}s.</p><p><a href="/paste">← back to paste-to-scan</a></p></body></html>`,
+    { status: 429, headers: { ...HTML, "retry-after": String(retryAfterSec) } },
+  );
+}
+
 /**
  * POST /api/scan-paste — paste a SKILL.md / agent / command and get an instant scorecard.
  * Deterministic-only (free tier; no LLM spend on anonymous input). The pasted content is
  * untrusted — the pipeline treats it as such and every renderer escapes it.
  */
 export async function POST(req: Request): Promise<Response> {
+  const opts = await resolveScanOptions(req);
+  const limits = opts.pro ? PRO_LIMIT : ANON_LIMIT;
+  const rl = rateLimit(`scan-paste:${opts.pro ? "pro" : "anon"}:${clientIp(req)}`, limits);
+  if (!rl.allowed) return tooManyRequests(rl.retryAfterSec);
+
   let content: string;
   let kindRaw: string;
   try {
