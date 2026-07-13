@@ -11,9 +11,11 @@ import { Signpost } from "@/components/CrossroadsBadge";
  * Scoped class names (`site-*`) so the embedded styles never collide with a page's local CSS.
  */
 
-const NAV_LINKS = [
+/** Exported (not just used locally) so tests can assert nav contents without rendering JSX. */
+export const NAV_LINKS = [
   { href: "/guide", label: "Guide" },
   { href: "/gallery", label: "Gallery" },
+  { href: "/report", label: "Reports" },
   { href: "/pricing", label: "Pricing" },
   { href: "/account", label: "Account" },
 ] as const;

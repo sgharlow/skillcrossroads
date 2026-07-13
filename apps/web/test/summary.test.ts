@@ -44,3 +44,42 @@ describe("renderRepoSummaryHtml — plugin rows use the manifest deep link", () 
     expect(html).not.toContain('href="/s/o/r/my-plugin"');
   });
 });
+
+describe("renderRepoSummaryHtml — Embed this badge section (repo-summary demand loop)", () => {
+  const scan = {
+    ref: "main",
+    treeSha: "abc",
+    truncated: false,
+    errors: [],
+    skills: [
+      { repoPath: "a", name: "a", artifact: { type: "skill" }, scorecard: { overall: 90, grade: "A" } },
+      { repoPath: "b", name: "b", artifact: { type: "skill" }, scorecard: { overall: 80, grade: "B" } },
+    ],
+  } as unknown as RepoScanResult;
+
+  it("omits the embed section when no embed option is passed", () => {
+    const html = renderRepoSummaryHtml(scan, t);
+    expect(html).not.toContain("Embed this badge");
+  });
+
+  it("renders the badge image, the exact badgeMarkdownLine() output, and the init hint when embed is passed", () => {
+    const embed = { badgeUrl: "https://skillcrossroads.com/api/badge/o/r.svg", scorecardUrl: "https://skillcrossroads.com/s/o/r" };
+    const html = renderRepoSummaryHtml(scan, t, { embed });
+    expect(html).toContain("Embed this badge");
+    expect(html).toContain(`src="${embed.badgeUrl}"`);
+    expect(html).toContain(`href="${embed.scorecardUrl}"`);
+    expect(html).toContain(
+      `[![Skill Crossroads](${embed.badgeUrl})](${embed.scorecardUrl})`,
+    );
+    expect(html).toContain("npx skillcrossroads init");
+  });
+
+  it("escapes a hostile badge/scorecard URL rather than reflecting it raw", () => {
+    const embed = {
+      badgeUrl: 'https://skillcrossroads.com/api/badge/o/r.svg" onerror="alert(1)',
+      scorecardUrl: "https://skillcrossroads.com/s/o/r",
+    };
+    const html = renderRepoSummaryHtml(scan, t, { embed });
+    expect(html).not.toContain('onerror="alert(1)"');
+  });
+});

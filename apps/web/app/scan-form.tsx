@@ -19,9 +19,10 @@ export default function ScanForm() {
   }
 
   return (
-    <form onSubmit={go} className="scan">
+    <form onSubmit={go} className="scan" action="/api/go" method="GET">
       <input
         aria-label="GitHub repo"
+        name="repo"
         placeholder="owner/repo  (e.g. anthropics/skills)"
         value={value}
         onChange={(e) => setValue(e.target.value)}

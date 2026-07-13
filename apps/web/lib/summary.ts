@@ -1,4 +1,4 @@
-import { PALETTE, gradeHex, type RepoScanResult } from "@beacon/core";
+import { PALETTE, gradeHex, badgeMarkdownLine, type RepoScanResult } from "@beacon/core";
 import { averageScore, averageGrade, type SlugTarget } from "./scan";
 
 function esc(s: string): string {
@@ -30,8 +30,18 @@ export function rowHref(t: SlugTarget, row: { repoPath: string; artifact: { type
   return `/s/${t.owner}/${t.repo}/${row.repoPath}`;
 }
 
+export interface RepoSummaryOptions {
+  homeUrl?: string;
+  /**
+   * When set (hosted repo-summary pages), render an "Embed this badge" block for the repo's own
+   * badge — same contract as the single-artifact scorecard, sourced from `badge-embed.ts` so the
+   * markdown line is never re-typed.
+   */
+  embed?: { badgeUrl: string; scorecardUrl: string };
+}
+
 /** A repo-level summary page: every skill in the repo with its grade, linking to each scorecard. */
-export function renderRepoSummaryHtml(scan: RepoScanResult, t: SlugTarget, opts: { homeUrl?: string } = {}): string {
+export function renderRepoSummaryHtml(scan: RepoScanResult, t: SlugTarget, opts: RepoSummaryOptions = {}): string {
   const rows = [...scan.skills].sort((a, b) => b.scorecard.overall - a.scorecard.overall);
   const avg = averageScore(scan);
   const avgGrade = averageGrade(scan);
@@ -79,6 +89,14 @@ h1{font-size:20px;margin:14px 0 2px;font-weight:700}
 .cta-blurb{color:${PALETTE.fog};font-size:13.5px;max-width:52ch}
 .cta{display:inline-block;background:${PALETTE.beam};color:#0b1220;font-weight:700;border-radius:10px;padding:11px 20px;text-decoration:none;white-space:nowrap}
 a.brand-link{color:inherit;text-decoration:none}
+.embed{margin-top:22px;padding-top:20px;border-top:1px solid ${PALETTE.ink3}}
+.embed h2{font-size:12px;letter-spacing:.16em;text-transform:uppercase;color:${PALETTE.fog};margin-bottom:12px}
+.embed-row{display:flex;align-items:center;gap:12px;flex-wrap:wrap;margin-bottom:12px}
+.embed-row img{display:block}
+.embed-code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:${PALETTE.foam};
+  background:${PALETTE.ink};border:1px solid ${PALETTE.ink3};border-radius:8px;padding:10px 12px;overflow-x:auto;white-space:pre}
+.embed-hint{color:${PALETTE.fog};font-size:12.5px;margin-top:10px}
+.embed-hint code{font-family:ui-monospace,Menlo,Consolas,monospace;color:${PALETTE.foam};background:${PALETTE.ink};border:1px solid ${PALETTE.ink3};border-radius:6px;padding:1px 6px}
 footer{color:${PALETTE.fog};font-size:12px;margin-top:22px;text-align:center}
 footer a{color:${PALETTE.fog}}
 @media(max-width:520px){.row{grid-template-columns:40px 40px 1fr}.pt{display:none}}
@@ -91,6 +109,19 @@ footer a{color:${PALETTE.fog}}
   <p class="meta">${countLabel(rows)} · average <span class="avg">${avgGrade} (${avg}/100)</span> · ref ${esc(scan.ref)} · deterministic</p>
   ${rowHtml}
   ${scan.errors.length ? `<p class="meta">${scan.errors.length} skill(s) could not be scanned.</p>` : ""}
+  ${
+    opts.embed
+      ? `<section class="embed">
+      <h2>Embed this badge</h2>
+      <div class="embed-row">
+        <a href="${esc(opts.embed.scorecardUrl)}"><img src="${esc(opts.embed.badgeUrl)}" alt="Skill Crossroads grade ${esc(avgGrade)}" height="20"></a>
+        <span class="cta-blurb">Always-fresh — it re-scans and updates on its own.</span>
+      </div>
+      <pre class="embed-code">${esc(badgeMarkdownLine(opts.embed))}</pre>
+      <p class="embed-hint">or run <code>npx skillcrossroads init</code> in your repo to insert it into your README.</p>
+    </section>`
+      : ""
+  }
   ${
     opts.homeUrl
       ? `<div class="cta-wrap"><span class="cta-blurb">Grade your own Claude Code skill — evidence-cited, file-and-line, free.</span><a class="cta" href="${esc(opts.homeUrl)}">Scan your own skill →</a></div>`

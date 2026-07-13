@@ -129,7 +129,10 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
           embed: badgeUrls(origin, target.owner, target.repo, target.subpath),
           ...(suggestions ? { suggestions } : {}),
         })
-      : renderRepoSummaryHtml(scan, target, { homeUrl: "/" });
+      : renderRepoSummaryHtml(scan, target, {
+          homeUrl: "/",
+          embed: badgeUrls(origin, target.owner, target.repo, target.subpath),
+        });
 
   // Pro-optioned responses (private token / managed LLM — including ?suggest=1, which requires
   // the managed model) must NEVER enter the shared CDN cache: the URL is the same as the public
