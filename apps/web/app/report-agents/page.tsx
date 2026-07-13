@@ -3,11 +3,25 @@ import { SiteNav, SiteFooter } from "@/components/SiteNav";
 import { REPORT_AGENTS_MD } from "@/content/report-agents";
 import { markdownToHtml } from "@/lib/markdown-lite";
 
+const REPORT_AGENTS_TITLE = "State of Claude Code Agents & Commands — Skill Crossroads";
+const REPORT_AGENTS_DESCRIPTION =
+  "43% of public subagents declare no tools list and silently inherit everything, including unrestricted Bash — an evidence-based audit of 85 subagents and slash commands across 9 repositories by Skill Crossroads, every figure traceable to pinned git trees.";
+
 export const metadata: Metadata = {
-  title: "The State of Claude Code Agents & Commands",
-  description:
-    "An evidence-based audit of 85 public Claude Code subagents and slash commands across 9 repositories, graded by Skill Crossroads — every figure traceable to pinned git trees.",
+  title: { absolute: REPORT_AGENTS_TITLE },
+  description: REPORT_AGENTS_DESCRIPTION,
   alternates: { canonical: "/report-agents" },
+  openGraph: {
+    title: REPORT_AGENTS_TITLE,
+    description: REPORT_AGENTS_DESCRIPTION,
+    url: "/report-agents",
+    type: "article",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: REPORT_AGENTS_TITLE,
+    description: REPORT_AGENTS_DESCRIPTION,
+  },
 };
 
 export default function ReportAgentsPage() {

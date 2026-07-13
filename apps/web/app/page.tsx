@@ -1,7 +1,12 @@
+import type { Metadata } from "next";
 import type { ReactElement } from "react";
 import { CrossroadsBadge, Signpost } from "@/components/CrossroadsBadge";
 import { SiteNav, FOOTER_LINKS } from "@/components/SiteNav";
 import ScanForm from "./scan-form";
+
+export const metadata: Metadata = {
+  alternates: { canonical: "/" },
+};
 
 export default function Home(): ReactElement {
   return (
@@ -35,7 +40,6 @@ export default function Home(): ReactElement {
           </p>
         </div>
         <div className="hero-visual" aria-label="A signpost pointing three ways: ship, fix, rethink">
-          {/* TODO: replace placeholder — signpost hero illustration */}
           <HeroSignpost />
           <div className="hero-chip">
             <CrossroadsBadge grade="A−" href="/scorecard" />

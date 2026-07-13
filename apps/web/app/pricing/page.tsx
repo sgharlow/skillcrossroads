@@ -1,7 +1,11 @@
+import type { Metadata } from "next";
 import SubscribeButton from "./subscribe-button";
 import { SiteNav, SiteFooter } from "@/components/SiteNav";
 
-export const metadata = { title: "Pricing" };
+export const metadata: Metadata = {
+  title: "Pricing",
+  alternates: { canonical: "/pricing" },
+};
 
 const FREE = ["CLI + public repo scans", "Full deterministic rubric", "CI GitHub Action + PR gating", "Triggering & exact tokens (your own key)", "Local HTML report + SVG badge"];
 const PRO = ["Everything in Free", "Private-repo scanning", "Managed LLM — no key needed", "Hosted scorecards + always-fresh badges", "Score history"];

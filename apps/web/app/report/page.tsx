@@ -3,11 +3,25 @@ import { SiteNav, SiteFooter } from "@/components/SiteNav";
 import { REPORT_MD } from "@/content/report";
 import { markdownToHtml } from "@/lib/markdown-lite";
 
+const REPORT_TITLE = "State of Claude Code Skills — Skill Crossroads";
+const REPORT_DESCRIPTION =
+  "73% of public Claude Code skills have a description that won't reliably trigger — an evidence-based audit of 214 skills across 18 repositories by Skill Crossroads, every figure traceable to pinned git trees.";
+
 export const metadata: Metadata = {
-  title: "The State of Claude Code Skills",
-  description:
-    "An evidence-based audit of 214 public Claude Code skills across 18 repositories, graded by Skill Crossroads — every figure traceable to pinned git trees.",
+  title: { absolute: REPORT_TITLE },
+  description: REPORT_DESCRIPTION,
   alternates: { canonical: "/report" },
+  openGraph: {
+    title: REPORT_TITLE,
+    description: REPORT_DESCRIPTION,
+    url: "/report",
+    type: "article",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: REPORT_TITLE,
+    description: REPORT_DESCRIPTION,
+  },
 };
 
 export default function ReportPage() {

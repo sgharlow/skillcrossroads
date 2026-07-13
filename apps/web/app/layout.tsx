@@ -3,7 +3,7 @@ import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const DESCRIPTION =
-  "Skill Crossroads gives your Claude Code skills, agents, and MCP servers an evidence-based quality grade — so you know whether to ship, fix, or rethink before you release.";
+  "Skill Crossroads gives your Claude Code skills, agents, slash commands, MCP configs, and plugins an evidence-based quality grade — so you know whether to ship, fix, or rethink before you release.";
 
 export const metadata: Metadata = {
   metadataBase: new URL("https://skillcrossroads.com"),
