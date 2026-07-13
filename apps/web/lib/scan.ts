@@ -1,4 +1,4 @@
-import { scanGitHubRepo, letterGrade, type RepoScanResult, type CheckContext } from "@beacon/core";
+import { scanGitHubRepo, letterGrade, GitHubError, type RepoScanResult, type CheckContext } from "@beacon/core";
 
 export interface SlugTarget {
   owner: string;
@@ -47,6 +47,17 @@ export async function scanTarget(t: SlugTarget, opts: ScanOptions = {}): Promise
 
   if (cacheable) cache.set(t.slug, { at: Date.now(), result });
   return result;
+}
+
+/**
+ * Classify a `scanTarget` rejection so route handlers can respond correctly without leaking
+ * internals. A GitHub 404 means the repo doesn't exist (or is private) — a stable, user-facing
+ * "not found" condition worth a 404 page. Everything else (rate limits, network errors, GitHub
+ * 5xx) is transient and deserves a retry-soon 503. Classification only — does not change what
+ * `scanTarget` throws.
+ */
+export function isRepoNotFoundError(err: unknown): boolean {
+  return err instanceof GitHubError && /GitHub API 404 for/.test(err.message);
 }
 
 /** Average overall score across a scan's skills (for a repo-level badge/summary). */

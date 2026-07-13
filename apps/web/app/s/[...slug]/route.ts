@@ -1,6 +1,6 @@
 import { after } from "next/server";
-import { renderHtml, suggestFixes, type FixSuggestion } from "@beacon/core";
-import { parseSlug, scanTarget } from "@/lib/scan";
+import { renderHtml, suggestFixes, PALETTE, type FixSuggestion } from "@beacon/core";
+import { parseSlug, scanTarget, isRepoNotFoundError } from "@/lib/scan";
 import { resolveScanOptions } from "@/lib/pro-scan";
 import { renderRepoSummaryHtml } from "@/lib/summary";
 import { recordScans } from "@/lib/record";
@@ -17,6 +17,46 @@ const HTML = { "content-type": "text/html; charset=utf-8" } as const;
  */
 function esc(text: string): string {
   return text.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+/**
+ * A branded, self-contained error page (same "harbor marker light" palette as the scorecard
+ * chrome). `messageHtml` must already be escaped by the caller — it's inserted verbatim so it can
+ * carry a `<code>`-wrapped slug. Never pass raw upstream error text (e.g. a GitHubError message)
+ * here: those can embed internal URLs (api.github.com) and must never reach the response body.
+ */
+function errorPage(opts: { title: string; heading: string; messageHtml: string; status: number }): Response {
+  const html = `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>${esc(opts.title)}</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+body{background:${PALETTE.ink};color:${PALETTE.foam};margin:0;padding:64px 20px;
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Helvetica,Arial,sans-serif;text-align:center}
+.card{max-width:520px;margin:0 auto;background:${PALETTE.ink2};border:1px solid ${PALETTE.ink3};
+  border-radius:16px;padding:40px 32px}
+h1{font-size:22px;margin:0 0 12px}
+p{color:${PALETTE.fog};line-height:1.5;margin:0 0 24px}
+code{font-family:ui-monospace,"Cascadia Code","SF Mono",Menlo,Consolas,monospace;color:${PALETTE.foam}}
+a.cta{display:inline-block;background:${PALETTE.beam};color:#0b1220;font-weight:700;border-radius:10px;
+  padding:11px 20px;text-decoration:none;margin:4px}
+a.link{display:inline-block;color:${PALETTE.fog};text-decoration:none;margin:4px}
+</style>
+</head>
+<body>
+<div class="card">
+<h1>${esc(opts.heading)}</h1>
+<p>${opts.messageHtml}</p>
+<div>
+<a class="cta" href="/">&larr; try another repo</a>
+<a class="link" href="/paste">or paste a SKILL.md directly</a>
+</div>
+</div>
+</body>
+</html>`;
+  return new Response(html, { status: opts.status, headers: { ...HTML, "cache-control": "no-store" } });
 }
 
 /** GET /s/:owner/:repo[/...subpath] — shareable public scorecard (one skill) or repo summary. */
@@ -36,9 +76,21 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
     scanOpts = await resolveScanOptions(req);
     scan = await scanTarget(target, scanOpts);
   } catch (err) {
-    return new Response(`<h1>Scan failed</h1><p>${esc(err instanceof Error ? err.message : "error")}</p>`, {
-      status: 502,
-      headers: HTML,
+    // Never reflect the raw upstream error (a GitHubError message embeds api.github.com) — only
+    // the escaped slug, which the requester already knows.
+    if (isRepoNotFoundError(err)) {
+      return errorPage({
+        title: "Repo not found — Skill Crossroads",
+        heading: "Repo not found",
+        messageHtml: `No public repo found at <code>${esc(target.slug)}</code> — check the spelling, or the repo may be private.`,
+        status: 404,
+      });
+    }
+    return errorPage({
+      title: "Scan unavailable — Skill Crossroads",
+      heading: "Scan unavailable",
+      messageHtml: `GitHub is rate-limiting us or unreachable right now — try again in a minute. (<code>${esc(target.slug)}</code>)`,
+      status: 503,
     });
   }
 
