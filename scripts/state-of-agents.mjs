@@ -97,6 +97,11 @@ process.stderr.write(
   "Deterministic edition — no LLM checks run; triggering figures come from TRIGGER-02/03/05.\n",
 );
 
+// ── Honesty constant (hand-written copy lives HERE, never in the generated md, so a
+//    regeneration can never silently drop it). Deterministic floor vs LLM discrimination. ──
+const GRADE_HONESTY =
+  `**Read the letter grades honestly.** Most published artifacts clear the deterministic floor — structure, budgets, and safety are table stakes, and letter grades cluster high because of it. The discriminating findings live in the LLM-assisted checks (whether a description will actually trigger, whether constraints and failure modes are stated, whether the instructions contradict themselves, whether anything verifies the work) — and none of them ran in this deterministic edition. A high letter grade here means "won't visibly break"; it is a floor, not an endorsement.`;
+
 // Check ids tracked per kind, in display order (the deterministic set that actually runs on
 // each kind under rubric v1.2 — see packages/core/src/checks/index.ts).
 const CHECK_LABELS = {
@@ -329,6 +334,8 @@ lines.push("");
 lines.push(
   `Average overall: **subagents ${A.avg.toFixed(1)}/100**, **commands ${C.avg.toFixed(1)}/100**. Deterministic grades are computed over the evaluated categories with weights renormalized — LLM-only categories (e.g. Verifiability for agents/commands) stay honestly unscored in this edition.`,
 );
+lines.push("");
+lines.push(GRADE_HONESTY);
 lines.push("");
 
 function chartBlock(title, rowCount, checkStats, order) {

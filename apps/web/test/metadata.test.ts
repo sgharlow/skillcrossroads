@@ -67,7 +67,7 @@ describe("/report-agents page metadata", () => {
 
   it("description mentions the report's headline stat", () => {
     const description = asString(reportAgentsMetadata.description);
-    expect(description).toContain("43%");
+    expect(description).toContain("57%");
     expect(description.toLowerCase()).toContain("tools");
   });
 

@@ -2,7 +2,7 @@ import { ImageResponse } from "next/og";
 import { PALETTE } from "@beacon/core";
 
 export const alt =
-  "43% of public subagents declare no tools list and silently inherit everything, including Bash.";
+  "57% of public subagents declare no tools list and silently inherit everything, including Bash.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -45,7 +45,7 @@ export default async function Image() {
             color: PALETTE.fail,
           }}
         >
-          43%
+          57%
         </div>
         <div
           style={{

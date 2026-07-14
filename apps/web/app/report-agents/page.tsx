@@ -5,7 +5,7 @@ import { markdownToHtml } from "@/lib/markdown-lite";
 
 const REPORT_AGENTS_TITLE = "State of Claude Code Agents & Commands — Skill Crossroads";
 const REPORT_AGENTS_DESCRIPTION =
-  "43% of public subagents declare no tools list and silently inherit everything, including unrestricted Bash — an evidence-based audit of 85 subagents and slash commands across 9 repositories by Skill Crossroads, every figure traceable to pinned git trees.";
+  "57% of public subagents declare no tools list and silently inherit everything, including unrestricted Bash — an evidence-based audit of 123 subagents and slash commands across 10 repositories by Skill Crossroads, every figure traceable to pinned git trees.";
 
 export const metadata: Metadata = {
   title: { absolute: REPORT_AGENTS_TITLE },

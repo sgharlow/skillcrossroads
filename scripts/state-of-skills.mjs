@@ -26,6 +26,7 @@ import {
   createFileCache,
   badgeUrls,
   DEFAULT_SITE_URL,
+  RUBRIC_VERSION,
 } from "../packages/core/dist/index.js";
 
 const here = dirname(fileURLToPath(import.meta.url));
@@ -107,6 +108,9 @@ if (useLlm) {
   process.stderr.write("Deterministic edition (set BEACON_LLM=1 + ANTHROPIC_API_KEY for the triggering hook).\n");
 }
 
+// The deterministic set that actually runs on the `skill` kind under rubric v1.2 — see
+// packages/core/src/checks/index.ts. Keeping this map complete matters: the per-check chart AND
+// the "pass every check" figure below are computed over exactly these ids.
 const DET_LABELS = {
   "STRUCT-01": "valid YAML frontmatter",
   "STRUCT-02": "recommended fields present",
@@ -114,20 +118,36 @@ const DET_LABELS = {
   "TOKEN-01": "under the line/token budget",
   "TOKEN-02": "progressive disclosure",
   "TOKEN-03": "description budget footprint",
+  "TOKEN-04": "recurring per-invocation cost",
   "CLARITY-03": "no ASCII-art / persona filler",
   "SAFETY-01": "no hardcoded secrets",
   "SAFETY-02": "allowed-tools least-privilege",
   "SAFETY-03": "no destructive auto-invocation",
   "SAFETY-04": "no shell-injection in ! blocks",
+  "TRIGGER-02": "description long enough to anchor",
+  "TRIGGER-03": "invocation cues in description",
+  "TRIGGER-05": "invocation flags consistent",
+  "VERIFY-01": "evals present",
+  "VERIFY-03": "version/changelog/readme hygiene",
 };
 const LLM_LABELS = useLlm
   ? {
       "TRIGGER-01": "description triggers reliably",
+      "CLARITY-02": "no internal contradictions",
       "CLARITY-05": "constraints & failure modes stated",
       "VERIFY-04": "verification step present",
     }
   : {};
 const CHECK_LABELS = { ...DET_LABELS, ...LLM_LABELS };
+
+// ── Edition-note + honesty constants (hand-written copy lives HERE, never in the generated md,
+//    so a regeneration can never silently drop it). ──
+/** What changed since the previous published edition — a rubric bump is an announcement event. */
+const EDITION_NOTE =
+  `> **Edition note — what changed since the v1.0 edition (2026-07-09).** Rubric v1.2 added deterministic checks that v1.0 did not run — TRIGGER-02 (description long enough to anchor), TRIGGER-03 (invocation cues), TRIGGER-05 (invocation-flag consistency), VERIFY-01 (evals present), and VERIFY-03 (maintenance hygiene) — plus the informational TOKEN-04 cost estimate and the LLM-assisted CLARITY-02 contradiction check. Keyless scans now score all six categories, so grade distributions shift accordingly and are **not comparable one-to-one** with the v1.0 edition. Each edition pins its own rubric, git trees, and reproduction command; this one replaces the v1.0 edition as the live report.`;
+/** The grade-inflation finding, stated plainly: deterministic floor vs LLM discrimination. */
+const GRADE_HONESTY =
+  `**Read the letter grades honestly.** Most public skills clear the deterministic floor — structure, budgets, and safety are table stakes, and letter grades cluster high because of it. The discriminating findings live in the LLM-assisted checks: whether the description will actually trigger (TRIGGER-01), whether constraints and failure modes are stated (CLARITY-05), whether the instructions contradict themselves (CLARITY-02), and whether anything verifies the work (VERIFY-04). A high letter grade means "won't visibly break"; the LLM rows in the chart below are where "actually good" is decided — and they are where most of the sample falls down.`;
 
 const scanned = [];
 let running = 0;
@@ -183,12 +203,21 @@ const bar = (n, d = total, width = 20) => {
   return "█".repeat(filled) + "░".repeat(width - filled);
 };
 
+// Local date (not UTC) — the run's calendar date where it was executed.
+const now = new Date();
+const today = `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(now.getDate()).padStart(2, "0")}`;
 const lines = [];
 lines.push("# The State of Claude Code Skills");
 lines.push("");
 lines.push(
-  `*An evidence-based audit of ${total} public Claude Code skills across ${scanned.filter((s) => s.scan.skills.length).length} repositories, graded by **Skill Crossroads** — the signpost for Claude Code artifacts.${useLlm ? " Includes the LLM-assisted triggering check." : " Deterministic checks only."} Every figure is traceable to the pinned git trees in the methodology.*`,
+  `*An evidence-based audit of ${total} public Claude Code skills across ${scanned.filter((s) => s.scan.skills.length).length} repositories, graded by **Skill Crossroads** (rubric v${RUBRIC_VERSION}) — the signpost for Claude Code artifacts.${useLlm ? " Includes the LLM-assisted checks (full edition)." : " Deterministic checks only."} Every figure is traceable to the pinned git trees in the methodology. Generated ${today}.*`,
 );
+lines.push("");
+lines.push(
+  `> **Edition & pinning.** Generated **${today}** under **rubric v${RUBRIC_VERSION}, ${useLlm ? "LLM (full)" : "deterministic"} edition**. This report is a pinned snapshot: its figures are exact for the git trees and rubric named in the methodology, and are regenerated — never hand-edited — when the rubric moves.`,
+);
+lines.push("");
+lines.push(EDITION_NOTE);
 lines.push("");
 lines.push(
   `> **Scope.** A deliberately mixed sample: Anthropic's well-maintained \`anthropics/skills\` catalog alongside a spread of community-authored repos (up to ${maxPerRepo} skills each). This is a read on skills people actually publish — not a curated best-of.`,
@@ -256,6 +285,14 @@ lines.push("| Grade | Skills | Share |");
 lines.push("|---|---|---|");
 for (const g of ["A", "B", "C", "D", "F"]) lines.push(`| ${g} | ${buckets[g] ?? 0} | ${pct(buckets[g] ?? 0)} |`);
 lines.push("");
+if (useLlm) {
+  lines.push(GRADE_HONESTY);
+} else {
+  lines.push(
+    `**Read the letter grades honestly.** Most public skills clear the deterministic floor — structure, budgets, and safety are table stakes, and letter grades cluster high because of it. The discriminating findings live in the LLM-assisted checks (triggering, constraints, contradictions, verification), which did not run in this edition.`,
+  );
+}
+lines.push("");
 
 lines.push("## How skills do on each check");
 lines.push("");
@@ -273,7 +310,7 @@ lines.push("```");
 if (useLlm && trig) {
   lines.push("");
   lines.push(
-    `_LLM checks (TRIGGER-01, CLARITY-05, VERIFY-04) show a smaller \`n\` than the deterministic checks when calls were dropped on transient model/network errors — each percentage is over the skills that check actually scored._`,
+    `_LLM checks (TRIGGER-01, CLARITY-02, CLARITY-05, VERIFY-04) show a smaller \`n\` than the deterministic checks when calls were dropped on transient model/network errors — each percentage is over the skills that check actually scored._`,
   );
 }
 lines.push("");
@@ -302,8 +339,8 @@ lines.push("## Methodology & reproducibility");
 lines.push("");
 lines.push(
   useLlm
-    ? "Skill Crossroads' deterministic checks (no LLM) plus the LLM-assisted triggering check (TRIGGER-01) were run against each repo's git tree at the sha below. Deterministic figures are bit-reproducible from those trees; LLM verdicts are content-hash cached and pinned to the same trees, but model output is not guaranteed bit-identical across runs."
-    : "Skill Crossroads' deterministic checks (no LLM) were run against each repo's git tree at the sha below. Deterministic checks are pure, so re-scanning the same tree reproduces these figures exactly. The LLM-assisted triggering check was excluded in this edition for cost and reproducibility.",
+    ? `Skill Crossroads' deterministic checks (rubric v${RUBRIC_VERSION}, no LLM) plus the LLM-assisted checks (TRIGGER-01 triggering judge, CLARITY-02 contradictions, CLARITY-05 constraints, VERIFY-04 verification) were run ${today} against each repo's git tree at the sha below. Deterministic figures are bit-reproducible from those trees; LLM verdicts are content-hash cached and pinned to the same trees, but model output is not guaranteed bit-identical across runs.`
+    : `Skill Crossroads' deterministic checks (rubric v${RUBRIC_VERSION}, no LLM) were run ${today} against each repo's git tree at the sha below. Deterministic checks are pure, so re-scanning the same tree reproduces these figures exactly. The LLM-assisted checks were excluded in this edition for cost and reproducibility.`,
 );
 lines.push("");
 lines.push("| Repo | Ref | Tree sha | Skills | Errors |");
