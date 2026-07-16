@@ -56,7 +56,7 @@ describe("computeDemandMetric", () => {
       [/count\(DISTINCT slug\)/s, [{ n: 2 }]],
       [/GROUP BY 1 ORDER BY 1/s, []],
       [/FROM badge_serves WHERE served_at/s, [{ n: 0 }]],
-      [/from_github = true/s, [{ n: 0 }]],
+      [/FROM badge_serves\s+WHERE from_github = true/s, [{ n: 0 }]],
       [/FROM gallery_entries$/s, [{ n: 0 }]],
       [/FROM subscriptions/s, [{ n: 0 }]],
       [/coalesce\(source, 'unknown'\)/s, [{ source: "reddit", count: 5 }, { source: "unknown", count: 2 }]],
