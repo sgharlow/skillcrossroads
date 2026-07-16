@@ -228,6 +228,10 @@ header.top::before{content:"";position:absolute;inset:0;pointer-events:none;
 .embed-row img{display:block}
 .embed-code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:${PALETTE.foam};
   background:${PALETTE.ink};border:1px solid ${PALETTE.ink3};border-radius:8px;padding:10px 12px;overflow-x:auto;white-space:pre}
+.embed-copy{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.embed-copy .embed-code{flex:1 1 auto;margin:0}
+.copy-btn{background:${PALETTE.ink3};color:${PALETTE.foam};border:1px solid ${PALETTE.ink3};border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer;white-space:nowrap}
+.copy-btn:hover{filter:brightness(1.15)}
 footer{text-align:center;color:${PALETTE.fog};font-size:12px;margin-top:20px}
 footer a{color:${PALETTE.fog}}
 .reveal{opacity:0;transform:translateY(8px);animation:rise .5s ease forwards}
@@ -298,7 +302,13 @@ export function renderHtml(card: Scorecard, opts: HtmlOptions = {}): string {
         <a href="${esc(opts.embed.scorecardUrl)}"><img src="${esc(opts.embed.badgeUrl)}" alt="Skill Crossroads grade ${esc(card.grade)}" height="20"></a>
         <span class="cta-blurb">Always-fresh — it re-scans and updates on its own.</span>
       </div>
-      <pre class="embed-code">${esc(badgeMarkdownLine(opts.embed))}</pre>
+      <div class="embed-copy">
+        <pre class="embed-code">${esc(badgeMarkdownLine(opts.embed))}</pre>
+        <button type="button" class="copy-btn">Copy</button>
+      </div>
+      <script>
+(function(){var b=document.querySelector('.copy-btn'),p=document.querySelector('.embed-code');if(!b||!p||!navigator.clipboard)return;b.addEventListener('click',function(){navigator.clipboard.writeText(p.textContent).then(function(){var o=b.textContent;b.textContent='Copied!';setTimeout(function(){b.textContent=o;},1500);});});})();
+</script>
     </section>`
     : "";
 
