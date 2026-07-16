@@ -76,6 +76,23 @@ export default async function Dashboard() {
             <div>gallery opt-ins: {demand.metric.galleryOptIns.toLocaleString()}</div>
             <div>paid subscriptions: {demand.metric.paidSubscriptions.toLocaleString()}</div>
           </div>
+          {demand.metric.externalScansBySource.length > 0 && (
+            <>
+              <h3>Scans by source</h3>
+              <ul>
+                {demand.metric.externalScansBySource.map((s) => (
+                  <li key={s.source}>
+                    {s.source}: {s.count.toLocaleString()}
+                  </li>
+                ))}
+              </ul>
+            </>
+          )}
+          <h3>Conversion (external-scanned repos → distribution)</h3>
+          <ul>
+            <li>badge embedded (GitHub): {demand.metric.reposWithBadgeServe.toLocaleString()} / {demand.metric.distinctExternalRepos.toLocaleString()}</li>
+            <li>gallery opt-in: {demand.metric.reposWithGalleryOptIn.toLocaleString()} / {demand.metric.distinctExternalRepos.toLocaleString()}</li>
+          </ul>
         </section>
       )}
 
