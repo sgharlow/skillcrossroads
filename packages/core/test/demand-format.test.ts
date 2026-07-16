@@ -22,5 +22,9 @@ describe("formatDemandReadout", () => {
     expect(out).toContain("badge repos via GitHub    : 6");
     expect(out).toContain("paid subscriptions        : 1");
     expect(out).toContain("2026-07-15");
+    expect(out).toContain("Scans by source:");
+    expect(out).toContain("reddit");
+    expect(out).toContain("badge embedded (GitHub) : 2/5");
+    expect(out).toContain("gallery opt-in          : 1/5");
   });
 });

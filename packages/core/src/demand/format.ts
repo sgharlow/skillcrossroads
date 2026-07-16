@@ -26,6 +26,15 @@ export function formatDemandReadout(metric: DemandMetric, verdict: G0Verdict): s
   L.push(`  badge repos via GitHub    : ${metric.distinctBadgeReposFromGitHub}`);
   L.push(`  gallery opt-ins           : ${metric.galleryOptIns}`);
   L.push(`  paid subscriptions        : ${metric.paidSubscriptions}`);
+  if (metric.externalScansBySource.length) {
+    L.push("");
+    L.push("Scans by source:");
+    for (const s of metric.externalScansBySource) L.push(`  ${s.source.padEnd(24)} ${s.count}`);
+  }
+  L.push("");
+  L.push("Conversion (external-scanned repos → distribution):");
+  L.push(`  badge embedded (GitHub) : ${metric.reposWithBadgeServe}/${metric.distinctExternalRepos}`);
+  L.push(`  gallery opt-in          : ${metric.reposWithGalleryOptIn}/${metric.distinctExternalRepos}`);
   if (metric.dailyExternalTrend.length) {
     L.push("");
     L.push("Daily external scans:");
