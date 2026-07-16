@@ -1,5 +1,9 @@
 import type { Metadata } from "next";
+import { cookies } from "next/headers";
 import { gradeHex, gradeRank } from "@beacon/core";
+import { readSessionFromCookieHeader, trustLogin } from "@/lib/session";
+import { hasDb, getPool } from "@/lib/db";
+import { readDemandConfig, computeDemandMetric, evaluateG0 } from "@beacon/core";
 import { scanHistory } from "@/lib/scans";
 import { badgeServes, type BadgeServeStats } from "@/lib/badge-serves";
 import { SiteNav, SiteFooter } from "@/components/SiteNav";
@@ -23,11 +27,57 @@ export default async function Dashboard() {
   const gradeRows = Object.entries(stats.byGrade).sort((a, b) => gradeRank(a[0]) - gradeRank(b[0]));
   const maxGrade = Math.max(1, ...gradeRows.map(([, n]) => n));
 
+  // Owner-only demand panel. Never fail the page — degrade to null like the badge tile.
+  const demand = await (async () => {
+    try {
+      const cfg = readDemandConfig(process.env);
+      const store = await cookies();
+      const header = store.getAll().map((c) => `${c.name}=${c.value}`).join("; ");
+      const login = trustLogin(readSessionFromCookieHeader(header).login, true);
+      if (!login || !cfg.ownerLogins.has(login.toLowerCase()) || !hasDb()) return null;
+      const metric = await computeDemandMetric(getPool(), {
+        ownerLogins: cfg.ownerLogins,
+        launchDate: cfg.launchDate,
+        trendDays: cfg.trendDays,
+      });
+      const verdict = evaluateG0(metric, {
+        launchDate: cfg.launchDate,
+        launchPosts: cfg.launchPosts,
+        now: new Date(),
+      });
+      return { metric, verdict };
+    } catch {
+      return null;
+    }
+  })();
+
   return (
     <main className="wrap">
       <SiteNav />
 
       <h1>Metrics</h1>
+
+      {demand && (
+        <section className="panel" style={{ borderLeft: "3px solid #888", paddingLeft: "1rem" }}>
+          <h2>Demand / G0 gate (owner-only)</h2>
+          <p className="muted">{demand.verdict.status.toUpperCase().replace("-", " ")}</p>
+          <ul>
+            {demand.verdict.reasons.map((r, i) => (
+              <li key={i}>{r}</li>
+            ))}
+          </ul>
+          <div className="bars">
+            <div>external scans (all-time): {demand.metric.externalScansTotal.toLocaleString()}</div>
+            <div>external scans (since launch): {demand.metric.externalScansSinceLaunch.toLocaleString()}</div>
+            <div>distinct external logins: {demand.metric.attributedExternalLogins.toLocaleString()}</div>
+            <div>anonymous scans: {demand.metric.anonymousScans.toLocaleString()}</div>
+            <div>distinct external repos: {demand.metric.distinctExternalRepos.toLocaleString()}</div>
+            <div>badge repos via GitHub: {demand.metric.distinctBadgeReposFromGitHub.toLocaleString()}</div>
+            <div>gallery opt-ins: {demand.metric.galleryOptIns.toLocaleString()}</div>
+            <div>paid subscriptions: {demand.metric.paidSubscriptions.toLocaleString()}</div>
+          </div>
+        </section>
+      )}
 
       <section className="tiles">
         <div className="tile">
