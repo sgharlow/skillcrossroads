@@ -24,7 +24,13 @@ export function readDemandConfig(env: Record<string, string | undefined>): Deman
       .filter(Boolean),
   );
   const launchRaw = (env.LAUNCH_DATE ?? "").trim();
-  const launchDate = /^\d{4}-\d{2}-\d{2}$/.test(launchRaw) ? launchRaw : null;
+  let launchDate: string | null = null;
+  if (/^\d{4}-\d{2}-\d{2}$/.test(launchRaw)) {
+    const d = new Date(launchRaw + "T00:00:00Z");
+    if (!Number.isNaN(d.getTime()) && d.toISOString().startsWith(launchRaw)) {
+      launchDate = launchRaw;
+    }
+  }
   return {
     ownerLogins,
     launchDate,

@@ -33,4 +33,9 @@ describe("evaluateG0", () => {
       { launchDate: "2026-07-13", launchPosts: 1, now: new Date("2026-08-15T00:00:00Z") });
     expect(v.status).toBe("pivot-warning");
   });
+  it("pivots at exactly 4.0 weeks with exactly 2 posts (>= boundary)", () => {
+    const v = evaluateG0(base,
+      { launchDate: "2026-07-13", launchPosts: 2, now: new Date("2026-08-10T00:00:00Z") });
+    expect(v.status).toBe("pivot");
+  });
 });

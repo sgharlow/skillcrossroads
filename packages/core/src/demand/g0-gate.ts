@@ -28,6 +28,7 @@ export function evaluateG0(metric: DemandMetric, ctx: G0Context): G0Verdict {
       reasons: [`${metric.externalScansSinceLaunch} external scan(s) since ${ctx.launchDate}.`],
     };
   }
+  // Parse-only (deterministic): "now" is the injected ctx.now, never a clock read.
   const weeks = (ctx.now.getTime() - new Date(ctx.launchDate + "T00:00:00Z").getTime()) / WEEK_MS;
   if (ctx.launchPosts >= PIVOT_MIN_POSTS && weeks >= PIVOT_WEEKS) {
     return {

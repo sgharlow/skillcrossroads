@@ -1,7 +1,7 @@
 import type { DemandMetric } from "./metric.js";
-import type { G0Verdict, G0Status } from "./g0-gate.js";
+import type { G0Verdict } from "./g0-gate.js";
 
-const LABEL: Record<G0Status, string> = {
+const LABEL: Record<string, string> = {
   "pre-launch": "○ PRE-LAUNCH",
   "live-signal": "● LIVE SIGNAL",
   "pivot-warning": "▲ PIVOT WARNING",

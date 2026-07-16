@@ -16,6 +16,8 @@ describe("readDemandConfig", () => {
   it("accepts a valid ISO launch date, rejects malformed", () => {
     expect(readDemandConfig({ LAUNCH_DATE: "2026-07-20" }).launchDate).toBe("2026-07-20");
     expect(readDemandConfig({ LAUNCH_DATE: "July 20" }).launchDate).toBeNull();
+    expect(readDemandConfig({ LAUNCH_DATE: "2026-13-40" }).launchDate).toBeNull();
+    expect(readDemandConfig({ LAUNCH_DATE: "2026-02-30" }).launchDate).toBeNull();
   });
   it("clamps launchPosts and trendDays to positive integers", () => {
     expect(readDemandConfig({ LAUNCH_POSTS: "2" }).launchPosts).toBe(2);
