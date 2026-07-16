@@ -1,5 +1,5 @@
 import { describe, it, expect } from "vitest";
-import { publicSkillPercentile, percentileLabel, STATE_OF_SKILLS, sampleMatchesRubric } from "../src/percentile.js";
+import { publicSkillPercentile, percentileBadgeText, percentileLabel, STATE_OF_SKILLS, sampleMatchesRubric } from "../src/percentile.js";
 
 describe("publicSkillPercentile (State of Skills CDF)", () => {
   it("pins to the regenerated 214-skill distribution", () => {
@@ -49,5 +49,18 @@ describe("publicSkillPercentile (State of Skills CDF)", () => {
   it("clamps out-of-range scores instead of extrapolating", () => {
     expect(publicSkillPercentile(-5)).toBe(0);
     expect(publicSkillPercentile(140)).toBe(99);
+  });
+});
+
+describe("percentileBadgeText", () => {
+  it("renders ≈top N% as the complement of the beats-percentile, with the honesty ≈", () => {
+    const t = percentileBadgeText(90);
+    expect(t).toMatch(/^≈top \d+%$/);
+    expect(t).toBe(`≈top ${100 - publicSkillPercentile(90)}%`);
+  });
+  it("is monotonic — a higher score is never a larger top-percent", () => {
+    const hi = Number(percentileBadgeText(98).match(/(\d+)/)![1]);
+    const lo = Number(percentileBadgeText(55).match(/(\d+)/)![1]);
+    expect(hi).toBeLessThanOrEqual(lo);
   });
 });

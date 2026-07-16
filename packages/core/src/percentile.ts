@@ -74,3 +74,8 @@ export function publicSkillPercentile(overall: number, sample: PercentileSample 
 export function percentileLabel(overall: number, sample: PercentileSample = STATE_OF_SKILLS): string {
   return `scores higher than ≈${publicSkillPercentile(overall, sample)}% of ${sample.n} public skills (deterministic rubric v${sample.rubric} sample, ${sample.edition})`;
 }
+
+/** Short badge form: "≈top N%" — the complement of the beats-percentile. Same sample + ≈ honesty. */
+export function percentileBadgeText(overall: number, sample: PercentileSample = STATE_OF_SKILLS): string {
+  return `≈top ${100 - publicSkillPercentile(overall, sample)}%`;
+}
