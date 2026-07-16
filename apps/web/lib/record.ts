@@ -18,6 +18,7 @@ export function recordScans(
   repo: string,
   skills: readonly ScannedSkill[],
   login?: string,
+  source?: string,
 ): Promise<void> {
   return Promise.all(
     skills.map((s) => {
@@ -32,6 +33,7 @@ export function recordScans(
           rubricVersion: s.scorecard.rubricVersion,
           categoryScores,
           ...(login ? { login } : {}),
+          ...(source ? { source } : {}),
         })
         .catch(() => {
           /* recording is best-effort */
