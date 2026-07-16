@@ -7,6 +7,7 @@ const metric: DemandMetric = {
   externalScansTotal: 7, externalScansSinceLaunch: 3, attributedExternalLogins: 2,
   anonymousScans: 4, distinctExternalRepos: 5, dailyExternalTrend: [{ day: "2026-07-15", count: 2 }],
   badgeServesInWindow: 9, distinctBadgeReposFromGitHub: 6, galleryOptIns: 8, paidSubscriptions: 1,
+  externalScansBySource: [{ source: "reddit", count: 5 }], reposWithBadgeServe: 2, reposWithGalleryOptIn: 1,
 };
 const verdict: G0Verdict = { status: "live-signal", reasons: ["3 external scan(s) since 2026-07-13."] };
 

@@ -6,6 +6,7 @@ const base: DemandMetric = {
   externalScansTotal: 0, externalScansSinceLaunch: 0, attributedExternalLogins: 0,
   anonymousScans: 0, distinctExternalRepos: 0, dailyExternalTrend: [],
   badgeServesInWindow: 0, distinctBadgeReposFromGitHub: 0, galleryOptIns: 0, paidSubscriptions: 0,
+  externalScansBySource: [], reposWithBadgeServe: 0, reposWithGalleryOptIn: 0,
 };
 
 describe("evaluateG0", () => {
