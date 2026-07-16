@@ -46,3 +46,24 @@ describe("renderBadge", () => {
     expect(svg).not.toContain("<x>");
   });
 });
+
+function fullCard(grade: string): Scorecard {
+  return { rubricVersion: "1.0", overall: 90, grade, categories: [], results: [], partial: false };
+}
+
+describe("renderBadge percentile segment", () => {
+  it("renders a third segment with the pct text and is wider than the 2-cell badge", () => {
+    const base = renderBadge(fullCard("A"));
+    const withPct = renderBadge(fullCard("A"), { pct: "≈top 8%" });
+    expect(withPct).toContain("≈top 8%");
+    expect(withPct).toContain("#1B2A45"); // neutral third-cell fill
+    const w0 = Number(base.match(/width="(\d+)"/)![1]);
+    const w1 = Number(withPct.match(/width="(\d+)"/)![1]);
+    expect(w1).toBeGreaterThan(w0);
+  });
+  it("is unchanged (no third cell) when pct is omitted", () => {
+    const svg = renderBadge(fullCard("A"));
+    expect(svg).not.toContain("#1B2A45");
+    expect(svg).not.toContain("≈top");
+  });
+});
