@@ -1,4 +1,4 @@
-import { percentileLabel } from "../percentile.js";
+import { percentileLabel, showsPercentile } from "../percentile.js";
 import { CONFIG_FILENAME } from "../suppress.js";
 import { checkDocsUrl, badgeMarkdownLine } from "../badge-embed.js";
 import { usedLlm, type CategoryScore, type CheckResult, type Evidence, type Scorecard } from "../types.js";
@@ -272,10 +272,9 @@ export function renderHtml(card: Scorecard, opts: HtmlOptions = {}): string {
     : "";
   // Ecosystem context on full-rubric SKILL scans only — the sample is 214 skills; ranking an
   // agent/command/mcp card against it would overstate (kind defaults to skill for legacy cards).
-  const contextNote =
-    !card.partial && (card.kind ?? "skill") === "skill"
-      ? `<div class="note">★ ${esc(percentileLabel(card.overall))}</div>`
-      : "";
+  const contextNote = showsPercentile(card)
+    ? `<div class="note">★ ${esc(percentileLabel(card.overall))}</div>`
+    : "";
   const suppressedNote =
     card.suppressed && card.suppressed.length > 0
       ? `<div class="note">⚠ ${card.suppressed.length} check(s) suppressed via ${CONFIG_FILENAME}: ${card.suppressed

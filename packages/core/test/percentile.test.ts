@@ -1,5 +1,13 @@
 import { describe, it, expect } from "vitest";
-import { publicSkillPercentile, percentileBadgeText, percentileLabel, STATE_OF_SKILLS, sampleMatchesRubric } from "../src/percentile.js";
+import {
+  publicSkillPercentile,
+  percentileBadgeText,
+  percentileLabel,
+  STATE_OF_SKILLS,
+  sampleMatchesRubric,
+  showsPercentile,
+} from "../src/percentile.js";
+import type { Scorecard } from "../src/types.js";
 
 describe("publicSkillPercentile (State of Skills CDF)", () => {
   it("pins to the regenerated 214-skill distribution", () => {
@@ -62,5 +70,23 @@ describe("percentileBadgeText", () => {
     const hi = Number(percentileBadgeText(98).match(/(\d+)/)![1]);
     const lo = Number(percentileBadgeText(55).match(/(\d+)/)![1]);
     expect(hi).toBeLessThanOrEqual(lo);
+  });
+});
+
+describe("showsPercentile", () => {
+  const card = (over: Partial<Scorecard> = {}): Scorecard =>
+    ({ rubricVersion: "1.2", overall: 90, grade: "A", categories: [], results: [], partial: false, kind: "skill", ...over }) as Scorecard;
+  it("shows for a full skill card on a matching rubric", () => {
+    expect(showsPercentile(card())).toBe(true);
+  });
+  it("hides for a non-skill artifact (would overstate vs the skills sample)", () => {
+    expect(showsPercentile(card({ kind: "subagent" }))).toBe(false);
+    expect(showsPercentile(card({ kind: "command" }))).toBe(false);
+  });
+  it("hides for a partial grade", () => {
+    expect(showsPercentile(card({ partial: true }))).toBe(false);
+  });
+  it("defaults a missing kind to skill", () => {
+    expect(showsPercentile(card({ kind: undefined }))).toBe(true);
   });
 });

@@ -20,7 +20,7 @@
  *
  * Renderers only show the percentile for full (non-partial) SKILL scorecards.
  */
-import { RUBRIC_VERSION } from "./types.js";
+import { RUBRIC_VERSION, type Scorecard } from "./types.js";
 
 export interface PercentileSample {
   /** Rubric the sample was graded under — compared against RUBRIC_VERSION by a pinning test. */
@@ -78,4 +78,14 @@ export function percentileLabel(overall: number, sample: PercentileSample = STAT
 /** Short badge form: "≈top N%" — the complement of the beats-percentile. Same sample + ≈ honesty. */
 export function percentileBadgeText(overall: number, sample: PercentileSample = STATE_OF_SKILLS): string {
   return `≈top ${100 - publicSkillPercentile(overall, sample)}%`;
+}
+
+/**
+ * The ONE authoritative gate for showing the ecosystem percentile, shared by the badge and the
+ * scorecard: full-rubric SKILL cards only (ranking an agent/command/mcp against the skills sample
+ * would overstate), and only when the sample matches the live rubric edition (a rubric bump against
+ * a stale sample silently inflates the figure).
+ */
+export function showsPercentile(card: Scorecard): boolean {
+  return (card.kind ?? "skill") === "skill" && !card.partial && sampleMatchesRubric();
 }

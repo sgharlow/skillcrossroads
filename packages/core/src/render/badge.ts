@@ -43,6 +43,9 @@ function textWidth(s: string): number {
  */
 export function renderBadge(card: Scorecard, opts: BadgeOptions = {}): string {
   const label = opts.label ?? "skill crossroads";
+  // A partial grade (some rubric categories unscored — e.g. keyless/deterministic-only, where
+  // Triggering & Verifiability don't run) is marked with a trailing "*" so the badge never implies
+  // a full assessment. Honesty over vanity: a full grade needs an Anthropic key (or Pro).
   const value = opts.value ?? (card.partial ? `${card.grade}*` : card.grade);
   const color = gradeHex(card.grade);
 

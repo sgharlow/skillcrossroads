@@ -1,5 +1,5 @@
 import { after } from "next/server";
-import { renderBadge, percentileBadgeText, sampleMatchesRubric, type Scorecard } from "@beacon/core";
+import { renderBadge, percentileBadgeText, showsPercentile, type Scorecard } from "@beacon/core";
 import { parseSlug, scanTarget, averageGrade, type SlugTarget, type ScanOptions } from "@/lib/scan";
 import { resolveScanOptions } from "@/lib/pro-scan";
 import { badgeCache, isStale, isExpired } from "@/lib/badge-cache";
@@ -29,7 +29,7 @@ async function computeBadge(target: SlugTarget, opts: ScanOptions): Promise<{ sv
     if (scan.skills.length === 1) {
       card = scan.skills[0]!.scorecard; // real scorecard → badge discloses a partial (keyless) grade
       grade = card.grade;
-      if (!card.partial && sampleMatchesRubric()) pct = percentileBadgeText(card.overall);
+      if (showsPercentile(card)) pct = percentileBadgeText(card.overall);
     } else if (scan.skills.length > 1) {
       grade = averageGrade(scan);
       // Repo-average badge is partial if ANY constituent skill was only partially graded (keyless).
