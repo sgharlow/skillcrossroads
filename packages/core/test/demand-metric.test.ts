@@ -61,4 +61,18 @@ describe("computeDemandMetric", () => {
     expect(m.externalScansSinceLaunch).toBe(0);
     expect(m.externalScansTotal).toBe(5);
   });
+
+  it("lowercases owner logins before passing them to SQL", async () => {
+    let capturedOwners: unknown = null;
+    const db = {
+      query(text: string, params?: unknown[]) {
+        if (/count\(\*\)::int AS n FROM scans WHERE \(login IS NULL/s.test(text) && !/scanned_at/.test(text)) {
+          capturedOwners = params?.[0];
+        }
+        return Promise.resolve({ rows: [{ n: 0 }] });
+      },
+    };
+    await computeDemandMetric(db, { ownerLogins: new Set(["SGharlow", "FOO"]), launchDate: null, trendDays: 30 });
+    expect(capturedOwners).toEqual(["sgharlow", "foo"]);
+  });
 });

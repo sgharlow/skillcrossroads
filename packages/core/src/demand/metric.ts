@@ -34,7 +34,7 @@ const EXTERNAL = "(login IS NULL OR lower(login) <> ALL($1::text[]))";
 
 /** The single authoritative computation of the G0 demand signal. Owner exclusion lives ONLY here. */
 export async function computeDemandMetric(db: Queryable, opts: DemandMetricOpts): Promise<DemandMetric> {
-  const owners = [...opts.ownerLogins]; // lowercased text[]
+  const owners = [...opts.ownerLogins].map((l) => l.toLowerCase()); // lowercased text[]
   const days = Math.max(1, Math.trunc(opts.trendDays));
 
   const scalar = async (text: string, params: unknown[]): Promise<number> =>
