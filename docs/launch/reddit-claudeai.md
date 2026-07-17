@@ -32,7 +32,7 @@ A few more numbers from the scan:
 - 0 of 214 passed every check cleanly. Almost nobody documents constraints and failure modes (0%) or ships a verification step (2%).
 - The one thing people nailed: secrets. Only 3 of 214 tripped the hardcoded-secret scan.
 
-I ran a second scan on subagents and slash commands too (85 artifacts across 9 repos). Different surprise there: 43% of subagents declare no `tools` list, which silently inherits every tool including Bash. Writeup at /report-agents.
+I ran a second scan on subagents and slash commands too (123 artifacts across 10 repos). Different surprise there: 57% of subagents declare no `tools` list, which silently inherits every tool including Bash. Writeup at /report-agents.
 
 You can scan your own for free before you publish:
 
@@ -40,9 +40,9 @@ You can scan your own for free before you publish:
 npx skillcrossroads ./my-skill
 ```
 
-or paste it at skillcrossroads.com/paste. Deterministic checks run with no key; add an Anthropic key and it also runs the LLM triggering judge (the "will this actually fire?" check).
+or paste it at skillcrossroads.com/paste?ref=reddit-claudeai. Deterministic checks run with no key; add an Anthropic key and it also runs the LLM triggering judge (the "will this actually fire?" check).
 
 Two honest notes since someone will ask: the skills report ran an earlier rubric edition (v1.0, with the LLM check) while the live scanner runs v1.2, so today's grades differ. Both are labeled and reproducible, tree SHAs pinned. And yes, the rubric is strict; that's the point, and every finding cites the file and line so you can argue with it. It's open-core: the CLI and public scans are free, the hosted Pro tier is the paid part.
 
-Report: skillcrossroads.com/report
+Report: skillcrossroads.com/report?ref=reddit-claudeai
 Code: github.com/sgharlow/skillcrossroads
