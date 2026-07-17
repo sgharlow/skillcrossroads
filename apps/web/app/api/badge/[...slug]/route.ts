@@ -1,5 +1,5 @@
 import { after } from "next/server";
-import { renderBadge, type Scorecard } from "@beacon/core";
+import { renderBadge, percentileBadgeText, showsPercentile, type Scorecard } from "@beacon/core";
 import { parseSlug, scanTarget, averageGrade, type SlugTarget, type ScanOptions } from "@/lib/scan";
 import { resolveScanOptions } from "@/lib/pro-scan";
 import { badgeCache, isStale, isExpired } from "@/lib/badge-cache";
@@ -23,11 +23,13 @@ function cacheKey(target: SlugTarget): string {
 async function computeBadge(target: SlugTarget, opts: ScanOptions): Promise<{ svg: string; ok: boolean }> {
   let card: Scorecard | null = null;
   let grade = "?";
+  let pct: string | undefined;
   try {
     const scan = await scanTarget(target, opts);
     if (scan.skills.length === 1) {
       card = scan.skills[0]!.scorecard; // real scorecard → badge discloses a partial (keyless) grade
       grade = card.grade;
+      if (showsPercentile(card)) pct = percentileBadgeText(card.overall);
     } else if (scan.skills.length > 1) {
       grade = averageGrade(scan);
       // Repo-average badge is partial if ANY constituent skill was only partially graded (keyless).
@@ -37,7 +39,7 @@ async function computeBadge(target: SlugTarget, opts: ScanOptions): Promise<{ sv
     grade = "?";
   }
   if (grade === "?") return { svg: renderBadge({ grade } as Scorecard, { value: "n/a" }), ok: false };
-  return { svg: renderBadge(card ?? ({ grade } as Scorecard)), ok: true };
+  return { svg: renderBadge(card ?? ({ grade } as Scorecard), pct ? { pct } : {}), ok: true };
 }
 
 /** In-flight background refreshes (per instance) — a burst of stale hits must not fan out N scans. */

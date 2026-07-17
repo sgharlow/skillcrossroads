@@ -90,4 +90,18 @@ describe("renderHtml", () => {
     expect(renderHtml(scorecard, { name: "x" })).not.toContain("Suggested fixes");
     expect(renderHtml(scorecard, { name: "x", suggestions: [] })).not.toContain("Suggested fixes");
   });
+
+  it("renders a one-click Copy button + script only when an embed is provided", () => {
+    const { scorecard } = audit(fixture("dangling-ref"));
+    const embed = {
+      badgeUrl: "https://skillcrossroads.com/api/badge/o/r.svg",
+      scorecardUrl: "https://skillcrossroads.com/s/o/r",
+    };
+    const withEmbed = renderHtml(scorecard, { name: "x", embed });
+    expect(withEmbed).toContain('class="copy-btn"');
+    expect(withEmbed).toContain("navigator.clipboard");
+    expect(withEmbed).toContain("embed-code");
+    const noEmbed = renderHtml(scorecard, { name: "x" });
+    expect(noEmbed).not.toContain('class="copy-btn"');
+  });
 });

@@ -47,7 +47,7 @@ export {
   type McpTool,
   type McpServerIntrospection,
 } from "./mcp-live.js";
-export { publicSkillPercentile, percentileLabel, STATE_OF_SKILLS, type PercentileSample } from "./percentile.js";
+export { publicSkillPercentile, percentileLabel, percentileBadgeText, sampleMatchesRubric, showsPercentile, STATE_OF_SKILLS, type PercentileSample } from "./percentile.js";
 export {
   badgeUrls,
   badgeMarkdown,

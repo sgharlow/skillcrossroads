@@ -73,7 +73,9 @@ describe("rateLimit", () => {
     expect(_trackedKeyCountForTests()).toBeLessThanOrEqual(MAX_TRACKED_KEYS);
     // The most recently inserted key must survive eviction (oldest goes first).
     expect(rateLimit(`flood-${MAX_TRACKED_KEYS + 499}`, opts).allowed).toBe(true);
-  });
+    // Heavy loop (MAX_TRACKED_KEYS + 500 inserts) — the default 5s timeout is load-sensitive and
+    // flakes when the full suite runs right after a build; give it headroom (passes ~3s idle).
+  }, 15_000);
 });
 
 describe("clientIp", () => {
