@@ -12,10 +12,14 @@ This runbook covers where to post, titles, timing, the pass/fail gate, what to w
 
 The gate calls for "1–2 developer communities." Recommended pairing:
 
-1. **Hacker News — Show HN.** Submit at https://news.ycombinator.com/submit with the title from `hn-show.md`, URL field `https://skillcrossroads.com/report`, and the text body pasted into the text box. (Show HN can have both a URL and text.)
+1. **Hacker News — Show HN.** Submit at https://news.ycombinator.com/submit with the title from `hn-show.md`, URL field `https://skillcrossroads.com/report?ref=hn-show`, and the text body pasted into the text box. (Show HN can have both a URL and text.)
 2. **Reddit — r/ClaudeAI** (primary; largest Claude audience) or **r/ClaudeCode** (more tool-focused, smaller). Post the `reddit-claudeai.md` body as a text post. Do not cross-post the identical body to both subreddits the same day — pick one; if the first gets no traction, the second is your fail-threshold "second launch post."
 
-Read each community's self-promotion rules before posting. Reddit: participate in the thread, answer comments, don't drop-and-run. HN: no upvote solicitation, no reposting if it flops the first time.
+**Attribution:** the post links carry `?ref=hn-show` / `?ref=reddit-claudeai`. Middleware drops those into a 30-min `sc_ref` cookie, so a scan the visitor runs later in the same session is attributed to that channel (see it in `npm run report:demand` → "Scans by source"). Keep the tags intact when you paste.
+
+**Community self-promotion rules — verify at post time (they change):**
+- **HN Show HN:** the thing must be something people can actually try (the free CLI + live report qualify). Do NOT ask for upvotes, organize voting, or use multiple accounts — HN detects rings and will bury/ban. Post once; if it sinks, don't repost the same submission. Be present in the comments.
+- **r/ClaudeAI / r/ClaudeCode:** read the subreddit's own rules + sidebar before posting — some Claude subs restrict self-promo or require a flair/day. Reddit's site-wide guidance is a ~9:1 participate-to-promote ratio: don't drop-and-run. Answer every comment with evidence; link the relevant `/docs/checks/<id>` page when a finding is questioned.
 
 ## Suggested titles (pick one per channel)
 
@@ -54,14 +58,17 @@ Read each community's self-promotion rules before posting. Reddit: participate i
 >   work entirely**; the problem is channel or positioning, not product. Distribution experiments
 >   only until a signal exists.
 
-The 14-day clock started **2026-07-10**.
+**Two clocks — don't confuse them.** (1) *Target-to-post:* the ROADMAP asks you to post within 14 days of the doc (dated **2026-07-10**) → **post by ~2026-07-24**. (2) *Pass window:* the "≥1 signal within 14 days" clock runs from **your post date**, not from 2026-07-10. Post sooner rather than later — the target-to-post window is the one burning down.
 
 ## What to monitor after posting
 
 Map each pass condition to where you actually see it:
 
+**Primary instrument — the demand readout.** Run `OWNER_LOGINS=sgharlow DATABASE_URL=<prod> npm run report:demand` from `apps/web`. It prints the G0 verdict plus **external (non-owner) scan count, distinct external repos, scans by source, and scan→badge/gallery conversion** — the gate metric computed directly, owner dogfooding excluded. Run it once *before* posting to capture the baseline, then daily. The same numbers render on the owner-gated **Demand / G0 panel** at `/dashboard`. Set `LAUNCH_DATE` (your post date) so the gate math is live.
+
+- **Scans by source (which channel worked):** `report:demand` → "Scans by source" attributes scans to `hn-show` / `reddit-claudeai` (via the `?ref` tag → `sc_ref` cookie). If a channel shows external scans, that channel converted.
 - **`/report` reader count (need ≥25 unique for that pass path):** Vercel Analytics → filter to the `/report` and `/report-agents` routes → unique visitors since the post.
-- **Site scans (need ≥3 for the readers-path pass):** `/dashboard` — watch total scans and recent-scans list for a delta above your own dogfooding baseline. Note the baseline number *before* you post so the delta is real.
+- **Site scans (need ≥3 for the readers-path pass):** `report:demand` external-scan count (excludes your own logins), or `/dashboard` total/recent scans for a delta above your dogfooding baseline. Note the baseline *before* you post so the delta is real.
 - **Stranger-initiated scan (any one satisfies the gate):**
   - **Gallery opt-in** — a new skill you didn't add appears on `/gallery`.
   - **External badge embed** — a badge served for an `owner/repo` that isn't yours. Watch `/api/badge/...` hits in Vercel Analytics / logs.
