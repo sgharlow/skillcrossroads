@@ -50,6 +50,25 @@ Conversion (external-scanned repos → distribution):
 - Once `LAUNCH_DATE` is set (the post date), "since launch" starts at 0 from this baseline, and
   new scans carry `source` (hn-show / reddit-claudeai) via the `sc_ref` cookie.
 
+## Post-send: exact commands (run the moment the first post is live)
+
+`LAUNCH_DATE` is read from `process.env` by BOTH the local readout and the live `/dashboard`
+panel, so set it in two places (replace the date with the actual post date):
+
+```bash
+# 1. Vercel production env (from apps/web — the linked project dir).
+#    NOTE: pipe with printf, NOT echo, and non-TTY `env add` is broken on Vercel CLI 51.8+ —
+#    if this fails, use the dashboard (Settings → Environment Variables) instead.
+cd apps/web
+printf '2026-07-17' | vercel env add LAUNCH_DATE production
+
+# 2. Redeploy so the env takes effect (git-native redeploy):
+git commit --allow-empty -m "chore: redeploy for LAUNCH_DATE" && git push origin main
+
+# 3. Daily readout (LAUNCH_DATE inline; DATABASE_URL is in apps/web/.env.local):
+OWNER_LOGINS=sgharlow LAUNCH_DATE=2026-07-17 npm run report:demand
+```
+
 ## Post-send log (fill in at send time)
 
 - HN item URL: _
