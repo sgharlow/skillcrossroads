@@ -32,7 +32,7 @@ Paste-ready description:
 
 Risk: plugin shells out to `npx skillcrossroads` — read-only analysis, should pass their scan.
 
-## 3. ComposioHQ/awesome-claude-skills — 67.9k ★ (PR-able; activity borderline, 55 days)
+## 3. ComposioHQ/awesome-claude-skills — 67.9k ★ — **PR OPENED 2026-07-16: [#1366](https://github.com/ComposioHQ/awesome-claude-skills/pull/1366)**
 
 - File: `README.md` → `### Development & Code Tools`, alphabetical at "S".
 - Entry line (their format):
@@ -41,7 +41,7 @@ Risk: plugin shells out to `npx skillcrossroads` — read-only analysis, should 
 - PR body: `Adds Skill Crossroads, an open-core grader for Claude Code artifacts (skills, subagents, slash commands, .mcp.json configs, plugins). The CLI is free (npx skillcrossroads, MIT) and produces evidence-cited scorecards where every finding carries a file:line citation; a GitHub Action can gate CI on a minimum grade. Entry placed alphabetically under Development & Code Tools; links verified live.`
 - Precedent: section already lists external tool links. Risk: repo may be slow to merge.
 
-## 4. jeremylongshore/claude-code-plugins-plus-skills (tonsofskills.com) — 2.5k ★ (PR-able, validator-gated)
+## 4. jeremylongshore/claude-code-plugins-plus-skills (tonsofskills.com) — 2.5k ★ — **PR OPENED 2026-07-16: [#1080](https://github.com/jeremylongshore/claude-code-plugins-plus-skills/pull/1080)** (vendored plugin self-grades A+/A)
 
 - Requires vendoring the plugin into their catalog + `marketplace.extended.json`; their `ccpi
   validate` + public 100-point rubric gate the merge ("C-grade rejects"). The vendored
@@ -54,7 +54,7 @@ Risk: plugin shells out to `npx skillcrossroads` — read-only analysis, should 
 External tools enter via marketplace auto-indexing (needs a `marketplace.json` we don't have);
 vendoring the skill duplicates #4 for less reach. Re-check their site for a submit flow later.
 
-## 6. jqueryscript/awesome-claude-code — 467 ★ — long shot
+## 6. jqueryscript/awesome-claude-code — 467 ★ — **PR OPENED 2026-07-16: [#516](https://github.com/jqueryscript/awesome-claude-code/pull/516)** (tail entries go to 0★, floor concern was wrong)
 
 Tools section is stars-descending with a ~2.2k floor; at ~1 star this likely gets ignored.
 Lowest priority; entry line drafted in the research if ever wanted.
