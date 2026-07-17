@@ -1,0 +1,92 @@
+# Final send run-sheet — the 4 remaining human sends (staged 2026-07-16)
+
+Order: Items 2 and 3 tonight (no timing sensitivity). Item 1 on a weekday morning (post by
+~2026-07-24). Item 4's daily.dev post goes the same day as the HN post; Changelog anytime.
+
+---
+
+## Item 1 — The G0 send (HN, then Reddit 1–2 days later)
+
+### Pre-flight (morning of, ~5 min)
+- [ ] Site check: open https://skillcrossroads.com/report — loads, badge in nav renders.
+- [ ] Fresh baseline: from `apps/web` run
+      `OWNER_LOGINS=sgharlow npm run report:demand` (DATABASE_URL comes from .env.local) and
+      note the external-scan total.
+- [ ] Open `docs/launch/send-checklist.md` (prepared replies to the 3 critiques) in a tab.
+- [ ] Block 2–3 hours to stay in the thread after posting.
+
+### Post to Hacker News (weekday, ideally before ~9am MST / noon ET)
+- [ ] Go to https://news.ycombinator.com/submit (signed in).
+- [ ] Title (recommended): `Show HN: I graded 214 public Claude Code skills – 73% may never trigger`
+      (must start with "Show HN:").
+- [ ] URL field: `https://skillcrossroads.com/report?ref=hn-show` (keep the ref tag).
+- [ ] Text box: paste the body from `docs/launch/hn-show.md`.
+- [ ] Submit ONCE. Never ask for upvotes; don't repost if it sinks.
+- [ ] Stay present: answer every comment with evidence; link the relevant
+      `https://skillcrossroads.com/docs/checks/<ID>` page when a finding is questioned.
+
+### Immediately after the HN post (~5 min)
+- [ ] Log the HN item URL in `docs/launch/g0-baseline.md` → "Post-send log".
+- [ ] Add the line `LAUNCH_DATE=<today YYYY-MM-DD>` to `apps/web/.env.local`
+      (the 8:03am daily-readout task reads it from there).
+- [ ] Set it in prod (from `apps/web`):
+      `printf '<today>' | vercel env add LAUNCH_DATE production`
+      (printf, not echo; if the CLI balks, use the Vercel dashboard → Settings → Env Vars).
+- [ ] Redeploy: `git commit --allow-empty -m "chore: redeploy for LAUNCH_DATE" && git push origin main`.
+
+### Reddit (1–2 days after HN — this is the staggered second channel)
+- [ ] Read r/ClaudeAI rules/sidebar first (flair? self-promo day?). Fallback sub: r/ClaudeCode.
+- [ ] Text post; body from `docs/launch/reddit-claudeai.md` (links carry `?ref=reddit-claudeai`).
+- [ ] Title (recommended): `43% of public Claude Code subagents inherit Bash by default — I scanned 85 of them`.
+- [ ] Stay in-thread 2–3 hours; ~9:1 participate-to-promote ratio.
+
+### Daily until verdict
+- [ ] Check `%LOCALAPPDATA%\skillcrossroads\demand-daily.log` (auto-appends 8:03am) or run
+      the readout manually. `/dashboard` shows the same panel.
+- [ ] The MOMENT a pass condition lands (stranger scan / 25 readers + 3 scans / Team inquiry):
+      record condition + timestamp + source in `g0-baseline.md`. That's the G0 pass evidence.
+
+---
+
+## Item 2 — awesome-claude-code (50.2k★) issue form (~1 min, do tonight)
+
+- [ ] Click the prefilled link (top of `docs/launch/community-listings.md`) — it opens the
+      "recommend resource" issue form with Display Name, Category=Linting, Link, Author, and
+      Description already filled.
+- [ ] Verify the Category dropdown actually shows **Linting** (dropdown prefills can silently
+      fail — pick it manually if blank).
+- [ ] Tick all 3 checkboxes (not on list / links live / Claude Code-specific — all true, verified).
+- [ ] Submit. Their bot may comment on the issue (license check etc.) — no action needed unless
+      it flags something.
+
+## Item 3 — Anthropic official plugin directory (~2 min, do tonight)
+
+- [ ] Go to https://clau.de/plugin-directory-submission (sign in with the Claude account).
+- [ ] Plugin name: `skillcrossroads` · Repo: `https://github.com/sgharlow/skillcrossroads`
+- [ ] Description — paste from `community-listings.md` §2 (the "Audit Claude Code artifacts
+      from inside Claude Code…" block).
+- [ ] Submit. Pipeline: automated security scan → Anthropic review → nightly sync.
+- [ ] Verify later (days): `claude plugin install skillcrossroads@claude-community` succeeds,
+      or the plugin appears on claude.com/plugins.
+
+## Item 4 — Changelog News + daily.dev
+
+### Changelog News (~3 min, anytime; published Mondays)
+- [ ] https://changelog.com/news/submit (sign in — GitHub OAuth).
+- [ ] URL: `https://skillcrossroads.com/report?ref=changelog`
+- [ ] Title: `State of Claude Code Skills: 73% of 214 public skills may never trigger`
+- [ ] "What's interesting": paste the blockquote from `docs/launch/newsletter-submissions.md` §1.
+      Frame stays DATA, not product — they reject commercial pitches.
+- [ ] They email only if published — no follow-up needed.
+
+### daily.dev (~3 min, SAME DAY as the HN post)
+- [ ] Sign in at app.daily.dev → **New Post** → link post.
+- [ ] URL: `https://skillcrossroads.com/report?ref=dailydev`
+- [ ] Title: the headline stat (`I graded 214 public Claude Code skills — 73% may never trigger`).
+- [ ] Post into an AI/Claude-relevant Squad; answer any comments that day.
+
+---
+
+## After all four: nothing left but measurement
+Listing PRs (#1366/#1080/#516) are maintainer-court — respond only if reviewers comment.
+The ROADMAP's win/flat/zombie branch plan governs from the G0 verdict onward.
