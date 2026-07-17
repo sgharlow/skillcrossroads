@@ -34,6 +34,4 @@ market:
 # Postgres entitlement; self-serve portal at /api/billing/portal). Dogfooded, $0 collected.
 monetization_path: CLAUDE.md#monetization-sprint-8-open-core
 
-# MISSING (flagged 2026-07-16): ROADMAP terminates at the G0 launch gate with no win/lose/zombie
-# branch plan. Needs a Steve decision — do not silently add.
-post_event_plan: none
+post_event_plan: ROADMAP.md#post-launch-branch-plan
