@@ -9,6 +9,11 @@ export interface DailyCount {
   count: number;
 }
 
+export interface SourceCount {
+  source: string;
+  count: number;
+}
+
 export interface DemandMetric {
   externalScansTotal: number;
   externalScansSinceLaunch: number;
@@ -20,6 +25,9 @@ export interface DemandMetric {
   distinctBadgeReposFromGitHub: number;
   galleryOptIns: number;
   paidSubscriptions: number;
+  externalScansBySource: SourceCount[];
+  reposWithBadgeServe: number;
+  reposWithGalleryOptIn: number;
 }
 
 export interface DemandMetricOpts {
@@ -81,6 +89,27 @@ export async function computeDemandMetric(db: Queryable, opts: DemandMetricOpts)
   const galleryOptIns = await scalar(`SELECT count(*)::int AS n FROM gallery_entries`, []);
   const paidSubscriptions = await scalar(`SELECT count(*)::int AS n FROM subscriptions WHERE pro = true`, []);
 
+  const externalScansBySource = (
+    await db.query(
+      `SELECT coalesce(source, 'unknown') AS source, count(*)::int AS count
+       FROM scans WHERE ${EXTERNAL}
+       GROUP BY 1 ORDER BY 2 DESC, 1 ASC LIMIT 10`,
+      [owners],
+    )
+  ).rows as SourceCount[];
+  const reposWithBadgeServe = await scalar(
+    `SELECT count(DISTINCT s.slug)::int AS n
+     FROM scans s JOIN badge_serves b ON b.slug = s.slug AND b.from_github = true
+     WHERE (s.login IS NULL OR lower(s.login) <> ALL($1::text[]))`,
+    [owners],
+  );
+  const reposWithGalleryOptIn = await scalar(
+    `SELECT count(DISTINCT s.slug)::int AS n
+     FROM scans s JOIN gallery_entries g ON g.id = s.slug
+     WHERE (s.login IS NULL OR lower(s.login) <> ALL($1::text[]))`,
+    [owners],
+  );
+
   return {
     externalScansTotal,
     externalScansSinceLaunch,
@@ -92,5 +121,8 @@ export async function computeDemandMetric(db: Queryable, opts: DemandMetricOpts)
     distinctBadgeReposFromGitHub,
     galleryOptIns,
     paidSubscriptions,
+    externalScansBySource,
+    reposWithBadgeServe,
+    reposWithGalleryOptIn,
   };
 }

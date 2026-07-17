@@ -10,6 +10,8 @@ export interface ScanRecord {
   categoryScores?: Record<string, number | null>;
   /** The signed-in user who ran the scan. Omitted for anonymous scans (they stay anonymous). */
   login?: string;
+  /** Attribution source (campaign ref / referrer). Omitted for unattributed scans. */
+  source?: string;
 }
 
 export interface ScanPoint {
@@ -42,10 +44,10 @@ export interface ScanHistory {
 }
 
 export function createMemoryScanHistory(): ScanHistory {
-  const all: Array<ScanRow & { login?: string }> = [];
+  const all: Array<ScanRow & { login?: string; source?: string }> = [];
   return {
     record(r) {
-      all.push({ slug: r.slug, name: r.name, grade: r.grade, overall: r.overall, scannedAt: new Date().toISOString(), login: r.login });
+      all.push({ slug: r.slug, name: r.name, grade: r.grade, overall: r.overall, scannedAt: new Date().toISOString(), login: r.login, source: r.source });
       return Promise.resolve();
     },
     history(slug, limit = 50) {
@@ -75,9 +77,9 @@ export function createPgScanHistory(pool: import("pg").Pool): ScanHistory {
   return {
     async record(r) {
       await pool.query(
-        `INSERT INTO scans (slug, name, grade, overall, rubric_version, category_scores, login)
-         VALUES ($1,$2,$3,$4,$5,$6,$7)`,
-        [r.slug, r.name, r.grade, r.overall, r.rubricVersion, r.categoryScores ? JSON.stringify(r.categoryScores) : null, r.login ?? null],
+        `INSERT INTO scans (slug, name, grade, overall, rubric_version, category_scores, login, source)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)`,
+        [r.slug, r.name, r.grade, r.overall, r.rubricVersion, r.categoryScores ? JSON.stringify(r.categoryScores) : null, r.login ?? null, r.source ?? null],
       );
     },
     async history(slug, limit = 50) {

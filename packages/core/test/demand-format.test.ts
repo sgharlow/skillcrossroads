@@ -7,6 +7,7 @@ const metric: DemandMetric = {
   externalScansTotal: 7, externalScansSinceLaunch: 3, attributedExternalLogins: 2,
   anonymousScans: 4, distinctExternalRepos: 5, dailyExternalTrend: [{ day: "2026-07-15", count: 2 }],
   badgeServesInWindow: 9, distinctBadgeReposFromGitHub: 6, galleryOptIns: 8, paidSubscriptions: 1,
+  externalScansBySource: [{ source: "reddit", count: 5 }], reposWithBadgeServe: 2, reposWithGalleryOptIn: 1,
 };
 const verdict: G0Verdict = { status: "live-signal", reasons: ["3 external scan(s) since 2026-07-13."] };
 
@@ -21,5 +22,9 @@ describe("formatDemandReadout", () => {
     expect(out).toContain("badge repos via GitHub    : 6");
     expect(out).toContain("paid subscriptions        : 1");
     expect(out).toContain("2026-07-15");
+    expect(out).toContain("Scans by source:");
+    expect(out).toContain("reddit");
+    expect(out).toContain("badge embedded (GitHub) : 2/5");
+    expect(out).toContain("gallery opt-in          : 1/5");
   });
 });

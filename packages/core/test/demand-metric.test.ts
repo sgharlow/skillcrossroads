@@ -22,8 +22,11 @@ describe("computeDemandMetric", () => {
       [/GROUP BY 1 ORDER BY 1/s, [{ day: "2026-07-14", count: 1 }, { day: "2026-07-15", count: 2 }]], // trend
       [/FROM badge_serves WHERE served_at/s, [{ n: 9 }]], // badge serves in window
       [/FROM badge_serves\s+WHERE from_github = true/s, [{ n: 6 }]], // badge repos via github
-      [/FROM gallery_entries/s, [{ n: 8 }]],
+      [/FROM gallery_entries$/s, [{ n: 8 }]],
       [/FROM subscriptions WHERE pro = true/s, [{ n: 1 }]],
+      [/coalesce\(source, 'unknown'\)/s, [{ source: "reddit", count: 5 }, { source: "unknown", count: 2 }]],
+      [/JOIN badge_serves b ON/s, [{ n: 3 }]],
+      [/JOIN gallery_entries g ON/s, [{ n: 1 }]],
     ]);
     const m = await computeDemandMetric(db, {
       ownerLogins: new Set(["sgharlow"]),
@@ -53,9 +56,12 @@ describe("computeDemandMetric", () => {
       [/count\(DISTINCT slug\)/s, [{ n: 2 }]],
       [/GROUP BY 1 ORDER BY 1/s, []],
       [/FROM badge_serves WHERE served_at/s, [{ n: 0 }]],
-      [/from_github = true/s, [{ n: 0 }]],
-      [/FROM gallery_entries/s, [{ n: 0 }]],
+      [/FROM badge_serves\s+WHERE from_github = true/s, [{ n: 0 }]],
+      [/FROM gallery_entries$/s, [{ n: 0 }]],
       [/FROM subscriptions/s, [{ n: 0 }]],
+      [/coalesce\(source, 'unknown'\)/s, [{ source: "reddit", count: 5 }, { source: "unknown", count: 2 }]],
+      [/JOIN badge_serves b ON/s, [{ n: 3 }]],
+      [/JOIN gallery_entries g ON/s, [{ n: 1 }]],
     ]);
     const m = await computeDemandMetric(db, { ownerLogins: new Set(), launchDate: null, trendDays: 30 });
     expect(m.externalScansSinceLaunch).toBe(0);
@@ -74,5 +80,30 @@ describe("computeDemandMetric", () => {
     };
     await computeDemandMetric(db, { ownerLogins: new Set(["SGharlow", "FOO"]), launchDate: null, trendDays: 30 });
     expect(capturedOwners).toEqual(["sgharlow", "foo"]);
+  });
+
+  it("computes external scans by source and scan-to-distribution conversion", async () => {
+    const db = fakeDb([
+      [/count\(\*\)::int AS n FROM scans WHERE \(login IS NULL.*scanned_at >= \$2/s, [{ n: 3 }]],
+      [/count\(\*\)::int AS n FROM scans WHERE \(login IS NULL/s, [{ n: 7 }]],
+      [/count\(DISTINCT lower\(login\)\)::int AS n FROM scans/s, [{ n: 2 }]],
+      [/count\(\*\)::int AS n FROM scans WHERE login IS NULL/s, [{ n: 4 }]],
+      [/count\(DISTINCT slug\)::int AS n FROM scans WHERE \(login IS NULL/s, [{ n: 5 }]],
+      [/GROUP BY 1 ORDER BY 1/s, [{ day: "2026-07-15", count: 2 }]],
+      [/FROM badge_serves WHERE served_at/s, [{ n: 9 }]],
+      [/FROM badge_serves\s+WHERE from_github = true/s, [{ n: 6 }]],
+      [/FROM gallery_entries$/s, [{ n: 8 }]],
+      [/FROM subscriptions WHERE pro = true/s, [{ n: 1 }]],
+      [/coalesce\(source, 'unknown'\)/s, [{ source: "reddit", count: 5 }, { source: "unknown", count: 2 }]],
+      [/JOIN badge_serves b ON/s, [{ n: 3 }]],
+      [/JOIN gallery_entries g ON/s, [{ n: 1 }]],
+    ]);
+    const m = await computeDemandMetric(db, { ownerLogins: new Set(["sgharlow"]), launchDate: "2026-07-13", trendDays: 30 });
+    expect(m.externalScansBySource).toEqual([
+      { source: "reddit", count: 5 },
+      { source: "unknown", count: 2 },
+    ]);
+    expect(m.reposWithBadgeServe).toBe(3);
+    expect(m.reposWithGalleryOptIn).toBe(1);
   });
 });
