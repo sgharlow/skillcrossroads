@@ -1,27 +1,16 @@
 import { after } from "next/server";
-import { renderHtml, suggestFixes, badgeUrls, PALETTE, normalizeSource, type FixSuggestion } from "@beacon/core";
+import { renderHtml, suggestFixes, badgeUrls, PALETTE, type FixSuggestion } from "@beacon/core";
 import { parseSlug, scanTarget, isRepoNotFoundError } from "@/lib/scan";
 import { resolveScanOptions } from "@/lib/pro-scan";
 import { renderRepoSummaryHtml } from "@/lib/summary";
 import { recordScans } from "@/lib/record";
 import { readSession } from "@/lib/session";
+import { scanSource } from "@/lib/attribution";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 const HTML = { "content-type": "text/html; charset=utf-8" } as const;
-
-/** The Referer host, but only when it is a different origin than this request (else null). */
-function externalRefererHost(req: Request): string | null {
-  const ref = req.headers.get("referer");
-  if (!ref) return null;
-  try {
-    const h = new URL(ref).host;
-    return h && h !== new URL(req.url).host ? h : null;
-  } catch {
-    return null;
-  }
-}
 
 /**
  * Escape text for HTML error pages. Error messages (e.g. GitHubError) can embed raw slug
@@ -118,7 +107,7 @@ export async function GET(req: Request, { params }: { params: Promise<{ slug: st
   // termination). Best-effort — never fails the scan. When the viewer is signed in, the scan is
   // attributed to them for /account ("your scans"); anonymous scans stay anonymous (login = null).
   const viewer = readSession(req).login;
-  const source = normalizeSource(new URL(req.url).searchParams.get("ref"), externalRefererHost(req)) ?? undefined;
+  const source = scanSource(req);
   after(() => recordScans(target.owner, target.repo, scan.skills, viewer, source));
 
   const url = new URL(req.url);
