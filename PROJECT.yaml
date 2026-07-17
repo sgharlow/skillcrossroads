@@ -1,0 +1,39 @@
+# PROJECT.yaml — machine-readable project contract. Single source of truth for volatile facts
+# and gates; prose docs reference this file, never restate its values. Checked by /roadmap-lint.
+
+name: skillcrossroads
+
+authoritative_plan: ROADMAP.md
+
+# idea | built | wired | live-proven | dogfooded | customer-used | revenue-proven
+# App + CLI + Action are live-proven; the full money path (OAuth → Stripe Pro → entitlement →
+# Pro scan) is dogfooded (2026-07-10). Not customer-used: zero arms-length users.
+ladder: dogfooded
+
+derived:
+  test_count: "npx vitest run 2>&1 | grep 'Tests '"
+  head: "git rev-parse --short HEAD"
+  branch: "git branch --show-current"
+
+# The one arms-length external demand signal this product has produced. Evidence or none.
+demand_signal: none
+
+gates:
+  - id: G0-launch
+    metric: external demand signal after posting the State of Claude Code Skills report to 1-2 dev communities (human-send by design)
+    target: ">= 1 stranger-initiated scan (gallery opt-in, external badge embed, or Action install) OR >= 25 unique /report readers with >= 3 site scans OR >= 1 Team-tier inquiry, within 14 days of the post"
+    kill: "2 launch posts + 4 weeks with 0 external scans -> stop feature work entirely; distribution/positioning experiments only until a signal exists"
+    owner: Steve
+    due: 2026-07-24  # post-by date (14 days from ROADMAP.md, 2026-07-10); the pass window runs from the actual post date
+
+market:
+  competitors_doc: ROADMAP.md#positioning--competitors
+  wtp_evidence: none
+
+# Stripe Pro $19/mo subscription live (apps/web /api/checkout + signature-verified webhook ->
+# Postgres entitlement; self-serve portal at /api/billing/portal). Dogfooded, $0 collected.
+monetization_path: CLAUDE.md#monetization-sprint-8-open-core
+
+# MISSING (flagged 2026-07-16): ROADMAP terminates at the G0 launch gate with no win/lose/zombie
+# branch plan. Needs a Steve decision — do not silently add.
+post_event_plan: none
