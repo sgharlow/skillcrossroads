@@ -69,6 +69,16 @@ export {
   CONFIG_FILENAME,
   type CrossroadsConfig,
 } from "./suppress.js";
+export { readDemandConfig, type DemandConfig } from "./demand/config.js";
+export {
+  computeDemandMetric,
+  type Queryable,
+  type DemandMetric,
+  type DailyCount,
+  type DemandMetricOpts,
+} from "./demand/metric.js";
+export { evaluateG0, type G0Verdict, type G0Status, type G0Context } from "./demand/g0-gate.js";
+export { formatDemandReadout } from "./demand/format.js";
 
 import { basename, join, resolve, relative, sep } from "node:path";
 import { mkdtempSync, rmSync, existsSync, readdirSync, statSync, writeFileSync, mkdirSync } from "node:fs";

@@ -9,7 +9,8 @@
     "build": "next build",
     "start": "next start",
     "typecheck": "tsc --noEmit",
-    "db:migrate": "node db/migrate.mjs"
+    "db:migrate": "node db/migrate.mjs",
+    "report:demand": "node scripts/demand-readout.mjs"
   },
   "dependencies": {
     "@beacon/core": "*",
