@@ -39,6 +39,7 @@ function cookie(req: Request, name: string): string | null {
  */
 export function scanSource(req: Request): string | undefined {
   const url = new URL(req.url);
-  const ref = url.searchParams.get("ref") ?? cookie(req, "sc_ref");
+  // `||` (not `??`) so an empty `?ref=` also falls through to the cookie.
+  const ref = url.searchParams.get("ref") || cookie(req, "sc_ref") || null;
   return normalizeSource(ref, externalRefererHost(req)) ?? undefined;
 }

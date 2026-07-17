@@ -34,6 +34,10 @@ describe("scanSource", () => {
     ).toBeUndefined();
   });
 
+  it("an empty ?ref= falls through to the cookie", () => {
+    expect(scanSource(req("https://skillcrossroads.com/s/o/r?ref=", { cookie: "sc_ref=hn-show" }))).toBe("hn-show");
+  });
+
   it("is undefined when unattributable", () => {
     expect(scanSource(req("https://skillcrossroads.com/s/o/r"))).toBeUndefined();
   });

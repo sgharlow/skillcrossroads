@@ -16,6 +16,7 @@ export function middleware(req: NextRequest) {
       path: "/",
       httpOnly: true,
       sameSite: "lax",
+      secure: process.env.NODE_ENV === "production",
     });
   }
   return res;
