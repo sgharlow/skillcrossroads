@@ -87,13 +87,12 @@ Order: Items 2 and 3 anytime (no timing sensitivity). Item 1 on a weekday mornin
 
 ## Item 4 — Changelog News + daily.dev
 
-### Changelog News (~3 min, anytime; published Mondays)
-- [ ] https://changelog.com/news/submit (sign in — GitHub OAuth).
-- [ ] URL: `https://skillcrossroads.com/report?ref=changelog`
-- [ ] Title: `State of Claude Code Skills: 73% of 214 public skills may never trigger`
-- [ ] "What's interesting": paste the blockquote from `docs/launch/newsletter-submissions.md` §1.
-      Frame stays DATA, not product — they reject commercial pitches.
-- [ ] They email only if published — no follow-up needed.
+### Changelog News — ✅ SUBMITTED 2026-07-18 (~6pm MT send window)
+- [x] Submitted via https://changelog.com/news/submit with `?ref=changelog` URL + headline title
+      + the corrected §1 blockquote (57% no-tools — the 43% draft error was caught and fixed
+      pre-send, re-verified vs the live report). Queues for Monday's edition.
+- They email only if published — no follow-up needed; `report:demand` will attribute any
+  `changelog`-ref scans.
 
 ### daily.dev (~3 min, SAME DAY as the HN post)
 - [ ] Sign in at app.daily.dev → **New Post** → link post.
