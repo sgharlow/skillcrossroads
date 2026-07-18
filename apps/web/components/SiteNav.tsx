@@ -29,6 +29,7 @@ export const FOOTER_LINKS = [
   { href: "/report-agents", label: "Agents report" },
   { href: "/docs/checks", label: "Check reference" },
   { href: "/docs/code-handling", label: "Your code & privacy" },
+  { href: "/privacy", label: "Privacy policy" },
   { href: "/dashboard", label: "Ecosystem stats" },
   { href: "https://github.com/sgharlow/skillcrossroads", label: "GitHub" },
 ] as const;
