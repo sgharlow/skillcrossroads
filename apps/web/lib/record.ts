@@ -1,5 +1,6 @@
 import type { ScannedSkill } from "@beacon/core";
 import { scanHistory } from "./scans";
+import { gallery } from "./gallery";
 
 /** Build the canonical `owner/repo/path` slug for a scanned skill. */
 export function slugFor(owner: string, repo: string, repoPath: string): string {
@@ -20,13 +21,15 @@ export function recordScans(
   login?: string,
   source?: string,
 ): Promise<void> {
+  const scannedAt = new Date().toISOString().slice(0, 10);
   return Promise.all(
     skills.map((s) => {
       const categoryScores: Record<string, number | null> = {};
       for (const c of s.scorecard.categories) categoryScores[c.key] = c.score;
-      return scanHistory
+      const slug = slugFor(owner, repo, s.repoPath);
+      const historyWrite = scanHistory
         .record({
-          slug: slugFor(owner, repo, s.repoPath),
+          slug,
           name: s.name,
           grade: s.scorecard.grade,
           overall: s.scorecard.overall,
@@ -38,6 +41,14 @@ export function recordScans(
         .catch(() => {
           /* recording is best-effort */
         });
+      // Keep a gallery entry (if this artifact is listed) from going stale against the live
+      // scorecard — best-effort, never inserts (opt-in stays deliberate). See lib/gallery.ts.
+      const galleryRefresh = gallery
+        .refreshIfListed(slug, s.name, s.scorecard.grade, s.scorecard.overall, scannedAt)
+        .catch(() => {
+          /* refresh is best-effort */
+        });
+      return Promise.all([historyWrite, galleryRefresh]);
     }),
   ).then(() => undefined);
 }

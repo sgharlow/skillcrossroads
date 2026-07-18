@@ -49,3 +49,20 @@ describe("gallery store", () => {
     expect(one.id).toBe("a/r/skills/one");
   });
 });
+
+describe("gallery store — refreshIfListed (F2: never let a listed entry go stale)", () => {
+  it("updates grade/overall/name/scannedAt on an existing entry in place (no new row)", async () => {
+    await g.refreshIfListed("a/r/skills/one", "one-renamed", "A+", 100, "2026-07-15");
+    const listed = (await g.list({ q: "one-renamed" }))[0]!;
+    expect(listed.grade).toBe("A+");
+    expect(listed.overall).toBe(100);
+    expect(listed.scannedAt).toBe("2026-07-15");
+    expect(await g.count()).toBe(3); // updated in place, not appended
+  });
+
+  it("is a no-op for an id that never opted in — never inserts", async () => {
+    await g.refreshIfListed("z/z/skills/ghost", "ghost", "A+", 100, "2026-07-15");
+    expect(await g.count()).toBe(3);
+    expect(await g.list({ q: "ghost" })).toEqual([]);
+  });
+});

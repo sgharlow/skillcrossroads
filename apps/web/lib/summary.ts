@@ -95,6 +95,10 @@ a.brand-link{color:inherit;text-decoration:none}
 .embed-row img{display:block}
 .embed-code{font-family:ui-monospace,Menlo,Consolas,monospace;font-size:12px;color:${PALETTE.foam};
   background:${PALETTE.ink};border:1px solid ${PALETTE.ink3};border-radius:8px;padding:10px 12px;overflow-x:auto;white-space:pre}
+.embed-copy{display:flex;align-items:flex-start;gap:10px;flex-wrap:wrap}
+.embed-copy .embed-code{flex:1 1 auto;margin:0}
+.copy-btn{background:${PALETTE.ink3};color:${PALETTE.foam};border:1px solid ${PALETTE.ink3};border-radius:8px;padding:8px 14px;font-size:12px;cursor:pointer;white-space:nowrap}
+.copy-btn:hover{filter:brightness(1.15)}
 .embed-hint{color:${PALETTE.fog};font-size:12.5px;margin-top:10px}
 .embed-hint code{font-family:ui-monospace,Menlo,Consolas,monospace;color:${PALETTE.foam};background:${PALETTE.ink};border:1px solid ${PALETTE.ink3};border-radius:6px;padding:1px 6px}
 footer{color:${PALETTE.fog};font-size:12px;margin-top:22px;text-align:center}
@@ -117,7 +121,13 @@ footer a{color:${PALETTE.fog}}
         <a href="${esc(opts.embed.scorecardUrl)}"><img src="${esc(opts.embed.badgeUrl)}" alt="Skill Crossroads grade ${esc(avgGrade)}" height="20"></a>
         <span class="cta-blurb">Always-fresh — it re-scans and updates on its own.</span>
       </div>
-      <pre class="embed-code">${esc(badgeMarkdownLine(opts.embed))}</pre>
+      <div class="embed-copy">
+        <pre class="embed-code">${esc(badgeMarkdownLine(opts.embed))}</pre>
+        <button type="button" class="copy-btn">Copy</button>
+      </div>
+      <script>
+(function(){var b=document.querySelector('.copy-btn'),p=document.querySelector('.embed-code');if(!b||!p||!navigator.clipboard)return;b.addEventListener('click',function(){navigator.clipboard.writeText(p.textContent).then(function(){var o=b.textContent;b.textContent='Copied!';setTimeout(function(){b.textContent=o;},1500);});});})();
+</script>
       <p class="embed-hint">or run <code>npx skillcrossroads init</code> in your repo to insert it into your README.</p>
     </section>`
       : ""

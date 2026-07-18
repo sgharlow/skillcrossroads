@@ -283,9 +283,15 @@ v1.0 LLM edition — and is deliberately *not* this sample.)
 
 ## Use it from inside Claude Code
 
-This repo ships an [`audit-skill`](./skill/SKILL.md) Skill: install it and say *"audit my
-skill"* — Claude runs the CLI, walks the ranked fix list, applies fixes, and re-grades until the
-score stops improving. (It grades A on its own rubric, and CI enforces that on every PR.)
+This repo ships an [`audit-skill`](./skill/SKILL.md) Skill: install the plugin, then invoke it
+explicitly — `/skillcrossroads:audit-skill` (verify the exact invocation name against
+[`.claude-plugin/plugin.json`](./.claude-plugin/plugin.json) and the skill's `name:` field for
+your installed version). It's explicit-invocation only, by design: the skill applies fixes
+directly to your files, so it never auto-fires on a passing mention — you invoke it
+deliberately, and it runs the CLI, walks the ranked fix list, applies fixes, and re-grades until
+the score stops improving. (Skill Crossroads takes its own SAFETY-03 medicine here — a skill
+that edits files doesn't get to auto-invoke itself.) It grades A+ on its own rubric (run
+`node packages/cli/dist/cli.js ./skill` to reproduce), and CI enforces a minimum grade on every PR.
 
 ## Continuous integration (GitHub Action)
 
