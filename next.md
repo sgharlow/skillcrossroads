@@ -1,6 +1,13 @@
-# Final send run-sheet — the 4 remaining human sends (staged 2026-07-16)
+# NEXT — the 4 remaining human sends (staged 2026-07-16; everything else is shipped)
 
-Order: Items 2 and 3 tonight (no timing sensitivity). Item 1 on a weekday morning (post by
+> Working checklist for the project's continuation. Tick boxes as sends complete; when all four
+> are done and G0 has a verdict, this file's job is over — the ROADMAP's win/flat/zombie branch
+> plan takes over. Repo state behind this: roadmap fully shipped, attribution live, daily
+> readout task running (8:03am → %LOCALAPPDATA%\skillcrossroads\demand-daily.log), 3 listing
+> PRs open (Composio #1366 · tonsofskills #1080 · jqueryscript #516).
+> Done 7-16: Console.dev email sent · GitHub Sponsors enrolled · X post (no ?ref — use ?ref=x next time).
+
+Order: Items 2 and 3 anytime (no timing sensitivity). Item 1 on a weekday morning (post by
 ~2026-07-24). Item 4's daily.dev post goes the same day as the HN post; Changelog anytime.
 
 ---
