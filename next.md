@@ -11,7 +11,9 @@
 >   validation comment). **Item 3 staged** — platform.claude.com/plugins/submit form filled all 3
 >   steps (name/repo/homepage/description/use-cases/Claude Code/MIT; no privacy URL — site has
 >   none); **SUBMITTED 7-18** (pipeline: security scan → Anthropic review → nightly sync; verify
->   in days via `claude plugin install skillcrossroads@claude-community`). Pre-flight for Item 1 refreshed in `g0-baseline.md`
+>   in days via `claude plugin install skillcrossroads@claude-community`).
+> Done 7-18 (later): **/privacy LIVE-PROVEN** — PR #8 merged, prod probe 200 with content verified
+>   (person-data policy; /docs/code-handling stays the code-data policy; footer + sitemap linked). Pre-flight for Item 1 refreshed in `g0-baseline.md`
 >   (7-18 re-baseline + a /report badge-in-nav question to eyeball before posting).
 
 Order: Items 2 and 3 anytime (no timing sensitivity). Item 1 on a weekday morning (post by
