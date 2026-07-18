@@ -60,6 +60,8 @@ describe("renderRepoSummaryHtml — Embed this badge section (repo-summary deman
   it("omits the embed section when no embed option is passed", () => {
     const html = renderRepoSummaryHtml(scan, t);
     expect(html).not.toContain("Embed this badge");
+    expect(html).not.toContain('class="copy-btn"');
+    expect(html).not.toContain("navigator.clipboard");
   });
 
   it("renders the badge image, the exact badgeMarkdownLine() output, and the init hint when embed is passed", () => {
@@ -72,6 +74,16 @@ describe("renderRepoSummaryHtml — Embed this badge section (repo-summary deman
       `[![Skill Crossroads](${embed.badgeUrl})](${embed.scorecardUrl})`,
     );
     expect(html).toContain("npx skillcrossroads init");
+  });
+
+  it("renders the one-click copy button and clipboard script when embed is passed", () => {
+    const embed = { badgeUrl: "https://skillcrossroads.com/api/badge/o/r.svg", scorecardUrl: "https://skillcrossroads.com/s/o/r" };
+    const html = renderRepoSummaryHtml(scan, t, { embed });
+    expect(html).toContain('class="embed-copy"');
+    expect(html).toContain('<button type="button" class="copy-btn">Copy</button>');
+    expect(html).toContain("navigator.clipboard");
+    // The <pre> stays selectable/progressive-enhancement — the script only wires the button.
+    expect(html).toContain('<pre class="embed-code">');
   });
 
   it("escapes a hostile badge/scorecard URL rather than reflecting it raw", () => {
