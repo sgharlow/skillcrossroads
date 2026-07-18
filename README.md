@@ -1,5 +1,16 @@
 # Skill Crossroads
 
+<!-- workshown-header -->
+[![Workshown](https://img.shields.io/badge/Workshown-member-0b7285)](https://sgharlow.github.io/ai-control-framework/)
+**Part of [Workshown](https://sgharlow.github.io/ai-control-framework/) — show your work.**
+[ai-control-framework](https://github.com/sgharlow/ai-control-framework) (the how) ·
+[orchestra-lite](https://github.com/sgharlow/orchestra-lite) (the scale) ·
+[ai-pr-bot](https://github.com/sgharlow/ai-pr-bot) (the enforcement) ·
+[skillcrossroads](https://github.com/sgharlow/skillcrossroads) (the grade) ·
+[recipes](https://github.com/sgharlow/claude-code-recipes) (the front door) ·
+[case study](https://github.com/sgharlow/distraction)
+<!-- /workshown-header -->
+
 [![Skill Crossroads](https://skillcrossroads.com/api/badge/sgharlow/skillcrossroads.svg)](https://skillcrossroads.com/s/sgharlow/skillcrossroads)
 
 Claude Code artifacts graded by [Skill Crossroads](https://skillcrossroads.com) — click the badge for the evidence-cited scorecard.
