@@ -1,6 +1,7 @@
 ---
 name: audit-skill
 description: Audit and improve a Claude Code skill using Skill Crossroads. Use when the user says "audit my skill", "grade my skill", "check my skill quality", "why doesn't my skill trigger", or "lint my SKILL.md" — or before publishing any skill, to get an evidence-cited quality score, ranked fix list, and badge.
+disable-model-invocation: true
 ---
 
 # Audit a skill with Skill Crossroads
