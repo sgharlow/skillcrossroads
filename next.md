@@ -6,6 +6,13 @@
 > readout task running (8:03am → %LOCALAPPDATA%\skillcrossroads\demand-daily.log), 3 listing
 > PRs open (Composio #1366 · tonsofskills #1080 · jqueryscript #516).
 > Done 7-16: Console.dev email sent · GitHub Sponsors enrolled · X post (no ?ref — use ?ref=x next time).
+> Done 7-18: **Item 2 SUBMITTED** — awesome-claude-code issue [#2297](https://github.com/hesreallyhim/awesome-claude-code/issues/2297)
+>   (Category=Linting set manually — URL prefill dropped it, as predicted; watch for their bot's
+>   validation comment). **Item 3 staged** — platform.claude.com/plugins/submit form filled all 3
+>   steps (name/repo/homepage/description/use-cases/Claude Code/MIT; no privacy URL — site has
+>   none); **SUBMITTED 7-18** (pipeline: security scan → Anthropic review → nightly sync; verify
+>   in days via `claude plugin install skillcrossroads@claude-community`). Pre-flight for Item 1 refreshed in `g0-baseline.md`
+>   (7-18 re-baseline + a /report badge-in-nav question to eyeball before posting).
 
 Order: Items 2 and 3 anytime (no timing sensitivity). Item 1 on a weekday morning (post by
 ~2026-07-24). Item 4's daily.dev post goes the same day as the HN post; Changelog anytime.

@@ -69,6 +69,18 @@ git commit --allow-empty -m "chore: redeploy for LAUNCH_DATE" && git push origin
 OWNER_LOGINS=sgharlow LAUNCH_DATE=2026-07-17 npm run report:demand
 ```
 
+## Refresh 2026-07-18 (pre-send re-baseline, same command)
+
+External scans all-time 1958 (Δ+513 since 7-16 — 7-17: 405 and 7-18: 111 line up with the
+owner's QA/polish scan batches, still all `source: unknown`, 0 attributed); distinct external
+repos 294 (unchanged); badge serves 1115; gallery opt-ins 31; paid subs 1 (owner). Gate math
+still runs on since-launch only — unchanged conclusion.
+
+Pre-flight note 7-18 (RESOLVED): `/report` loads live (200, headline intact); the homepage hero
+badge renders (A−). The send-checklist's "badge in nav renders" was imprecise — `SiteNav.tsx`
+only renders the Signpost logo glyph by design; there is no nav badge and never was. No
+regression; pre-flight is green.
+
 ## Post-send log (fill in at send time)
 
 - HN item URL: _
