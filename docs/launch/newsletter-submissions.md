@@ -10,13 +10,13 @@ Each link carries its own `?ref=` tag so `report:demand` attributes any resultin
 - **Paste-ready:**
   - URL: `https://skillcrossroads.com/report?ref=changelog`
   - Title: `State of Claude Code Skills: 73% of 214 public skills may never trigger`
-  - What's interesting (Markdown):
-    > I scanned 214 public Claude Code skills across 18 repos (plus 85 subagents/commands across 9)
-    > with a deterministic, evidence-cited rubric. Headlines: 73% of skills have trigger descriptions
-    > that may never fire, and 43% of subagents declare no `tools` list — silently inheriting
-    > everything, including Bash. Every finding carries file:line receipts, the trees are pinned by
-    > SHA, and the whole scan reproduces with one `npx` command. There's a companion agents/commands
-    > edition at /report-agents.
+  - What's interesting (Markdown) — *numbers re-verified vs the live report 2026-07-18*:
+    > I scanned 214 public Claude Code skills across 18 repos (plus 123 agents/commands — 87
+    > subagents + 36 commands — across 10 repos) with a deterministic, evidence-cited rubric.
+    > Headlines: 73% of skills have trigger descriptions that may never fire, and 57% of subagents
+    > declare no `tools` list — silently inheriting everything, including Bash. Every finding
+    > carries file:line receipts, the trees are pinned by SHA, and the whole scan reproduces with
+    > one `npx` command. There's a companion agents/commands edition at /report-agents.
 
 ## 2. Console.dev — free editorial review, email
 
