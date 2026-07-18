@@ -34,6 +34,12 @@ export interface GalleryStore {
   add(entry: Omit<GalleryEntry, "id">): Promise<GalleryEntry>;
   list(query?: GalleryQuery): Promise<GalleryEntry[]>;
   count(): Promise<number>;
+  /**
+   * Refresh grade/overall/name/scannedAt on an EXISTING gallery entry only — never inserts. The
+   * gallery is opt-in (a fresh scan must not silently list an artifact that never opted in), but a
+   * listed entry must not go stale against the live scorecard either. No-op if `id` isn't listed.
+   */
+  refreshIfListed(id: string, name: string, grade: string, overall: number, scannedAt: string): Promise<void>;
 }
 
 function idFor(owner: string, repo: string, path: string): string {
@@ -68,6 +74,11 @@ export function createMemoryGallery(): GalleryStore {
     },
     list: (query = {}) => Promise.resolve(applyGalleryQuery([...byId.values()], query)),
     count: () => Promise.resolve(byId.size),
+    refreshIfListed(id, name, grade, overall, scannedAt) {
+      const existing = byId.get(id);
+      if (existing) byId.set(id, { ...existing, name, grade, overall, scannedAt });
+      return Promise.resolve();
+    },
   };
 }
 
@@ -96,6 +107,12 @@ export function createPgGallery(pool: import("pg").Pool): GalleryStore {
     async count() {
       const r = await pool.query("SELECT count(*)::int AS c FROM gallery_entries");
       return r.rows[0].c as number;
+    },
+    async refreshIfListed(id, name, grade, overall, scannedAt) {
+      await pool.query(
+        `UPDATE gallery_entries SET name=$2, grade=$3, overall=$4, scanned_at=$5 WHERE id=$1`,
+        [id, name, grade, overall, scannedAt],
+      );
     },
   };
 }
