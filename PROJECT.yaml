@@ -25,6 +25,10 @@ gates:
     kill: "2 launch posts + 4 weeks with 0 external scans -> stop feature work entirely; distribution/positioning experiments only until a signal exists"
     owner: Steve
     due: 2026-07-24  # post-by date (14 days from ROADMAP.md, 2026-07-10); the pass window runs from the actual post date
+    status: "NOT STARTED — the post-by date passed without a launch post. The gate is NOT failed:
+      its 14-day pass window runs from the ACTUAL post date, so the measurement window has simply
+      not opened yet, and the kill clause (2 posts + 4 weeks, 0 external scans) has not begun to
+      run. ON POST: set posted_on, re-date `due` to posted_on + 14, and start counting."
 
 market:
   competitors_doc: ROADMAP.md#positioning--competitors
