@@ -13,14 +13,19 @@ improving. Every finding is evidence-cited (file and line) — work from the rec
 
 1. Identify the skill directory (it contains a `SKILL.md`). If more than one candidate exists,
    ask the user which skill to audit.
-2. Run the audit and capture the report:
+2. Run the audit and capture the report. **Single-quote** the directory argument — single
+   quotes prevent the shell from expanding `$(...)`, backticks, and `$variables` hidden in a
+   path (double quotes do NOT stop command substitution). If the path contains a single
+   quote, `$`, a backtick, or a newline, do not pass it to a shell at all — such characters
+   in a skill directory name are themselves a red flag; rename the directory or ask the user
+   for a safe path first.
 
    ```bash
-   npx skillcrossroads@latest <skill-dir> --markdown
+   npx skillcrossroads@latest '<skill-dir>' --markdown
    ```
 
 3. Read the **Top fixes** list (ranked by grade impact). Optionally, if `ANTHROPIC_API_KEY`
-   is set, run `npx skillcrossroads@latest <skill-dir> --suggest` to get proposed
+   is set, run `npx skillcrossroads@latest '<skill-dir>' --suggest` to get proposed
    current → proposed fixes for the top findings — treat them as proposals to review, never
    apply one unread. For each fix, open the cited
    file:line, confirm the finding is real, and apply the smallest change that resolves it.
@@ -29,7 +34,7 @@ improving. Every finding is evidence-cited (file and line) — work from the rec
    constraints and failure modes; remove hardcoded secrets or over-broad `allowed-tools`.
 4. Re-run the audit. Repeat steps 3–4 until the grade stops improving or only intentional
    trade-offs remain.
-5. Offer the badge: `npx skillcrossroads@latest <skill-dir> --badge` writes an SVG the user
+5. Offer the badge: `npx skillcrossroads@latest '<skill-dir>' --badge` writes an SVG the user
    can embed in their README, linking to https://skillcrossroads.com for the hosted version.
 
 ## Constraints
@@ -47,6 +52,6 @@ improving. Every finding is evidence-cited (file and line) — work from the rec
 
 ## Verify
 
-Done means: the final `npx skillcrossroads@latest <skill-dir> --markdown` run shows the improved
+Done means: the final `npx skillcrossroads@latest '<skill-dir>' --markdown` run shows the improved
 grade with **no fail-status findings remaining** (or each remaining one acknowledged by the user
 as intentional), and the before → after grades are reported to the user.
