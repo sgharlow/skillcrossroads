@@ -37,6 +37,10 @@ await pool.query(`
   )
 `);
 await pool.query(`CREATE INDEX IF NOT EXISTS badge_serves_served_at_idx ON badge_serves (served_at)`);
+// PostgREST roles get zero access (2026-08-02 security fix; see db/schema.sql) —
+// the app connects as the table owner, which bypasses RLS.
+await pool.query(`ALTER TABLE badge_serves ENABLE ROW LEVEL SECURITY`);
+await pool.query(`REVOKE ALL ON badge_serves FROM anon, authenticated`);
 const check = await pool.query(
   `SELECT column_name FROM information_schema.columns WHERE table_name = 'badge_serves' ORDER BY ordinal_position`,
 );

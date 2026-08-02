@@ -47,3 +47,15 @@ CREATE TABLE IF NOT EXISTS badge_cache (
   svg        TEXT NOT NULL,
   scanned_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
+
+-- Lock out Supabase's PostgREST roles (2026-08-02 security fix, advisor rls_disabled_in_public).
+-- The app only ever connects as the table owner via DATABASE_URL, so anon/authenticated need
+-- zero access; without this, the publishable anon key had full CRUD on every table above.
+ALTER TABLE subscriptions   ENABLE ROW LEVEL SECURITY;
+ALTER TABLE gallery_entries ENABLE ROW LEVEL SECURITY;
+ALTER TABLE scans           ENABLE ROW LEVEL SECURITY;
+ALTER TABLE badge_cache     ENABLE ROW LEVEL SECURITY;
+REVOKE ALL ON ALL TABLES    IN SCHEMA public FROM anon, authenticated;
+REVOKE ALL ON ALL SEQUENCES IN SCHEMA public FROM anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON TABLES    FROM anon, authenticated;
+ALTER DEFAULT PRIVILEGES IN SCHEMA public REVOKE ALL ON SEQUENCES FROM anon, authenticated;
