@@ -30,10 +30,10 @@ The gate calls for "1–2 developer communities." Recommended pairing:
 
 **Reddit:**
 - I scanned 214 public Claude Code skills — 73% have descriptions that may never trigger
-- I graded 214 public Claude Code skills and 85 subagents/commands — here's what breaks
-- 43% of public Claude Code subagents inherit Bash by default — I scanned 85 of them
+- I graded 214 public Claude Code skills and 123 subagents/commands — here's what breaks
+- 57% of public Claude Code subagents inherit unrestricted Bash by default — I scanned 87 of them
 
-(For a subagent-security angle on either channel, lead with the third Reddit title — the 43%-inherits-Bash stat is the strongest hook.)
+(For a subagent-security angle on either channel, lead with the third Reddit title — the 57%-inherits-Bash stat is the strongest hook.)
 
 ## Timing (best practice)
 
@@ -91,7 +91,7 @@ Keep these short and honest. Paste and lightly edit to fit the specific comment.
 > Strictness is the point — the goal is to catch the stuff that makes a good skill look broken in someone else's session, before you publish. The checks map to Anthropic's own skill-authoring guidance: triggering descriptions, the line/token budget, least-privilege tool grants, verification steps. And every finding carries file:line evidence, so it's arguable — if a check is wrong on your artifact, you can see exactly why it fired and suppress it with a reason.
 
 **3. "That's a small / self-serving sample."**
-> Fair to ask. It's 214 skills across 18 public repos, and 85 agents/commands across 9 — a deliberately mixed sample (Anthropic's own catalog plus community repos), not a curated best-of. The per-repo caps are disclosed, the trees are pinned, and you can re-run the exact scan on any repos you want, including your own: `npx skillcrossroads owner/repo`. If the sample's biased, the reproduction command lets anyone show it.
+> Fair to ask. It's 214 skills across 18 public repos, and 123 agents/commands (87 subagents + 36 commands) across 10 — a deliberately mixed sample (Anthropic's own catalog plus community repos), not a curated best-of. The per-repo caps are disclosed, the trees are pinned, and you can re-run the exact scan on any repos you want, including your own: `npx skillcrossroads owner/repo`. If the sample's biased, the reproduction command lets anyone show it.
 
 ---
 

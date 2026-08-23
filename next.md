@@ -25,9 +25,12 @@ Order: Items 2 and 3 anytime (no timing sensitivity). Item 1 on a weekday mornin
 
 ### Pre-flight (morning of, ~5 min)
 - [ ] Site check: open https://skillcrossroads.com/report — loads, badge in nav renders.
-- [ ] Fresh baseline: from `apps/web` run
-      `OWNER_LOGINS=sgharlow npm run report:demand` (DATABASE_URL comes from .env.local) and
-      note the external-scan total.
+- [ ] Fresh baseline: run the WRAPPER, not the npm script directly —
+      `pwsh -File apps/web/scripts/demand-daily.ps1` (it loads DATABASE_URL from `.env.local`
+      and appends to the daily log). The bare `npm run report:demand` exits 2 with
+      "DATABASE_URL is not set": `scripts/demand-readout.mjs` reads `process.env` only and does
+      NOT parse `.env.local` — the PS1 wrapper does. Corrected 2026-08-23 after the documented
+      command failed in pre-flight. Note the external-scan total.
 - [ ] Open `docs/launch/send-checklist.md` (prepared replies to the 3 critiques) in a tab.
 - [ ] Block 2–3 hours to stay in the thread after posting.
 
