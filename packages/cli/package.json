@@ -44,5 +44,8 @@
   "homepage": "https://github.com/sgharlow/skillcrossroads#readme",
   "bugs": {
     "url": "https://github.com/sgharlow/skillcrossroads/issues"
+  },
+  "engines": {
+    "node": ">=20"
   }
 }
