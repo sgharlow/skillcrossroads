@@ -294,7 +294,7 @@ v1.0 LLM edition — and is deliberately *not* this sample.)
 
 ## Use it from inside Claude Code
 
-This repo ships an [`audit-skill`](./skill/SKILL.md) Skill: install the plugin, then invoke it
+This repo ships an [`audit-skill`](./plugin/skills/audit-skill/SKILL.md) Skill: install the plugin, then invoke it
 explicitly — `/skillcrossroads:audit-skill` (verify the exact invocation name against
 [`.claude-plugin/plugin.json`](./.claude-plugin/plugin.json) and the skill's `name:` field for
 your installed version). It's explicit-invocation only, by design: the skill applies fixes
