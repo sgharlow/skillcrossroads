@@ -1,0 +1,80 @@
+name: Publish CLI
+
+# Publishing moved into CI on 2026-09-03, for a specific reason rather than tidiness.
+#
+# skillcrossroads@0.11.3 shipped a `dist/` built before the version refactor: the tarball
+# said 0.11.3 while the binary printed 0.11.1. `dist/` is gitignored and `prepublishOnly`
+# rebuilds it, so the only way that reaches the registry is a publish from a local tree
+# whose lifecycle scripts did not run. No check that reads this repo can catch that — the
+# repo is correct and the registry is wrong.
+#
+# A clean checkout removes the failure mode instead of documenting it: there is no stale
+# dist to pack, because there is no dist until this workflow builds one. Publishing here
+# also lets npm attach a provenance attestation via OIDC, which is what ties the tarball
+# back to this commit and this workflow (marketplace review, 2026-09-01).
+
+on:
+  workflow_dispatch:
+    inputs:
+      dry_run:
+        description: 'Build, pack and verify without publishing'
+        type: boolean
+        default: true
+  push:
+    tags: ['cli-v*']
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      # Required for npm provenance. Without it `--provenance` fails rather than
+      # silently publishing an unattested package.
+      id-token: write
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          registry-url: https://registry.npmjs.org
+
+      - name: Install (clean, from the lockfile)
+        run: npm ci
+
+      - name: Build the published artifact
+        run: npm run bundle --workspace=skillcrossroads
+
+      - name: Prove the packed tarball is not stale
+        # The 0.11.3 defect, caught before publish rather than after: pack, extract, and run
+        # the binary a user would actually get. Asserting the SOURCE is what let 0.11.3 pass.
+        working-directory: packages/cli
+        run: |
+          set -euo pipefail
+          version=$(node -p "require('./package.json').version")
+          npm pack --silent
+          tar -xzf "skillcrossroads-${version}.tgz"
+          reported=$(node package/dist/cli.js --version | awk '{print $NF}')
+          echo "package.json: ${version} | packed binary: ${reported}"
+          if [ "${reported}" != "${version}" ]; then
+            echo "::error::packed binary reports ${reported}, package is ${version} — stale dist/"
+            exit 1
+          fi
+          node -e "if(!require('./package/package.json').repository) { console.error('no repository field'); process.exit(1) }"
+          rm -rf package "skillcrossroads-${version}.tgz"
+
+      - name: Publish with provenance
+        if: ${{ github.event_name == 'push' || inputs.dry_run == false }}
+        working-directory: packages/cli
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
+
+      - name: Verify what the registry now serves
+        # Publish is not the end of the story: this fetches the release back out of the
+        # registry and runs it, which is the only check that would have caught 0.11.3.
+        if: ${{ github.event_name == 'push' || inputs.dry_run == false }}
+        working-directory: packages/cli
+        run: |
+          sleep 15
+          npm run verify:published
