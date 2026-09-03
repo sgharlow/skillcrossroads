@@ -53,32 +53,26 @@ try {
 
   const root = join(work, 'package');
   const published = JSON.parse(readFileSync(join(root, 'package.json'), 'utf8'));
-
-  // 1. The tarball must claim the version we asked for.
   if (published.version !== version) {
     fail(`tarball package.json says ${published.version}, expected ${version}`);
   }
 
-  // 2. THE 0.11.3 CHECK: the binary a user runs must agree with the package it came in.
-  const entry = join(root, published.bin?.[name] ?? published.bin ?? 'dist/cli.js');
-  const reported = execFileSync(process.execPath, [entry, '--version'], { encoding: 'utf8' })
-    .trim()
-    .split(/\s+/)
-    .pop();
-  if (reported !== version) {
-    fail(
-      `the published binary reports ${reported} but the package is ${version}.\n` +
-        `  This is the 0.11.3 defect: a stale dist/ was packed. Rebuild and republish.`,
+  // One definition of "publishable", shared with the pre-publish gate in CI, so the two
+  // cannot drift into disagreeing about what a good release looks like. mkdtemp puts this
+  // outside the repo, which is the condition the self-containment check depends on.
+  try {
+    execFileSync(
+      process.execPath,
+      [join(dirname(fileURLToPath(import.meta.url)), 'assert-publishable.mjs'), root],
+      { stdio: 'inherit' },
     );
+  } catch {
+    // assert-publishable has already printed the specific reason; a stack trace from the
+    // wrapper would bury it.
+    fail(`${name}@${version} as served by the registry is not publishable (see above)`);
   }
 
-  // 3. Reviewers must be able to tie the tarball back to its public source.
-  if (!published.repository) fail('published package.json has no repository field');
-
-  console.log(
-    `verify-published: OK — ${name}@${version} reports ${reported}, ` +
-      `repository ${typeof published.repository === 'string' ? published.repository : published.repository.url}`,
-  );
+  console.log(`verify-published: OK — ${name}@${version} verified as served by the registry.`);
 } finally {
   rmSync(work, { recursive: true, force: true });
 }

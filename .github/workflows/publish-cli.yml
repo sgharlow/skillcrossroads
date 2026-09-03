@@ -45,23 +45,18 @@ jobs:
       - name: Build the published artifact
         run: npm run bundle --workspace=skillcrossroads
 
-      - name: Prove the packed tarball is not stale
-        # The 0.11.3 defect, caught before publish rather than after: pack, extract, and run
-        # the binary a user would actually get. Asserting the SOURCE is what let 0.11.3 pass.
-        working-directory: packages/cli
+      - name: Prove the packed tarball is publishable, from outside the repo
+        # The 0.11.3 defect caught before publish rather than after. Extraction happens in
+        # RUNNER_TEMP on purpose: Node resolves bare imports by walking UP the tree, so a
+        # tarball extracted anywhere inside the workspace finds the repo's own node_modules
+        # and runs even when the bundle is broken. An earlier draft of this step verified
+        # inside packages/cli and would have passed a package that crashes on install.
         run: |
           set -euo pipefail
-          version=$(node -p "require('./package.json').version")
-          npm pack --silent
-          tar -xzf "skillcrossroads-${version}.tgz"
-          reported=$(node package/dist/cli.js --version | awk '{print $NF}')
-          echo "package.json: ${version} | packed binary: ${reported}"
-          if [ "${reported}" != "${version}" ]; then
-            echo "::error::packed binary reports ${reported}, package is ${version} — stale dist/"
-            exit 1
-          fi
-          node -e "if(!require('./package/package.json').repository) { console.error('no repository field'); process.exit(1) }"
-          rm -rf package "skillcrossroads-${version}.tgz"
+          version=$(node -p "require('./packages/cli/package.json').version")
+          npm pack --silent --workspace=skillcrossroads --pack-destination "$RUNNER_TEMP"
+          tar -xzf "$RUNNER_TEMP/skillcrossroads-${version}.tgz" -C "$RUNNER_TEMP"
+          node packages/cli/scripts/assert-publishable.mjs "$RUNNER_TEMP/package"
 
       - name: Publish with provenance
         if: ${{ github.event_name == 'push' || inputs.dry_run == false }}
