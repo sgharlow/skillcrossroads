@@ -112,7 +112,8 @@ the grade stops improving.
 - A ranked **Top fixes** list ordered by grade impact.
 - After the fix loop (when the user requested fixes): the before → after grades, reported to
   the user.
-- With `--badge`: an SVG badge file written into the skill directory.
+- With `--badge`: an SVG badge file, `<name>.beacon.svg`, written to the **current working
+  directory** — not into the skill directory; `--badge=<path>` chooses another location.
 
 ## Error Handling
 
