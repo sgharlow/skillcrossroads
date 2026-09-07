@@ -6,6 +6,7 @@
     "name": "Steve Harlow",
     "email": "sgharlow@users.noreply.github.com"
   },
+  "homepage": "https://skillcrossroads.com",
   "repository": "https://github.com/sgharlow/skillcrossroads",
   "license": "MIT",
   "keywords": [
@@ -16,5 +17,6 @@
     "skills",
     "agent-skills",
     "ci"
-  ]
+  ],
+  "commands": []
 }
