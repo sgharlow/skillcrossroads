@@ -13,8 +13,12 @@ jobs:
           path: packages/core/test/fixtures/skills/good-skill
           min-grade: B
       # Dogfood: the audit-skill Skill we ship must itself grade A− or better on every PR.
+      # Path corrected 2026-09-09: `skill/` was deleted by a6e7a45 ("one canonical copy of the
+      # skill"), which left this gate pointing at nothing. It went unnoticed because this workflow
+      # only runs on pull_request and no PR opened between that refactor and today — the tool that
+      # grades skills could not grade its own. Keep this path pinned to the canonical copy.
       - uses: sgharlow/skillcrossroads/apps/action@v1
         with:
-          path: skill
+          path: plugin/skills/audit-skill
           min-grade: A-
           comment: false
