@@ -2,7 +2,7 @@
   "name": "beacon-monorepo",
   "version": "0.1.0",
   "private": true,
-  "description": "Skill Crossroads — the signpost for Claude Code artifacts. An evidence-based quality scorecard, letter grade, and embeddable badge for Skills, subagents, MCP servers, and plugins: ship, fix, or rethink before you release.",
+  "description": "Skill Crossroads \u2014 the signpost for Claude Code artifacts. An evidence-based quality scorecard, letter grade, and embeddable badge for Skills, subagents, MCP servers, and plugins: ship, fix, or rethink before you release.",
   "type": "module",
   "workspaces": [
     "packages/*",
@@ -27,8 +27,11 @@
   },
   "overrides": {
     "next": {
-      "postcss": ">=8.5.10"
-    }
+      "postcss": ">=8.5.23"
+    },
+    "nanoid": "^3.3.18",
+    "postcss": "^8.5.23",
+    "qs": "^6.16.0"
   },
   "devDependencies": {
     "@types/node": "^22.10.0",
