@@ -86,3 +86,28 @@ describe("evaluateG0 — only arms-length signal passes the gate", () => {
     expect(v.status).toBe("live-signal");
   });
 });
+
+/**
+ * LAUNCH_DATE gets set in Vercel ahead of the post so the send day is paste-and-go. A date that
+ * has not arrived yet must NOT activate the gate: it would start the 4-week pivot clock early and
+ * report "pivot triggers in N weeks" before anything had been posted.
+ */
+describe("evaluateG0 — a LAUNCH_DATE in the future is still pre-launch", () => {
+  it("stays pre-launch when the launch date has not arrived", () => {
+    const v = evaluateG0(base, {
+      launchDate: "2026-09-15",
+      launchPosts: 0,
+      now: new Date("2026-09-10T00:00:00Z"),
+    });
+    expect(v.status).toBe("pre-launch");
+  });
+
+  it("activates on the launch date itself", () => {
+    const v = evaluateG0(base, {
+      launchDate: "2026-09-15",
+      launchPosts: 1,
+      now: new Date("2026-09-15T00:00:00Z"),
+    });
+    expect(v.status).toBe("pivot-warning");
+  });
+});
