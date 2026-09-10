@@ -22,12 +22,28 @@ export function evaluateG0(metric: DemandMetric, ctx: G0Context): G0Verdict {
   if (!ctx.launchDate) {
     return { status: "pre-launch", reasons: ["No LAUNCH_DATE set — gate not yet active."] };
   }
-  if (metric.externalScansSinceLaunch > 0) {
+  // LAUNCH_DATE is set in Vercel ahead of the post so send day is paste-and-go. Until that date
+  // arrives the gate must stay dark: activating early starts the 4-week pivot clock against a
+  // post that has not happened.
+  if (new Date(ctx.launchDate + "T00:00:00Z").getTime() > ctx.now.getTime()) {
     return {
-      status: "live-signal",
-      reasons: [`${metric.externalScansSinceLaunch} external scan(s) since ${ctx.launchDate}.`],
+      status: "pre-launch",
+      reasons: [`LAUNCH_DATE ${ctx.launchDate} has not arrived — gate not yet active.`],
     };
   }
+  // PROJECT.yaml's ratified pass condition is a STRANGER-INITIATED signal, not scan volume.
+  // Raw scan count cannot carry the gate: prod has no login on any scan row and no source on 98%
+  // of them, so that counter also counts the owner's own re-scans (2026-09-09 audit).
+  const signals: string[] = [];
+  if (metric.distinctBadgeReposFromGitHub > 0)
+    signals.push(`${metric.distinctBadgeReposFromGitHub} arms-length badge embed(s).`);
+  if (metric.galleryOptIns > 0) signals.push(`${metric.galleryOptIns} arms-length gallery opt-in(s).`);
+  if (metric.attributedExternalScansSinceLaunch > 0)
+    signals.push(
+      `${metric.attributedExternalScansSinceLaunch} referred scan(s) since ${ctx.launchDate}.`,
+    );
+  if (metric.paidSubscriptions > 0) signals.push(`${metric.paidSubscriptions} paid subscription(s).`);
+  if (signals.length > 0) return { status: "live-signal", reasons: signals };
   // Parse-only (deterministic): "now" is the injected ctx.now, never a clock read.
   const weeks = (ctx.now.getTime() - new Date(ctx.launchDate + "T00:00:00Z").getTime()) / WEEK_MS;
   if (ctx.launchPosts >= PIVOT_MIN_POSTS && weeks >= PIVOT_WEEKS) {

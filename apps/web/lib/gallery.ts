@@ -13,6 +13,12 @@ export interface GalleryEntry {
   overall: number;
   /** ISO date the entry was last scored. */
   scannedAt: string;
+  /**
+   * The signed-in user who opted this entry in. Distinct from `owner`, which is the SCANNED
+   * repo's owner — only this field can evidence an arms-length opt-in. Undefined for anonymous
+   * opt-ins and for rows created before the column existed.
+   */
+  optedInBy?: string;
 }
 
 export type GallerySort = "score" | "recent" | "name";
@@ -88,11 +94,14 @@ export function createPgGallery(pool: import("pg").Pool): GalleryStore {
     async add(input) {
       const id = idFor(input.owner, input.repo, input.path);
       await pool.query(
-        `INSERT INTO gallery_entries (id, owner, repo, path, name, grade, overall, scanned_at)
-         VALUES ($1,$2,$3,$4,$5,$6,$7,$8)
+        `INSERT INTO gallery_entries (id, owner, repo, path, name, grade, overall, scanned_at, opted_in_by)
+         VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9)
          ON CONFLICT (id) DO UPDATE
-           SET name=$5, grade=$6, overall=$7, scanned_at=$8`,
-        [id, input.owner, input.repo, input.path, input.name, input.grade, input.overall, input.scannedAt],
+           SET name=$5, grade=$6, overall=$7, scanned_at=$8,
+               -- keep the FIRST recorded actor: a later re-opt-in must not erase who really listed it
+               opted_in_by=COALESCE(gallery_entries.opted_in_by, EXCLUDED.opted_in_by)`,
+        [id, input.owner, input.repo, input.path, input.name, input.grade, input.overall, input.scannedAt,
+         input.optedInBy ?? null],
       );
       return { ...input, id };
     },

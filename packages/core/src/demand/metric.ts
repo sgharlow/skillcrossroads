@@ -17,6 +17,14 @@ export interface SourceCount {
 export interface DemandMetric {
   externalScansTotal: number;
   externalScansSinceLaunch: number;
+  /**
+   * Scans since launch that carry a real referral source (`?ref=` / `sc_ref` / external referer)
+   * on a repo the owner does not own. This is the only scan counter that can evidence a stranger:
+   * `externalScansSinceLaunch` counts unattributed traffic too. See g0-gate.ts.
+   */
+  attributedExternalScansSinceLaunch: number;
+  /** Scans with no attribution at all — cannot be classified as owner or stranger either way. */
+  unattributedScans: number;
   attributedExternalLogins: number;
   anonymousScans: number;
   distinctExternalRepos: number;
@@ -58,6 +66,20 @@ export async function computeDemandMetric(db: Queryable, opts: DemandMetricOpts)
         [owners, opts.launchDate],
       )
     : 0;
+  // A stranger leaves evidence: a ref tag, a campaign cookie, or an external referer host. No
+  // source at all means the row cannot be told apart from the owner's own re-scans.
+  const attributedExternalScansSinceLaunch = opts.launchDate
+    ? await scalar(
+        `SELECT count(*)::int AS n FROM scans
+         WHERE ${EXTERNAL} AND scanned_at >= $2::date AND source IS NOT NULL
+           AND lower(split_part(slug, '/', 1)) <> ALL($1::text[])`,
+        [owners, opts.launchDate],
+      )
+    : 0;
+  const unattributedScans = await scalar(
+    `SELECT count(*)::int AS n FROM scans WHERE source IS NULL`,
+    [],
+  );
   const attributedExternalLogins = await scalar(
     `SELECT count(DISTINCT lower(login))::int AS n FROM scans
      WHERE login IS NOT NULL AND lower(login) <> ALL($1::text[])`,
@@ -81,12 +103,25 @@ export async function computeDemandMetric(db: Queryable, opts: DemandMetricOpts)
     `SELECT count(*)::int AS n FROM badge_serves WHERE served_at >= (CURRENT_DATE - ($1::int - 1))`,
     [days],
   );
+  // Owner exclusion here is by REPO OWNER, not by login: a badge embedded in the owner's own repo
+  // and a gallery entry for a repo the owner listed are self-generated, never arms-length demand.
+  // (2026-09-09 audit: all 7 badge repos and all 31 gallery entries in prod were the owner's.)
   const distinctBadgeReposFromGitHub = await scalar(
     `SELECT count(DISTINCT slug)::int AS n FROM badge_serves
-     WHERE from_github = true AND served_at >= (CURRENT_DATE - ($1::int - 1))`,
-    [days],
+     WHERE from_github = true AND served_at >= (CURRENT_DATE - ($1::int - 1))
+       AND lower(split_part(slug, '/', 1)) <> ALL($2::text[])`,
+    [days, owners],
   );
-  const galleryOptIns = await scalar(`SELECT count(*)::int AS n FROM gallery_entries`, []);
+  // `owner` is the SCANNED repo's owner, not who opted it in — filtering on it alone still counted
+  // 21 `anthropics/skills` entries the owner had listed himself. Only a recorded non-owner actor
+  // evidences a stranger; rows predating `opted_in_by` have no actor and cannot be classified.
+  const galleryOptIns = await scalar(
+    `SELECT count(*)::int AS n FROM gallery_entries
+     WHERE opted_in_by IS NOT NULL
+       AND lower(opted_in_by) <> ALL($1::text[])
+       AND lower(owner) <> ALL($1::text[])`,
+    [owners],
+  );
   const paidSubscriptions = await scalar(`SELECT count(*)::int AS n FROM subscriptions WHERE pro = true`, []);
 
   const externalScansBySource = (
@@ -113,6 +148,8 @@ export async function computeDemandMetric(db: Queryable, opts: DemandMetricOpts)
   return {
     externalScansTotal,
     externalScansSinceLaunch,
+    attributedExternalScansSinceLaunch,
+    unattributedScans,
     attributedExternalLogins,
     anonymousScans,
     distinctExternalRepos,

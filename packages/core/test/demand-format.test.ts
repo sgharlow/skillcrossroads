@@ -28,3 +28,29 @@ describe("formatDemandReadout", () => {
     expect(out).toContain("gallery opt-in          : 1/5");
   });
 });
+
+/**
+ * 2026-09-09: the readout led with "external scans (all-time): 15,426", a number that counts
+ * unattributed traffic and the owner's own re-scans. Read at a glance it looks like demand. The
+ * readout must separate what evidences a stranger from what merely happened.
+ */
+describe("formatDemandReadout — separates arms-length signal from unattributed volume", () => {
+  const metric: DemandMetric = {
+    externalScansTotal: 15426, externalScansSinceLaunch: 0, attributedExternalScansSinceLaunch: 0,
+    unattributedScans: 15193, attributedExternalLogins: 0, anonymousScans: 15426,
+    distinctExternalRepos: 304, dailyExternalTrend: [], badgeServesInWindow: 1730,
+    distinctBadgeReposFromGitHub: 0, galleryOptIns: 0, paidSubscriptions: 0,
+    externalScansBySource: [], reposWithBadgeServe: 0, reposWithGalleryOptIn: 0,
+  };
+
+  it("reports the unattributed count so scan volume is not mistaken for demand", () => {
+    const out = formatDemandReadout(metric, { status: "pivot-warning", reasons: [] });
+    expect(out).toContain("unattributed scans");
+    expect(out).toContain("15193");
+  });
+
+  it("labels arms-length signal as its own section", () => {
+    const out = formatDemandReadout(metric, { status: "pivot-warning", reasons: [] });
+    expect(out).toContain("Arms-length signal");
+  });
+});

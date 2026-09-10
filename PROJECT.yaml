@@ -24,11 +24,22 @@ gates:
     target: ">= 1 stranger-initiated scan (gallery opt-in, external badge embed, or Action install) OR >= 25 unique /report readers with >= 3 site scans OR >= 1 Team-tier inquiry, within 14 days of the post"
     kill: "2 launch posts + 4 weeks with 0 external scans -> stop feature work entirely; distribution/positioning experiments only until a signal exists"
     owner: Steve
-    due: 2026-07-24  # post-by date (14 days from ROADMAP.md, 2026-07-10); the pass window runs from the actual post date
-    status: "NOT STARTED — the post-by date passed without a launch post. The gate is NOT failed:
-      its 14-day pass window runs from the ACTUAL post date, so the measurement window has simply
-      not opened yet, and the kill clause (2 posts + 4 weeks, 0 external scans) has not begun to
-      run. ON POST: set posted_on, re-date `due` to posted_on + 14, and start counting."
+    planned_post: 2026-09-15  # Steve's decision 2026-09-09; LAUNCH_DATE is pre-set to this in Vercel
+    due: 2026-09-29  # planned_post + 14. RE-DATE if the post slips; the window runs from the ACTUAL post
+    status: "NOT STARTED — armed for a 2026-09-15 post. The gate is NOT failed: its 14-day window
+      runs from the ACTUAL post date and has not opened, and the kill clause (2 posts + 4 weeks,
+      0 external scans) has not begun to run.
+
+      2026-09-09 — the gate was MEASURING THE WRONG THING and would have passed itself. `evaluateG0`
+      passed on `externalScansSinceLaunch > 0`, whose owner exclusion keys on `login`, which is NULL
+      on all 15,510 prod scan rows; badge and gallery counts had no owner filter at all. Live audit:
+      all 7 badge repos were sgharlow/*, all 31 gallery opt-ins were the owner's own or repos he
+      scanned himself. Posting would have flipped the gate to live-signal within hours regardless of
+      whether one stranger arrived. Fixed to the target above — only a stranger-initiated signal
+      passes. Arms-length signal live after the fix: 0/0/0/0. See commit 2fe3a94.
+
+      ON POST: set posted_on, confirm `due` = posted_on + 14, and start counting. A LAUNCH_DATE in
+      the future keeps the gate pre-launch, so pre-setting it is safe."
 
 market:
   competitors_doc: ROADMAP.md#positioning--competitors
