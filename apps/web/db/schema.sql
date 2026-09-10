@@ -21,6 +21,10 @@ CREATE TABLE IF NOT EXISTS gallery_entries (
   created_at TIMESTAMPTZ NOT NULL DEFAULT now()
 );
 CREATE INDEX IF NOT EXISTS gallery_overall_idx ON gallery_entries (overall DESC);
+-- Who opted this entry in. `owner` is the SCANNED repo's owner, which is NOT the same person, so
+-- it can never evidence arms-length demand on its own (2026-09-09 G0 audit). NULL = pre-existing
+-- row, actor unknown; the demand metric refuses to count those.
+ALTER TABLE gallery_entries ADD COLUMN IF NOT EXISTS opted_in_by TEXT;
 
 -- Every scan, for score-history / trend charts (Sprint 11).
 CREATE TABLE IF NOT EXISTS scans (

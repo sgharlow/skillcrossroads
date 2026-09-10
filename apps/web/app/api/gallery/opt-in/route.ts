@@ -38,6 +38,9 @@ export async function POST(req: Request): Promise<Response> {
     return Response.json({ error: `no skills found in ${repo}` }, { status: 404 });
   }
 
+  // Who is opting in — resolved BEFORE the loop so every entry records the same actor. This is
+  // the only field that can evidence an arms-length opt-in (see GalleryEntry.optedInBy).
+  const optedInBy = trustLogin(readSession(req).login, Boolean(process.env.DATABASE_URL)) ?? undefined;
   const entries = [];
   for (const s of scan.skills) {
     entries.push(
@@ -49,15 +52,15 @@ export async function POST(req: Request): Promise<Response> {
         grade: s.scorecard.grade,
         overall: s.scorecard.overall,
         scannedAt: today(),
+        ...(optedInBy ? { optedInBy } : {}),
       }),
     );
   }
 
   // Also record to score-history so gallery opt-ins feed /trends, /dashboard, and (when signed in)
   // /account — matching the /s/ scan path. Best-effort; attributed only to a verified identity.
-  const viewer = trustLogin(readSession(req).login, Boolean(process.env.DATABASE_URL)) ?? undefined;
   const source = scanSource(req);
-  after(() => recordScans(target.owner, target.repo, scan.skills, viewer, source));
+  after(() => recordScans(target.owner, target.repo, scan.skills, optedInBy, source));
 
   return Response.json({ added: entries.length, entries });
 }
