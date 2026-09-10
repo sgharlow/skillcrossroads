@@ -49,7 +49,7 @@ describe("QA fix 1 — LLM checks are kind-scoped (never run where they can't ap
   });
 });
 
-describe("QA fix 2 — percentile renders for SKILLS only (the sample is 214 skills)", () => {
+describe("QA fix 2 — percentile renders for SKILLS only (the sample is 208 skills)", () => {
   it("a keyed full-rubric AGENT card never shows the percentile in any renderer", async () => {
     const { scorecard, name } = await auditAsync(agentFile, { model: stub }, "subagent");
     expect(scorecard.partial).toBe(false); // full rubric — the old guard would have leaked

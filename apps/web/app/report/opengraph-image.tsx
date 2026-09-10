@@ -1,7 +1,7 @@
 import { ImageResponse } from "next/og";
 import { PALETTE } from "@beacon/core";
 
-export const alt = "73% of public Claude Code skills have a description that won't reliably trigger.";
+export const alt = "69% of public Claude Code skills have a description that won't reliably trigger.";
 export const size = { width: 1200, height: 630 };
 export const contentType = "image/png";
 
@@ -44,7 +44,7 @@ export default async function Image() {
             color: PALETTE.fail,
           }}
         >
-          73%
+          69%
         </div>
         <div
           style={{

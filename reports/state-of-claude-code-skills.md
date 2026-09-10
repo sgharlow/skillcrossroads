@@ -1,31 +1,29 @@
 # The State of Claude Code Skills
 
-*An evidence-based audit of 214 public Claude Code skills across 18 repositories, graded by **Skill Crossroads** — the signpost for Claude Code artifacts. Includes the LLM-assisted triggering check. Every figure is traceable to the pinned git trees in the methodology.*
+*An evidence-based audit of 216 public Claude Code skills across 18 repositories, graded by **Skill Crossroads** (rubric v1.2) — the signpost for Claude Code artifacts. Includes the LLM-assisted checks (full edition). Every figure is traceable to the pinned git trees in the methodology. Generated 2026-09-10.*
 
-> **Edition & pinning.** Generated **2026-07-09** under **rubric v1.0, LLM (full) edition**. The
-> rubric is versioned and has since moved on (the live scanner runs a later rubric with more
-> deterministic checks, so scanning these same repos today produces different — generally
-> higher — deterministic figures). This report is a pinned snapshot: its numbers are exact for
-> the trees and rubric named here, and are not regenerated when the rubric changes.
+> **Edition & pinning.** Generated **2026-09-10** under **rubric v1.2, LLM (full) edition**. This report is a pinned snapshot: its figures are exact for the git trees and rubric named in the methodology, and are regenerated — never hand-edited — when the rubric moves.
+
+> **Edition note — what changed since the v1.0 edition (2026-07-09).** Rubric v1.2 added deterministic checks that v1.0 did not run — TRIGGER-02 (description long enough to anchor), TRIGGER-03 (invocation cues), TRIGGER-05 (invocation-flag consistency), VERIFY-01 (evals present), and VERIFY-03 (maintenance hygiene) — plus the informational TOKEN-04 cost estimate and the LLM-assisted CLARITY-02 contradiction check. Keyless scans now score all six categories, so grade distributions shift accordingly and are **not comparable one-to-one** with the v1.0 edition. Each edition pins its own rubric, git trees, and reproduction command; this one replaces the v1.0 edition as the live report.
 
 > **Scope.** A deliberately mixed sample: Anthropic's well-maintained `anthropics/skills` catalog alongside a spread of community-authored repos (up to 12 skills each). This is a read on skills people actually publish — not a curated best-of.
 
 ## The headline
 
-**Among skills Skill Crossroads could score, 73% have a description that won't reliably trigger** — 93 (43%) outright unlikely to fire, 63 (29%) borderline. "My skill never fires" is the #1 real-world skill failure, and it hides in the frontmatter `description`.
+**Among skills Skill Crossroads could score, 69% have a description that won't reliably trigger** — 87 (40%) outright unlikely to fire, 61 (28%) borderline. "My skill never fires" is the #1 real-world skill failure, and it hides in the frontmatter `description`.
 
-Skill Crossroads scored **214 of 214** skills for triggering.
+Skill Crossroads scored **215 of 216** skills for triggering — 1 could not be reached (model/network errors) and are excluded from the triggering figures.
 
-The average Skill Crossroads score across all 214 skills is **73.6/100**.
+The average Skill Crossroads score across all 216 skills is **82.1/100**.
 
 ## Will your skill even fire? (Triggering & Discoverability)
 
 How the LLM triggering check graded each description:
 
 ```
-fires reliably (pass)   █████░░░░░░░░░░░░░░░  27%  (58)
-borderline    (warn)    ██████░░░░░░░░░░░░░░  29%  (63)
-won't fire    (fail)    █████████░░░░░░░░░░░  43%  (93)
+fires reliably (pass)   ██████░░░░░░░░░░░░░░  31%  (67)
+borderline    (warn)    ██████░░░░░░░░░░░░░░  28%  (61)
+won't fire    (fail)    ████████░░░░░░░░░░░░  40%  (87)
 ```
 
 A description fails when it reads like a title, buries the use case, omits the natural-language phrases a user would actually say, or is so broad it never anchors. All of it is fixable **before** you publish — that's the point of the check.
@@ -34,84 +32,86 @@ A description fails when it reads like a title, buries the use case, omits the n
 
 | Grade | Skills | Share |
 |---|---|---|
-| A | 1 | 0% |
-| B | 37 | 17% |
-| C | 113 | 53% |
-| D | 52 | 24% |
-| F | 11 | 5% |
+| A | 7 | 3% |
+| B | 156 | 72% |
+| C | 45 | 21% |
+| D | 2 | 1% |
+| F | 6 | 3% |
+
+**Read the letter grades honestly.** Most public skills clear the deterministic floor — structure, budgets, and safety are table stakes, and letter grades cluster high because of it. The discriminating findings live in the LLM-assisted checks: whether the description will actually trigger (TRIGGER-01), whether constraints and failure modes are stated (CLARITY-05), whether the instructions contradict themselves (CLARITY-02), and whether anything verifies the work (VERIFY-04). A high letter grade means "won't visibly break"; the LLM rows in the chart below are where "actually good" is decided — and they are where most of the sample falls down.
 
 ## How skills do on each check
 
 Share of skills that **pass cleanly** (higher is better):
 
 ```
-STRUCT-01 valid YAML frontmatter               ███████████████████░  97%   n=214 (0 warn, 6 fail)
-STRUCT-02 recommended fields present           ███████████████████░  94%   n=214 (7 warn, 6 fail)
-STRUCT-05 supporting-file references resolve   ███████████████████░  95%   n=214 (0 warn, 10 fail)
-TOKEN-01 under the line/token budget           ██████████████████░░  90%   n=214 (16 warn, 5 fail)
-TOKEN-02 progressive disclosure                ████████████████░░░░  79%   n=214 (45 warn, 0 fail)
-TOKEN-03 description budget footprint          ████████████████████  99%   n=214 (2 warn, 0 fail)
-CLARITY-03 no ASCII-art / persona filler       ███████████████████░  95%   n=214 (5 warn, 5 fail)
-SAFETY-01 no hardcoded secrets                 ████████████████████  99%   n=214 (0 warn, 3 fail)
-SAFETY-02 allowed-tools least-privilege        ████████████████████  99%   n=214 (3 warn, 0 fail)
-SAFETY-03 no destructive auto-invocation       █████████████████░░░  87%   n=214 (28 warn, 0 fail)
-SAFETY-04 no shell-injection in ! blocks       ████████████████████ 100%   n=214 (0 warn, 0 fail)
-TRIGGER-01 description triggers reliably       █████░░░░░░░░░░░░░░░  27%   n=214 (63 warn, 93 fail)
-CLARITY-05 constraints & failure modes stated  ░░░░░░░░░░░░░░░░░░░░   0%   n=214 (12 warn, 201 fail)
-VERIFY-04 verification step present            ░░░░░░░░░░░░░░░░░░░░   2%   n=214 (7 warn, 203 fail)
+STRUCT-01 valid YAML frontmatter               ███████████████████░  96%   n=215 (0 warn, 8 fail)
+STRUCT-02 recommended fields present           ███████████████████░  96%   n=215 (1 warn, 8 fail)
+STRUCT-05 supporting-file references resolve   ███████████████████░  94%   n=208 (0 warn, 13 fail)
+TOKEN-01 under the line/token budget           ██████████████████░░  91%   n=215 (16 warn, 4 fail)
+TOKEN-02 progressive disclosure                █████████████████░░░  84%   n=208 (33 warn, 0 fail)
+TOKEN-03 description budget footprint          ████████████████████  99%   n=215 (2 warn, 0 fail)
+TOKEN-04 recurring per-invocation cost         ██████████████████░░  91%   n=215 (19 warn, 0 fail)
+CLARITY-03 no ASCII-art / persona filler       ███████████████████░  97%   n=215 (1 warn, 6 fail)
+SAFETY-01 no hardcoded secrets                 ███████████████████░  97%   n=216 (0 warn, 6 fail)
+SAFETY-02 allowed-tools least-privilege        ███████████████████░  95%   n=215 (10 warn, 0 fail)
+SAFETY-03 no destructive auto-invocation       █████████████████░░░  87%   n=215 (28 warn, 0 fail)
+SAFETY-04 no shell-injection in ! blocks       ████████████████████ 100%   n=215 (0 warn, 0 fail)
+TRIGGER-02 description long enough to anchor   ██████████████████░░  90%   n=215 (13 warn, 9 fail)
+TRIGGER-03 invocation cues in description      ██████████░░░░░░░░░░  52%   n=215 (96 warn, 8 fail)
+TRIGGER-05 invocation flags consistent         ████████████████████ 100%   n=215 (0 warn, 0 fail)
+VERIFY-01 evals present                        ░░░░░░░░░░░░░░░░░░░░   0%   n=208 (10 warn, 197 fail)
+VERIFY-03 version/changelog/readme hygiene     ████████████████████ 100%   n=208 (0 warn, 0 fail)
+TRIGGER-01 description triggers reliably       ██████░░░░░░░░░░░░░░  31%   n=215 (61 warn, 87 fail)
+CLARITY-02 no internal contradictions          ████████████████░░░░  80%   n=208 (35 warn, 6 fail)
+CLARITY-05 constraints & failure modes stated  ░░░░░░░░░░░░░░░░░░░░   0%   n=215 (21 warn, 193 fail)
+VERIFY-04 verification step present            █░░░░░░░░░░░░░░░░░░░   3%   n=214 (6 warn, 202 fail)
 ```
 
-_LLM checks (TRIGGER-01, CLARITY-05, VERIFY-04) show a smaller `n` than the deterministic checks when calls were dropped on transient model/network errors — each percentage is over the skills that check actually scored._
+_LLM checks (TRIGGER-01, CLARITY-02, CLARITY-05, VERIFY-04) show a smaller `n` than the deterministic checks when calls were dropped on transient model/network errors — each percentage is over the skills that check actually scored._
 
 ## What this means
 
-**0 of 214 skills (0%)** pass every check Skill Crossroads ran, cleanly.
+**1 of 216 skills (0%)** pass every check Skill Crossroads ran, cleanly.
 
 The most common defects across the sample:
 
-- constraints & failure modes stated (CLARITY-05): 213 of 214
-- verification step present (VERIFY-04): 210 of 214
-- description triggers reliably (TRIGGER-01): 156 of 214
-- progressive disclosure (TOKEN-02): 45 of 214
-- no destructive auto-invocation (SAFETY-03): 28 of 214
-- under the line/token budget (TOKEN-01): 21 of 214
-- recommended fields present (STRUCT-02): 13 of 214
-- supporting-file references resolve (STRUCT-05): 10 of 214
-- no ASCII-art / persona filler (CLARITY-03): 10 of 214
-- valid YAML frontmatter (STRUCT-01): 6 of 214
+- constraints & failure modes stated (CLARITY-05): 214 of 215
+- verification step present (VERIFY-04): 208 of 214
+- evals present (VERIFY-01): 207 of 208
+- description triggers reliably (TRIGGER-01): 148 of 215
+- invocation cues in description (TRIGGER-03): 104 of 215
+- no internal contradictions (CLARITY-02): 41 of 208
+- progressive disclosure (TOKEN-02): 33 of 208
+- no destructive auto-invocation (SAFETY-03): 28 of 215
+- description long enough to anchor (TRIGGER-02): 22 of 215
+- under the line/token budget (TOKEN-01): 20 of 215
 
 Each is catchable **before** publishing, with `npx skillcrossroads ./your-skill` — and each is exactly the kind of thing that makes a good skill look broken in someone else's session.
 
 ## Methodology & reproducibility
 
-Skill Crossroads' deterministic checks (no LLM) plus the LLM-assisted triggering check (TRIGGER-01) were run against each repo's git tree at the sha below, under **rubric v1.0** (11 deterministic + 3 LLM checks — the catalog as of 2026-07-09). Deterministic figures are bit-reproducible from those trees **with the v1.0 engine**; LLM verdicts are content-hash cached and pinned to the same trees, but model output is not guaranteed bit-identical across runs.
-
-> **Discovery update (v0.11.2, 2026-07-11):** this edition ran with discovery that included
-> skills found inside `test/` and `fixtures/` trees. Discovery now excludes them — a repo's
-> public grade should describe what it ships, not its test data. Re-running against the same
-> pinned trees with current discovery can therefore yield slightly lower per-repo skill counts
-> (fixture skills dropped); artifact-level grades are unaffected. The next edition will use the
-> new rule throughout.
+Skill Crossroads' deterministic checks (rubric v1.2, no LLM) plus the LLM-assisted checks (TRIGGER-01 triggering judge, CLARITY-02 contradictions, CLARITY-05 constraints, VERIFY-04 verification) were run 2026-09-10 against each repo's git tree at the sha below. Deterministic figures are bit-reproducible from those trees; LLM verdicts are content-hash cached and pinned to the same trees, but model output is not guaranteed bit-identical across runs.
 
 | Repo | Ref | Tree sha | Skills | Errors |
 |---|---|---|---|---|
-| anthropics/skills | main | `9d2f1ae18723` | 12 | 0 |
-| diegosouzapw/awesome-omni-skill | main | `a6b3c3005ced` | 12 | 0 |
-| lionelsimai/claude-skills-collection | main | `5c3b481f1879` | 12 | 0 |
-| membranedev/application-skills | main | `f484c8265e70` | 12 | 0 |
-| Trompetilla/Skills | main | `a4277979986e` | 12 | 0 |
-| LeoYeAI/openclaw-master-skills | main | `67e40a3ee347` | 12 | 0 |
-| ComeOnOliver/skillshub | main | `def8531e6511` | 12 | 0 |
-| agentskillexchange/skills | main | `561182614102` | 12 | 0 |
-| ranbot-ai/awesome-skills | main | `12b433915a83` | 12 | 0 |
-| inbharatai/claude-skills | main | `02077f8b2c05` | 12 | 0 |
-| onfire7777/universal-ai-skills-library | main | `1e29cd14119f` | 12 | 0 |
-| FridrichMethod/awesome-skills | main | `1380472e5c8c` | 12 | 0 |
-| rootcastleco/rei-skills | main | `9990ea381cfa` | 12 | 0 |
-| itsmostafa/aws-agent-skills | main | `4ab904a69cda` | 12 | 0 |
-| kid-sid/claude-spellbook | main | `a51ebdd8902c` | 12 | 0 |
-| Cortexa-LLC/ai-pack | main | `8c7debe195a9` | 10 | 0 |
-| Sandeeprdy1729/skill_galaxy | main | `2dd36c8ab8f1` | 12 | 0 |
-| excatt/superclaude-plusplus | main | `9c36a87a9edc` | 12 | 0 |
+| [anthropics/skills](https://skillcrossroads.com/s/anthropics/skills) ([source](https://github.com/anthropics/skills)) | main | [`41bbe19d1a1a`](https://github.com/anthropics/skills/tree/41bbe19d1a1a7eaab5e7bb9050a417e5c6cffc8f) | 12 | 0 |
+| [diegosouzapw/awesome-omni-skill](https://skillcrossroads.com/s/diegosouzapw/awesome-omni-skill) ([source](https://github.com/diegosouzapw/awesome-omni-skill)) | main | [`a6b3c3005ced`](https://github.com/diegosouzapw/awesome-omni-skill/tree/a6b3c3005cedf056a48b084671c6282426d6e9fc) | 12 | 0 |
+| [lionelsimai/claude-skills-collection](https://skillcrossroads.com/s/lionelsimai/claude-skills-collection) ([source](https://github.com/lionelsimai/claude-skills-collection)) | main | [`5c3b481f1879`](https://github.com/lionelsimai/claude-skills-collection/tree/5c3b481f1879c5ff119dfd350987d250531a49eb) | 12 | 0 |
+| [membranedev/application-skills](https://skillcrossroads.com/s/membranedev/application-skills) ([source](https://github.com/membranedev/application-skills)) | main | [`f484c8265e70`](https://github.com/membranedev/application-skills/tree/f484c8265e70ec910a57342389cca5c5de7d8167) | 12 | 0 |
+| [Trompetilla/Skills](https://skillcrossroads.com/s/Trompetilla/Skills) ([source](https://github.com/Trompetilla/Skills)) | main | [`a4277979986e`](https://github.com/Trompetilla/Skills/tree/a4277979986e03177b86838f836c5d69c11e8052) | 12 | 0 |
+| [LeoYeAI/openclaw-master-skills](https://skillcrossroads.com/s/LeoYeAI/openclaw-master-skills) ([source](https://github.com/LeoYeAI/openclaw-master-skills)) | main | [`e5199b56ae1f`](https://github.com/LeoYeAI/openclaw-master-skills/tree/e5199b56ae1ff72e141586c17695563486c46702) | 12 | 0 |
+| [ComeOnOliver/skillshub](https://skillcrossroads.com/s/ComeOnOliver/skillshub) ([source](https://github.com/ComeOnOliver/skillshub)) | main | [`def8531e6511`](https://github.com/ComeOnOliver/skillshub/tree/def8531e65114c0fca8fb8551c1871ee0eed705c) | 12 | 0 |
+| [agentskillexchange/skills](https://skillcrossroads.com/s/agentskillexchange/skills) ([source](https://github.com/agentskillexchange/skills)) | main | [`d320bec98077`](https://github.com/agentskillexchange/skills/tree/d320bec98077748a3e793a751c54481c67f58737) | 12 | 0 |
+| [ranbot-ai/awesome-skills](https://skillcrossroads.com/s/ranbot-ai/awesome-skills) ([source](https://github.com/ranbot-ai/awesome-skills)) | main | [`d58cd70385a4`](https://github.com/ranbot-ai/awesome-skills/tree/d58cd70385a4332a8d310140fd13ba5876a6780b) | 12 | 0 |
+| [inbharatai/claude-skills](https://skillcrossroads.com/s/inbharatai/claude-skills) ([source](https://github.com/inbharatai/claude-skills)) | main | [`02077f8b2c05`](https://github.com/inbharatai/claude-skills/tree/02077f8b2c05946a71fa087dee6d614c0b4e4e0d) | 12 | 0 |
+| [onfire7777/universal-ai-skills-library](https://skillcrossroads.com/s/onfire7777/universal-ai-skills-library) ([source](https://github.com/onfire7777/universal-ai-skills-library)) | main | [`2a76bf42ce5c`](https://github.com/onfire7777/universal-ai-skills-library/tree/2a76bf42ce5c860adf8d0f3fcf3f6804109ac65b) | 12 | 0 |
+| [FridrichMethod/awesome-skills](https://skillcrossroads.com/s/FridrichMethod/awesome-skills) ([source](https://github.com/FridrichMethod/awesome-skills)) | main | [`cd408695c35a`](https://github.com/FridrichMethod/awesome-skills/tree/cd408695c35ae13579329f2590e03765beb8243f) | 12 | 0 |
+| [rootcastleco/rei-skills](https://skillcrossroads.com/s/rootcastleco/rei-skills) ([source](https://github.com/rootcastleco/rei-skills)) | main | [`7894dcd04603`](https://github.com/rootcastleco/rei-skills/tree/7894dcd04603a784fb0a6de96793db74783d74a0) | 12 | 0 |
+| [itsmostafa/aws-agent-skills](https://skillcrossroads.com/s/itsmostafa/aws-agent-skills) ([source](https://github.com/itsmostafa/aws-agent-skills)) | main | [`4ab904a69cda`](https://github.com/itsmostafa/aws-agent-skills/tree/4ab904a69cda893b5c98f97966bf9a48311823e9) | 12 | 0 |
+| [kid-sid/claude-spellbook](https://skillcrossroads.com/s/kid-sid/claude-spellbook) ([source](https://github.com/kid-sid/claude-spellbook)) | main | [`a7c2ac930b2f`](https://github.com/kid-sid/claude-spellbook/tree/a7c2ac930b2f11fe09b58bc7a9a41ce6ea1dd390) | 12 | 0 |
+| [Cortexa-LLC/ai-pack](https://skillcrossroads.com/s/Cortexa-LLC/ai-pack) ([source](https://github.com/Cortexa-LLC/ai-pack)) | main | [`4710951439a9`](https://github.com/Cortexa-LLC/ai-pack/tree/4710951439a9415f6b16512d3bb8be9695e8a381) | 12 | 0 |
+| [Sandeeprdy1729/skill_galaxy](https://skillcrossroads.com/s/Sandeeprdy1729/skill_galaxy) ([source](https://github.com/Sandeeprdy1729/skill_galaxy)) | main | [`991d5af7a87f`](https://github.com/Sandeeprdy1729/skill_galaxy/tree/991d5af7a87f49d2c27748ba143c8c6490ad2514) | 12 | 0 |
+| [excatt/superclaude-plusplus](https://skillcrossroads.com/s/excatt/superclaude-plusplus) ([source](https://github.com/excatt/superclaude-plusplus)) | main | [`a4beaf578860`](https://github.com/excatt/superclaude-plusplus/tree/a4beaf578860b63637213444854964a3106c9bbe) | 12 | 0 |
 
-Reproduce: check out the engine at rubric v1.0 (repo history, 2026-07-09), then `npm run build && BEACON_LLM=1 ANTHROPIC_API_KEY=… node scripts/state-of-skills.mjs` (default repo set). Running the CURRENT engine reproduces the scan but not these figures — later rubrics add checks, which shifts scores. Pass `owner/repo …` to scan your own repos with today's rubric instead.
+Reproduce: `npm run build && BEACON_LLM=1 ANTHROPIC_API_KEY=… node scripts/state-of-skills.mjs` (default repo set) — or pass `owner/repo …` to scan your own.
