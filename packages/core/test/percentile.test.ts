@@ -10,9 +10,9 @@ import {
 import type { Scorecard } from "../src/types.js";
 
 describe("publicSkillPercentile (State of Skills CDF)", () => {
-  it("pins to the regenerated 214-skill distribution", () => {
-    expect(STATE_OF_SKILLS.n).toBe(214);
-    expect(STATE_OF_SKILLS.buckets.reduce((a, b) => a + b.count, 0)).toBe(214);
+  it("pins to the regenerated 208-skill distribution (2026-09 edition)", () => {
+    expect(STATE_OF_SKILLS.n).toBe(208);
+    expect(STATE_OF_SKILLS.buckets.reduce((a, b) => a + b.count, 0)).toBe(208);
   });
 
   it("the sample rubric matches the LIVE rubric — regenerate via scripts/percentile-sample.mjs on every bump", () => {
@@ -36,20 +36,20 @@ describe("publicSkillPercentile (State of Skills CDF)", () => {
   });
 
   it("reflects the v1.2 deterministic reality: most public skills grade A, so an A is unremarkable", () => {
-    // 168/214 of the sample are A-band — a 92 no longer claims "≈99%".
+    // 161/208 of the sample are A-band (2026-09 edition) — a 92 no longer claims "≈99%".
     expect(publicSkillPercentile(92)).toBeLessThan(40);
     expect(publicSkillPercentile(97)).toBeGreaterThan(60);
   });
 
   it("interpolates within a band: 85 beats F+D+C plus half the B band", () => {
-    // below = 0 + 6 + 2 + 38 * (85-80)/10 = 27 → 27/214 ≈ 13%
-    expect(publicSkillPercentile(85)).toBe(13);
+    // below = 1 + 7 + 2 + 37 * (85-80)/10 = 28.5 → 28.5/208 ≈ 13.7% → 14 (2026-09 edition)
+    expect(publicSkillPercentile(85)).toBe(14);
   });
 
   it("labels with the ≈ marker, the pinned edition, AND the sample rubric (drift stays visible)", () => {
     const label = percentileLabel(90);
     expect(label).toContain("≈");
-    expect(label).toContain("214 public skills");
+    expect(label).toContain("208 public skills");
     expect(label).toContain(STATE_OF_SKILLS.edition);
     expect(label).toContain(`deterministic rubric v${STATE_OF_SKILLS.rubric} sample`);
   });

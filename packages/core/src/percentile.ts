@@ -33,19 +33,24 @@ export interface PercentileSample {
 }
 
 /**
- * Deterministic rubric v1.2 sample — generated 2026-07-11 by scripts/percentile-sample.mjs
- * over the same 18 curated repos as the State-of-Skills report (0 repo failures, n=214).
+ * Deterministic rubric v1.2 sample — generated 2026-09-10 by scripts/percentile-sample.mjs
+ * over the same 18 curated repos as the State-of-Skills report (0 repo failures, n=208).
+ * ⚠️ n=208 is NOT the report's 216, and both are right: the sample script keeps `kind === "skill"`
+ * only (the percentile renders on skill cards alone — see percentile-sample.mjs:61), while the
+ * report counts every artifact those repos hold. The 8 are subagents/commands that appeared
+ * since July, when both figures were 214 because none existed. Re-derive before quoting either.
+ * Previous edition: 2026-07-11, n=214 (0/6/2/38/168).
  */
 export const STATE_OF_SKILLS: PercentileSample = {
   rubric: "1.2",
-  edition: "2026-07",
-  n: 214,
+  edition: "2026-09",
+  n: 208,
   buckets: [
-    { min: 0, max: 60, count: 0 }, // F
-    { min: 60, max: 70, count: 6 }, // D
+    { min: 0, max: 60, count: 1 }, // F
+    { min: 60, max: 70, count: 7 }, // D
     { min: 70, max: 80, count: 2 }, // C
-    { min: 80, max: 90, count: 38 }, // B
-    { min: 90, max: 100, count: 168 }, // A
+    { min: 80, max: 90, count: 37 }, // B
+    { min: 90, max: 100, count: 161 }, // A
   ],
 };
 

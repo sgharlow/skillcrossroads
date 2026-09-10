@@ -34,9 +34,9 @@ describe("markdownToHtml (report renderer)", () => {
   it("renders the actual published report without losing its headline figures", () => {
     const html = markdownToHtml(REPORT_MD);
     expect(html).toContain("<h1>The State of Claude Code Skills</h1>");
-    expect(html).toContain("73.6/100"); // average score survives conversion
+    expect(html).toContain("82.1/100"); // average score survives conversion (2026-09 edition, rubric v1.2)
     expect(html).toContain("<table>"); // grade-distribution + methodology tables render
-    expect(html).toContain("214"); // sample size present
+    expect(html).toContain("216"); // sample size present
     expect(html).not.toContain("undefined");
   });
 });
