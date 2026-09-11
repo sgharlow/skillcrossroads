@@ -9,11 +9,12 @@ Each link carries its own `?ref=` tag so `report:demand` attributes any resultin
 - **Rule that matters:** they reject commercial product pitches — submit the DATA REPORT, not the SaaS.
 - **Paste-ready:**
   - URL: `https://skillcrossroads.com/report?ref=changelog`
-  - Title: `State of Claude Code Skills: 73% of 214 public skills may never trigger`
-  - What's interesting (Markdown) — *numbers re-verified vs the live report 2026-07-18*:
-    > I scanned 214 public Claude Code skills across 18 repos (plus 123 agents/commands — 87
-    > subagents + 36 commands — across 10 repos) with a deterministic, evidence-cited rubric.
-    > Headlines: 73% of skills have trigger descriptions that may never fire, and 57% of subagents
+  - Title: `State of Claude Code Skills: 69% of 216 public skills may never trigger`
+  - What's interesting (Markdown) — *numbers updated to the live 2026-09-10 edition (rubric v1.2);
+    the 2026-07-18 Changelog submission carried the earlier v1.0 edition's figures*:
+    > I scanned 216 public Claude Code skills across 18 repos (plus 123 agents/commands — 87
+    > subagents + 36 commands — across 10 repos) with an evidence-cited rubric.
+    > Headlines: 69% of skills have trigger descriptions that may never fire, and 57% of subagents
     > declare no `tools` list — silently inheriting everything, including Bash. Every finding
     > carries file:line receipts, the trees are pinned by SHA, and the whole scan reproduces with
     > one `npx` command. There's a companion agents/commands edition at /report-agents.
