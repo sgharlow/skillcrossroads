@@ -55,7 +55,7 @@ demand amplifiers. No horizontal breadth.*
 | # | Item | Why first | Est. |
 |---|------|-----------|------|
 | 1 | **Config + suppression** — `.skillcrossroads.json`: disable/ignore a check globally or per-skill (with a required `reason`), set `min-grade`, token-budget overrides; suppressions disclosed on the scorecard ("2 checks suppressed") so grades stay honest | The #1 linter-adoption blocker: one false positive in CI with no escape hatch = uninstall. Every peer tool ships this | 1.5d |
-| 2 | **Percentile benchmark** — every scorecard/badge shows "beats N% of the 214 public skills scanned" (computed from the pinned report dataset; regenerated with each report edition) | Turns an opaque number into a shareable comparison; zero new data collection | 1d |
+| 2 | **Percentile benchmark** — every scorecard/badge shows "beats N% of the 208 public skills scanned" (208 in the 2026-09 edition, 214 in July; the label reads `sample.n`, so re-derive it rather than quoting this) (computed from the pinned report dataset; regenerated with each report edition) | Turns an opaque number into a shareable comparison; zero new data collection | 1d |
 | 3 | **The `audit-skill` Skill** — a Claude Code skill (in-repo `skill/` + gallery-listed) that runs `npx skillcrossroads` on the user's skill and walks them through the fix list | Distribution inside the ecosystem being audited; must itself grade A (dogfood proof) | 1d |
 
 ### Sprint 2 — Tagline integrity: agents & commands · **CORE SHIPPED 2026-07-10** (owner override of the G0 gate)

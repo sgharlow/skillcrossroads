@@ -284,7 +284,7 @@ scorecard, and `SAFETY-*` checks can never be suppressed**:
 skillcrossroads.com never apply a repo's config — a public grade always reflects the full rubric.
 
 Full-rubric SKILL scorecards also show an ecosystem percentile — *"scores higher than ≈N% of
-214 public skills (deterministic rubric v1.2 sample, 2026-07)"*. The comparison sample is
+208 public skills (deterministic rubric v1.2 sample, 2026-09)"*. The comparison sample is
 regenerated under the **current rubric** (deterministic edition, `scripts/percentile-sample.mjs`)
 on every rubric bump, so live scores are always ranked against like-for-like grades — a test
 pins the sample rubric to the engine's, and the label names the sample so drift stays visible.
