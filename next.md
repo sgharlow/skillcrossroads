@@ -16,8 +16,8 @@
 >   (person-data policy; /docs/code-handling stays the code-data policy; footer + sitemap linked). Pre-flight for Item 1 refreshed in `g0-baseline.md`
 >   (7-18 re-baseline + a /report badge-in-nav question to eyeball before posting).
 
-Order: Items 2 and 3 anytime (no timing sensitivity). Item 1 on a weekday morning (post by
-~2026-07-24). Item 4's daily.dev post goes the same day as the HN post; Changelog anytime.
+Order: Items 2 and 3 anytime (no timing sensitivity). Item 1 on a weekday morning (post on
+`PROJECT.yaml`'s G0 `planned_post` — 2026-09-15 as of 2026-09-10). Item 4's daily.dev post goes the same day as the HN post; Changelog anytime.
 
 ---
 
@@ -36,7 +36,7 @@ Order: Items 2 and 3 anytime (no timing sensitivity). Item 1 on a weekday mornin
 
 ### Post to Hacker News (weekday, ideally before ~9am MST / noon ET)
 - [ ] Go to https://news.ycombinator.com/submit (signed in).
-- [ ] Title (recommended): `Show HN: I graded 214 public Claude Code skills – 73% may never trigger`
+- [ ] Title (recommended): `Show HN: I graded 216 public Claude Code skills – 69% may never trigger`
       (must start with "Show HN:").
 - [ ] URL field: `https://skillcrossroads.com/report?ref=hn-show` (keep the ref tag).
 - [ ] Text box: paste the body from `docs/launch/hn-show.md`.
@@ -56,7 +56,7 @@ Order: Items 2 and 3 anytime (no timing sensitivity). Item 1 on a weekday mornin
 ### Reddit (1–2 days after HN — this is the staggered second channel)
 - [ ] Read r/ClaudeAI rules/sidebar first (flair? self-promo day?). Fallback sub: r/ClaudeCode.
 - [ ] Text post; body from `docs/launch/reddit-claudeai.md` (links carry `?ref=reddit-claudeai`).
-- [ ] Title (recommended): `43% of public Claude Code subagents inherit Bash by default — I scanned 85 of them`.
+- [ ] Title (recommended): `57% of public Claude Code subagents inherit Bash by default — I scanned 87 of them`.
 - [ ] Stay in-thread 2–3 hours; ~9:1 participate-to-promote ratio.
 
 ### Daily until verdict
@@ -100,7 +100,7 @@ Order: Items 2 and 3 anytime (no timing sensitivity). Item 1 on a weekday mornin
 ### daily.dev (~3 min, SAME DAY as the HN post)
 - [ ] Sign in at app.daily.dev → **New Post** → link post.
 - [ ] URL: `https://skillcrossroads.com/report?ref=dailydev`
-- [ ] Title: the headline stat (`I graded 214 public Claude Code skills — 73% may never trigger`).
+- [ ] Title: the headline stat (`I graded 216 public Claude Code skills — 69% may never trigger`).
 - [ ] Post into an AI/Claude-relevant Squad; answer any comments that day.
 
 ---

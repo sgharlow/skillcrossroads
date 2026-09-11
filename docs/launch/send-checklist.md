@@ -24,13 +24,15 @@ The gate calls for "1–2 developer communities." Recommended pairing:
 ## Suggested titles (pick one per channel)
 
 **Hacker News (Show HN — must start with "Show HN:"):**
-- Show HN: Skill Crossroads – evidence-cited grades for Claude Code skills, agents, and plugins
-- Show HN: I graded 214 public Claude Code skills – 73% may never trigger
-- Show HN: A linter for Claude Code skills, subagents, and plugins (with file:line evidence)
+- Show HN: Skill Crossroads – evidence-cited grades for Claude Code artifacts
+- Show HN: I graded 216 public Claude Code skills – 69% may never trigger
+- Show HN: A linter for Claude Code skills, subagents, and plugins
+
+(HN caps titles at 80 characters; all three fit.)
 
 **Reddit:**
-- I scanned 214 public Claude Code skills — 73% have descriptions that may never trigger
-- I graded 214 public Claude Code skills and 123 subagents/commands — here's what breaks
+- I scanned 216 public Claude Code skills — 69% have descriptions that may never trigger
+- I graded 216 public Claude Code skills and 123 subagents/commands — here's what breaks
 - 57% of public Claude Code subagents inherit unrestricted Bash by default — I scanned 87 of them
 
 (For a subagent-security angle on either channel, lead with the third Reddit title — the 57%-inherits-Bash stat is the strongest hook.)
@@ -58,7 +60,7 @@ The gate calls for "1–2 developer communities." Recommended pairing:
 >   work entirely**; the problem is channel or positioning, not product. Distribution experiments
 >   only until a signal exists.
 
-**Two clocks — don't confuse them.** (1) *Target-to-post:* the ROADMAP asks you to post within 14 days of the doc (dated **2026-07-10**) → **post by ~2026-07-24**. (2) *Pass window:* the "≥1 signal within 14 days" clock runs from **your post date**, not from 2026-07-10. Post sooner rather than later — the target-to-post window is the one burning down.
+**Two clocks — don't confuse them.** (1) *Target-to-post:* the ROADMAP's original "within 14 days of the doc" (dated **2026-07-10**) lapsed; the post date now lives in `PROJECT.yaml` → G0-launch `planned_post` (**2026-09-15** as of 2026-09-10). (2) *Pass window:* the "≥1 signal within 14 days" clock runs from **your post date**, not from 2026-07-10. Post sooner rather than later — the target-to-post window is the one burning down.
 
 ## What to monitor after posting
 
@@ -85,13 +87,13 @@ Record the winning signal (which condition, timestamp, source) the moment it lan
 Keep these short and honest. Paste and lightly edit to fit the specific comment.
 
 **1. "The grade distributions differ between the two reports / from what I get scanning today."**
-> Correct, and it's labeled. The skills report ran rubric v1.0 with the LLM triggering check; the agents report and the live scanner run v1.2 deterministic. Each report pins its edition, the git tree SHAs, and the reproduction command, so the numbers are exact for the trees and rubric named. Re-scanning the same repos today gives different (generally higher) deterministic figures because later rubrics add checks — the reports are pinned snapshots, not live dashboards.
+> Correct, and it's labeled. The skills report runs rubric v1.2 with the LLM-assisted checks; the agents report runs v1.2 deterministic-only. Each report pins its edition, the git tree SHAs, and the reproduction command, so the numbers are exact for the trees and rubric named. Re-scanning the same repos today can give different figures because the repos have moved past the pinned trees, and a keyless scan skips the LLM checks — the reports are pinned snapshots, not live dashboards. (The earlier v1.0 skills edition isn't comparable one-to-one: v1.2 added checks, and the report's edition note lists them.)
 
 **2. "You invented a rubric nobody passes."**
 > Strictness is the point — the goal is to catch the stuff that makes a good skill look broken in someone else's session, before you publish. The checks map to Anthropic's own skill-authoring guidance: triggering descriptions, the line/token budget, least-privilege tool grants, verification steps. And every finding carries file:line evidence, so it's arguable — if a check is wrong on your artifact, you can see exactly why it fired and suppress it with a reason.
 
 **3. "That's a small / self-serving sample."**
-> Fair to ask. It's 214 skills across 18 public repos, and 123 agents/commands (87 subagents + 36 commands) across 10 — a deliberately mixed sample (Anthropic's own catalog plus community repos), not a curated best-of. The per-repo caps are disclosed, the trees are pinned, and you can re-run the exact scan on any repos you want, including your own: `npx skillcrossroads owner/repo`. If the sample's biased, the reproduction command lets anyone show it.
+> Fair to ask. It's 216 skills across 18 public repos, and 123 agents/commands (87 subagents + 36 commands) across 10 — a deliberately mixed sample (Anthropic's own catalog plus community repos), not a curated best-of. The per-repo caps are disclosed, the trees are pinned, and you can re-run the exact scan on any repos you want, including your own: `npx skillcrossroads owner/repo`. If the sample's biased, the reproduction command lets anyone show it.
 
 ---
 
