@@ -48,8 +48,10 @@ Order: Items 2 and 3 anytime (no timing sensitivity). Item 1 on a weekday mornin
 - [ ] Log the HN item URL in `docs/launch/g0-baseline.md` → "Post-send log".
 - [ ] Add the line `LAUNCH_DATE=<today YYYY-MM-DD>` to `apps/web/.env.local`
       (the 8:03am daily-readout task reads it from there).
-- [ ] Set it in prod (from `apps/web`):
-      `printf '<today>' | vercel env add LAUNCH_DATE production`
+- [ ] Set it in prod (from the REPO ROOT — the Vercel link `.vercel/project.json` lives there with
+      `rootDirectory: apps/web`; from `apps/web` the CLI says "not linked". Corrected 2026-09-13 dry run.
+      Already set for this launch: `LAUNCH_DATE=2026-09-15` was in Vercel production 4 days before the post):
+      `printf '<today>' | npx vercel@latest env add LAUNCH_DATE production`
       (printf, not echo; if the CLI balks, use the Vercel dashboard → Settings → Env Vars).
 - [ ] Redeploy: `git commit --allow-empty -m "chore: redeploy for LAUNCH_DATE" && git push origin main`.
 
