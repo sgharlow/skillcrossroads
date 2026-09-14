@@ -56,11 +56,11 @@ Conversion (external-scanned repos → distribution):
 panel, so set it in two places (replace the date with the actual post date):
 
 ```bash
-# 1. Vercel production env (from apps/web — the linked project dir).
+# 1. Vercel production env (from the REPO ROOT — the link lives there, rootDirectory apps/web;
+#    running from apps/web says "not linked". Corrected by the 2026-09-13 dry run.)
 #    NOTE: pipe with printf, NOT echo, and non-TTY `env add` is broken on Vercel CLI 51.8+ —
 #    if this fails, use the dashboard (Settings → Environment Variables) instead.
-cd apps/web
-printf '2026-07-17' | vercel env add LAUNCH_DATE production
+printf '2026-07-17' | npx vercel@latest env add LAUNCH_DATE production   # from the repo root
 
 # 2. Redeploy so the env takes effect (git-native redeploy):
 git commit --allow-empty -m "chore: redeploy for LAUNCH_DATE" && git push origin main
