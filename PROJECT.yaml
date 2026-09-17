@@ -24,9 +24,9 @@ gates:
     target: ">= 1 stranger-initiated scan (gallery opt-in, external badge embed, or Action install) OR >= 25 unique /report readers with >= 3 site scans OR >= 1 Team-tier inquiry, within 14 days of the post"
     kill: "2 launch posts + 4 weeks with 0 external scans -> stop feature work entirely; distribution/positioning experiments only until a signal exists"
     owner: Steve
-    planned_post: 2026-09-15  # Steve's decision 2026-09-09; LAUNCH_DATE is pre-set to this in Vercel
-    due: 2026-09-29  # planned_post + 14. RE-DATE if the post slips; the window runs from the ACTUAL post
-    status: "NOT STARTED — armed for a 2026-09-15 post. The gate is NOT failed: its 14-day window
+    planned_post: 2026-09-17  # re-dated 2026-09-16 (Steve): the 9-15 post did not happen. Was 2026-09-15 (decided 9-09). LAUNCH_DATE re-set to match in .env.local + Vercel prod
+    due: 2026-10-01  # planned_post + 14. RE-DATE if the post slips; the window runs from the ACTUAL post
+    status: "NOT STARTED — armed for a 2026-09-17 post (the planned 2026-09-15 post did not happen: HN Algolia shows no skillcrossroads.com story; Steve confirmed 9-16 and re-dated to Thu 9-17 06:00). The gate is NOT failed: its 14-day window
       runs from the ACTUAL post date and has not opened, and the kill clause (2 posts + 4 weeks,
       0 external scans) has not begun to run.
 
