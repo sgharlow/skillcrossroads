@@ -49,6 +49,9 @@ Conversion (external-scanned repos → distribution):
   all-time totals as noise; the gate math runs on **since-launch** numbers only.
 - Once `LAUNCH_DATE` is set (the post date), "since launch" starts at 0 from this baseline, and
   new scans carry `source` (hn-show / reddit-claudeai) via the `sc_ref` cookie.
+  ⚠️ **This did NOT hold for the actual 2026-09-17 launch** — the post went out on the bare apex
+  with no `?ref`, so no HN scan carries a `source`. See "FINDING 2026-09-17" below before reading
+  any since-launch or by-source number for this window.
 
 ## Post-send: exact commands (run the moment the first post is live)
 
@@ -125,9 +128,112 @@ launch watch that reported "8 REAL signups" that were all rehearsals.
 dogfood subscription is no longer active, so `ladder: dogfooded` now rests on the 2026-07-10
 event with no currently-live subscription behind it. Not diagnosed here — flagged only.
 
-## Post-send log (fill in at send time)
+## FINDING 2026-09-17 — the launch post is UNTAGGED: the gate's measuring instrument is blind to its own launch
 
-- HN item URL: _
-- Reddit permalink: _
-- `LAUNCH_DATE` set to: _
-- Winning signal (condition, timestamp, source): _
+**Status: not fixable retroactively.** This is a first-class defect in the G0 measurement method,
+not a footnote. Read it before reading any number out of the 14-day window.
+
+### What was supposed to happen
+
+The prepared draft (`docs/launch/hn-show.md`) put `?ref=hn-show` on the posted URL. The chain
+built for exactly this gate (slice #2, main `d0e1631`, described at the top of this file) is:
+
+`https://skillcrossroads.com/report?ref=hn-show` → `apps/web/middleware.ts` sets the `sc_ref`
+cookie (30 min, HttpOnly, matcher covers `/`, `/report`, `/report-agents`, `/paste`, `/gallery`,
+`/pricing`) → the visitor runs a scan in the same session → `apps/web/lib/attribution.ts`
+`scanSource()` reads the cookie → `scans.source = 'hn-show'` → the row counts in
+`attributedExternalScansSinceLaunch` (`packages/core/src/demand/metric.ts`), which is one of the
+four signals `evaluateG0` (`packages/core/src/demand/g0-gate.ts`) can pass the gate on, and it is
+the one that prints as `hn-show` under "Scans by source" in `report:demand`.
+
+### What actually happened
+
+The post went up with the **bare apex `https://skillcrossroads.com`** — no `?ref`.
+HN item 49744398, 2026-09-17T18:06:26Z. No query param means the middleware sets no cookie; a
+scan run afterwards is a same-origin request (`/` → `/s/owner/repo`), so `externalRefererHost()`
+returns null and `normalizeSource()` returns null. Every HN arrival lands in `scans.source IS NULL`.
+
+Verified against prod at 2026-09-17T21:1xZ, read-only: **534 scan rows since 18:06:26Z, 100% of
+them `source = NULL`, zero tagged anything.** (The 534 is itself the noise problem below.)
+
+### Consequence for reading the 14-day window (posted_on 2026-09-17 → due 2026-10-01)
+
+- `attributedExternalScansSinceLaunch` will stay **0 for the whole window** regardless of how many
+  strangers arrive from HN. That signal path in `evaluateG0` is dead for this launch. If it ever
+  goes non-zero it means some *other* channel, not HN.
+- HN scans land in the `unknown` bucket, which already holds >11,000 rows of the owner's own corpus
+  sweeps (see the 2026-08-23 re-baseline) and grew by 534 in the first three hours after the post.
+  A stranger's scan is **not separable from owner noise by volume** — do not read a bump in
+  "scans by source: unknown" as traction. This is the same trap the 2026-08-23 audit called out.
+- The gate's **primary pass path is unaffected**: a stranger-initiated gallery opt-in, an external
+  badge embed, an Action install, or a Team-tier inquiry is identified by *actor / repo owner*
+  (`galleryOptIns`, `distinctBadgeReposFromGitHub` in `metric.ts`), never by `source`. G0 can still
+  be passed honestly. It is only the referred-scan evidence that is lost.
+
+### Fallback measure (investigated, live-proven — it is real, and it is partial)
+
+**Vercel Web Analytics `referrerHostname`.** `@vercel/analytics/next` is mounted in
+`apps/web/app/layout.tsx`, and it records the landing referrer per pageview independently of the
+`?ref` chain. Proven against the live project on 2026-09-17 (read-only query, day window):
+
+```
+referrerHostname          visitors  pageviews
+(direct/empty)                  10         10
+google.com                       6          6
+news.ycombinator.com             3          3       <-- the HN arrivals, separable
+...
+```
+
+Filtering `referrerHostname eq 'news.ycombinator.com'` and grouping by `route` works too — on
+2026-09-17 all 3 HN visitors were on route `/` and none had reached `/report`.
+
+What the fallback **can** answer: unique HN-referred visitors, and which routes they landed on —
+which is exactly the input to the gate's second pass path (">= 25 unique /report readers"), and
+which `send-checklist.md` already nominates as the source for that count.
+
+What the fallback **cannot** answer: it counts *readers*, not *scans*. There is no way to tie a
+scan row back to an HN visitor, so the "with >= 3 site scans" half of that pass path can only be
+read site-wide, against the owner-noise floor described above. Nothing in the code can recover
+per-visitor scan attribution for an untagged landing.
+
+Two operational caveats: the numbers live **only in the Vercel dashboard** — `report:demand` does
+not read them, so they must be pulled and written into this file by hand during the window; and
+Vercel Analytics retention is bounded, so pull them before `due` (2026-10-01), not after.
+
+**Secondary, narrow:** `HOST_TAGS` in `packages/core/src/demand/source.ts` maps
+`news.ycombinator.com` → `hn`, so a scan request that *itself* carries an HN Referer **is** tagged
+`hn` in the DB. That only fires for a deep link into the site posted in the thread (e.g. a
+`/s/owner/repo` URL in a comment) — not for the normal land-on-apex-then-scan path. With 0 comments
+on the thread it has fired 0 times. Any link posted in the thread from here on should carry
+`?ref=hn-show` anyway, which restores full attribution for that link.
+
+### Divergence from `docs/launch/hn-show.md` (recorded, not a defect)
+
+| | Prepared (`hn-show.md`) | Actually posted |
+|---|---|---|
+| Title | `Show HN: I graded 216 public Claude Code skills – 69% may never trigger` | `Show HN: Linting 216 public Claude Code skills – 69% won't reliably trigger` |
+| URL field | `https://skillcrossroads.com/report?ref=hn-show` | `https://skillcrossroads.com` (bare apex) |
+| Time | planned "Thu 9-17 06:00" (`PROJECT.yaml`, re-dated 9-16) | 2026-09-17T18:06:26Z |
+
+The title change is a copy decision and carries no measurement consequence. The URL change is the
+finding above. The posting time matches neither reading of "06:00" (neither 06:00Z nor 06:00 local),
+so treat the planned send-window guidance in `send-checklist.md` as not followed for this post.
+
+## Post-send log (filled 2026-09-17, ~3h after the post)
+
+- HN item URL: `https://news.ycombinator.com/item?id=49744398` — posted 2026-09-17T18:06:26Z by
+  `sgharlow`, title `Show HN: Linting 216 public Claude Code skills – 69% won't reliably trigger`,
+  URL field = bare apex `https://skillcrossroads.com` (see the FINDING above).
+  Traction at 2026-09-17T21:03Z: **1 point, 0 comments.**
+- Reddit permalink: **not posted.** HN was the only channel used on 2026-09-17. Verification: no
+  permalink is recorded anywhere in this repo, no commit or doc references a submission, the
+  `reddit-claudeai.md` draft is unsent, and a `site:reddit.com skillcrossroads` web search returns
+  no matching submission. (Reddit's own JSON API returns 403 to a server-side fetch, so this is a
+  web-index + repo-evidence check, not a Reddit-API check.) That also means the kill clause's
+  "2 launch posts" condition still stands at **1**.
+- `LAUNCH_DATE` set to: `2026-09-17` — present in `apps/web/.env.local`; claimed set in Vercel
+  production (not re-verified against the Vercel env in this pass).
+- Winning signal (condition, timestamp, source): **none yet** — window open 2026-09-17 →
+  2026-10-01. Not recomputed in this pass; the last full arms-length readout is the 2026-09-09
+  audit recorded in `PROJECT.yaml` (0 badge / 0 gallery / 0 referred scans / 0 paid). Re-run
+  `pwsh -File apps/web/scripts/demand-daily.ps1` for a current figure rather than quoting that one.
