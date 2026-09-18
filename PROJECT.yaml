@@ -25,10 +25,24 @@ gates:
     kill: "2 launch posts + 4 weeks with 0 external scans -> stop feature work entirely; distribution/positioning experiments only until a signal exists"
     owner: Steve
     planned_post: 2026-09-17  # re-dated 2026-09-16 (Steve): the 9-15 post did not happen. Was 2026-09-15 (decided 9-09). LAUNCH_DATE re-set to match in .env.local + Vercel prod
-    due: 2026-10-01  # planned_post + 14. RE-DATE if the post slips; the window runs from the ACTUAL post
-    status: "NOT STARTED — armed for a 2026-09-17 post (the planned 2026-09-15 post did not happen: HN Algolia shows no skillcrossroads.com story; Steve confirmed 9-16 and re-dated to Thu 9-17 06:00). The gate is NOT failed: its 14-day window
-      runs from the ACTUAL post date and has not opened, and the kill clause (2 posts + 4 weeks,
-      0 external scans) has not begun to run.
+    posted_on: 2026-09-17  # ACTUAL post: HN item 49744398, 2026-09-17T18:06:26Z. Matches planned_post
+    due: 2026-10-01  # CONFIRMED 2026-09-17 against the ACTUAL post: posted_on 2026-09-17 + 14 days = 2026-10-01. Unchanged because the post landed on the planned date
+    status: "LIVE — posted 2026-09-17T18:06:26Z as HN item 49744398
+      (https://news.ycombinator.com/item?id=49744398, author sgharlow). Title as posted:
+      `Show HN: Linting 216 public Claude Code skills – 69% won't reliably trigger`.
+      Traction at 2026-09-17T21:03Z: 1 point, 0 comments. The 14-day window is OPEN:
+      posted_on 2026-09-17 + 14 days = `due` 2026-10-01 (arithmetic confirmed, date unchanged
+      because the post landed on planned_post). One launch post so far, so the kill clause
+      (2 posts + 4 weeks, 0 external scans) cannot fire before a second post.
+
+      ⚠️ THE POST IS UNTAGGED AND THE GATE'S OWN INSTRUMENT IS BLIND TO IT. The prepared draft
+      (docs/launch/hn-show.md) specified https://skillcrossroads.com/report?ref=hn-show; the post
+      went up with the bare apex https://skillcrossroads.com, so no HN arrival sets the `sc_ref`
+      cookie and `attributedExternalScansSinceLaunch` stays 0 however many strangers scan.
+      Fallback (live-proven, but NOT in `report:demand` — it must be read from the Vercel
+      dashboard and logged by hand): Vercel Web Analytics `referrerHostname`. Full finding,
+      consequences, and exactly what the fallback can and cannot answer:
+      docs/launch/g0-baseline.md § FINDING 2026-09-17.
 
       2026-09-09 — the gate was MEASURING THE WRONG THING and would have passed itself. `evaluateG0`
       passed on `externalScansSinceLaunch > 0`, whose owner exclusion keys on `login`, which is NULL
@@ -38,8 +52,9 @@ gates:
       whether one stranger arrived. Fixed to the target above — only a stranger-initiated signal
       passes. Arms-length signal live after the fix: 0/0/0/0. See commit 2fe3a94.
 
-      ON POST: set posted_on, confirm `due` = posted_on + 14, and start counting. A LAUNCH_DATE in
-      the future keeps the gate pre-launch, so pre-setting it is safe."
+      ON POST (RAN 2026-09-17, late — the post was ~3h old before this was written back):
+      posted_on set, `due` confirmed = posted_on + 14 = 2026-10-01, counting started.
+      LAUNCH_DATE=2026-09-17 is set in apps/web/.env.local and claimed set in Vercel production."
 
 market:
   competitors_doc: ROADMAP.md#positioning--competitors

@@ -1,4 +1,18 @@
-# Show HN post
+# Show HN post — PREPARED DRAFT (not what went out)
+
+> ⚠️ **This file is the PREPARED post. The post that actually went live on 2026-09-17 differs.**
+>
+> | | Prepared (below) | Actually posted |
+> |---|---|---|
+> | Title | `Show HN: I graded 216 public Claude Code skills – 69% may never trigger` | `Show HN: Linting 216 public Claude Code skills – 69% won't reliably trigger` |
+> | URL field | `https://skillcrossroads.com/report?ref=hn-show` | `https://skillcrossroads.com` (bare apex, **no `?ref`**) |
+> | Posted | planned Thu 2026-09-17 06:00 | 2026-09-17T18:06:26Z |
+>
+> Live post: HN item 49744398 — https://news.ycombinator.com/item?id=49744398
+>
+> The dropped `?ref=hn-show` broke the launch attribution the gate was built to measure with.
+> Read `docs/launch/g0-baseline.md` § "FINDING 2026-09-17" before using any by-source number.
+> Keep the `?ref` tags below intact on any future post, comment link, or re-submission.
 
 **Title:** Show HN: I graded 216 public Claude Code skills – 69% may never trigger
 
