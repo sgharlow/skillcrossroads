@@ -219,6 +219,41 @@ The title change is a copy decision and carries no measurement consequence. The 
 finding above. The posting time matches neither reading of "06:00" (neither 06:00Z nor 06:00 local),
 so treat the planned send-window guidance in `send-checklist.md` as not followed for this post.
 
+## FINDING 2026-09-18 — the post was KILLED, not weakly received
+
+Everything in the section above assumes the post was live on HN. It was not. HN's classifier
+flagged it about two minutes after the 18:06:26Z post, and the moderator's reply (18:36:18Z) gives
+the reason: **the software classified the text as genai**, which HN does not allow. The "1 point,
+0 comments" traction below measured a dead item, not an audience's verdict. Evidence: Gmail thread
+`1a0b08f5375c7d68`.
+
+**Consequences for G0:**
+
+- The 14-day window (`due` 2026-10-01) was opened by ~2 minutes of exposure. `PROJECT.yaml` now
+  marks `due` PROVISIONAL and adds `relisted_on`. The window moves to the ACTUAL post date.
+- Whether this counts as launch post 1 for the kill clause is an open question for Steve
+  (`PROJECT.yaml` `open_question`). Until he rules, read the clause as not started.
+- **The relist offer is open.** HN will make a fresh copy with full `/newest` time in exchange
+  for an entirely handwritten comment and reply. No part of that text may be LLM-written,
+  edited or polished. A second kill would spend the moderator's goodwill.
+- On relist, the URL field should be `https://skillcrossroads.com/report?ref=hn-show`. That
+  fixes the attribution gap in the FINDING above for everything that arrives through the relist.
+
+**The count to lead with — decide before writing.** These four counts are live on `/report`, and
+all are correct as recorded 2026-09-17. Re-read `/report` before the relist rather than trusting
+this table:
+
+| Count | What it is |
+|---|---|
+| 216 | public skills in the corpus (18 repos) |
+| 215 | skills scored for triggering, **the denominator of the 69%** |
+| 208 | the percentile comparison sample, 2026-09 edition (rubric v1.2) |
+| 214 | the July edition of that sample (historical) |
+
+The killed title paired **216** with **69%**. The 69% is over **215**. Separately, the GitHub
+Action's PR comment still prints "≈99% of **214**" while the current edition is 208. Check whether
+the Action is pinned to the July dataset before any post links to a badge.
+
 ## Post-send log (filled 2026-09-17, ~3h after the post)
 
 - HN item URL: `https://news.ycombinator.com/item?id=49744398` — posted 2026-09-17T18:06:26Z by
