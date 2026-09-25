@@ -26,8 +26,22 @@ gates:
     owner: Steve
     planned_post: 2026-09-17  # re-dated 2026-09-16 (Steve): the 9-15 post did not happen. Was 2026-09-15 (decided 9-09). LAUNCH_DATE re-set to match in .env.local + Vercel prod
     posted_on: 2026-09-17  # ACTUAL post: HN item 49744398, 2026-09-17T18:06:26Z. Matches planned_post
-    due: 2026-10-01  # CONFIRMED 2026-09-17 against the ACTUAL post: posted_on 2026-09-17 + 14 days = 2026-10-01. Unchanged because the post landed on the planned date
-    status: "LIVE — posted 2026-09-17T18:06:26Z as HN item 49744398
+    due: 2026-10-01  # PROVISIONAL since 2026-09-18: computed from a post that was KILLED ~2 min after posting (see `killed`). The window moves with the ACTUAL post: on relist, set `relisted_on` and recompute due = relisted_on + 14. If no relist happens, Steve rules on what 10-01 measures
+    killed:
+      date: 2026-09-17
+      when: "~18:08Z — flagged within about two minutes of the 18:06:26Z post (Steve's own report to hn@ycombinator.com, 18:16Z)"
+      reason: "HN moderator (Daniel), 2026-09-17T18:36:18Z: the software classified the text as genai, which HN does not allow"
+      evidence: "Gmail thread 1a0b08f5375c7d68 (sgharlow@gmail.com <-> hn@ycombinator.com)"
+      relist_offer: "OPEN, unanswered at 2026-09-18 ~19:00 MST. HN will make a fresh copy with full /newest time in exchange for an entirely handwritten comment on the item plus a reply email. Steve writes every word; Claude must not draft, edit or polish any of it (that is what killed the first post)"
+    relisted_on:  # set on relist, then recompute `due`
+    open_question: "Does a killed post count as launch post 1 for the kill clause (2 launch posts + 4 weeks with 0 external scans)? It had ~2 minutes of exposure. Owner: Steve. Until ruled, the clause is read as NOT started"
+    status: "KILLED 2026-09-17 by HN's genai classifier (see `killed`); relist offer OPEN.
+      The 14-day window below was opened by a post that got ~2 minutes of exposure, so the
+      arms-length signal it could produce is ~0 by construction and `due` is provisional.
+      Before any relist, settle which count leads: the four counts on /report are all correct but
+      measure different things (docs/launch/g0-baseline.md § FINDING 2026-09-18).
+
+      HISTORY — as first written back 2026-09-17: LIVE — posted 2026-09-17T18:06:26Z as HN item 49744398
       (https://news.ycombinator.com/item?id=49744398, author sgharlow). Title as posted:
       `Show HN: Linting 216 public Claude Code skills – 69% won't reliably trigger`.
       Traction at 2026-09-17T21:03Z: 1 point, 0 comments. The 14-day window is OPEN:
