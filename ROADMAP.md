@@ -1,5 +1,7 @@
 # Skill Crossroads — Roadmap
 
+> **Test counts in this file are historical snapshots** written at each milestone, never a current claim. The live number is `npx vitest run` (9-24 roadmap-lint: twelve hand-copied counts here; none is authoritative).
+
 > **Authoritative forward plan** (2026-07-10). The original 12-sprint build plan (private Build
 > Bible) is complete: engine, CLI, hosted app, Action, report, and billing are live at
 > [skillcrossroads.com](https://skillcrossroads.com) and the money path is dogfooded. This roadmap
@@ -274,7 +276,8 @@ user hits and repairs known warts on the core loop.*
 > degenerate verdicts), VERIFY-03 maintenance hygiene (demoted to informational in review —
 > per-skill scans can't see repo-root hygiene, warning was a systematic false accusation).
 > Item 20, **State of Claude Code Agents & Commands** at /report-agents (real run, trees pinned,
-> deterministic edition disclosed): 85 artifacts / 9 of 17 repos; headlines — **43% of public
+> deterministic edition disclosed): 85 artifacts / 9 of 17 repos; headlines — **57% of public
+> *(Corrected 2026-09-25: this read "43%" — the draft error next.md records as caught and fixed; the published figure is 57% no-tools. 9-24 roadmap-lint D3.)*
 > subagents declare no `tools` and silently inherit everything incl. Bash**, 94% lack clean
 > invocation cues; avg 91.3 (agents) / 96.1 (commands). A 27-agent adversarial review of both
 > sprints found 10 verified defects (incl. reflected XSS on /s error pages and Pro scorecards
