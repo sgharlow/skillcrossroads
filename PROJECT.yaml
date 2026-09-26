@@ -34,7 +34,7 @@ gates:
       evidence: "Gmail thread 1a0b08f5375c7d68 (sgharlow@gmail.com <-> hn@ycombinator.com)"
       relist_offer: "ACCEPTED by Steve 2026-09-25 (/daily-priority AskUserQuestion: Relist). Owed by Steve, in his own words only: the handwritten comment on item 49744398 and the reply email on Gmail thread 1a0b08f5375c7d68. Claude sets relisted_on and recomputes due when HN confirms the fresh copy. History — was: OPEN, unanswered at 2026-09-18 ~19:00 MST. HN will make a fresh copy with full /newest time in exchange for an entirely handwritten comment on the item plus a reply email. Steve writes every word; Claude must not draft, edit or polish any of it (that is what killed the first post)"
     relisted_on:  # set on relist, then recompute `due`
-    open_question: "Does a killed post count as launch post 1 for the kill clause (2 launch posts + 4 weeks with 0 external scans)? It had ~2 minutes of exposure. Owner: Steve. Until ruled, the clause is read as NOT started"
+    kill_clause_ruling_2026_09_26: "NOT STARTED (Steve, 2026-09-26 /daily-priority AskUserQuestion): the killed 2026-09-17 post (~2 minutes of exposure) does NOT count as launch post 1. The kill clause (2 launch posts + 4 weeks with 0 external scans) starts at the first post that stays live. Was open_question since 2026-09-18: 'Does a killed post count as launch post 1 …? Until ruled, the clause is read as NOT started' — the provisional reading is now the ruling."
     status: "KILLED 2026-09-17 by HN's genai classifier (see `killed`); relist offer OPEN.
       The 14-day window below was opened by a post that got ~2 minutes of exposure, so the
       arms-length signal it could produce is ~0 by construction and `due` is provisional.
