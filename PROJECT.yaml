@@ -32,7 +32,7 @@ gates:
       when: "~18:08Z — flagged within about two minutes of the 18:06:26Z post (Steve's own report to hn@ycombinator.com, 18:16Z)"
       reason: "HN moderator (Daniel), 2026-09-17T18:36:18Z: the software classified the text as genai, which HN does not allow"
       evidence: "Gmail thread 1a0b08f5375c7d68 (sgharlow@gmail.com <-> hn@ycombinator.com)"
-      relist_offer: "OPEN, unanswered at 2026-09-18 ~19:00 MST. HN will make a fresh copy with full /newest time in exchange for an entirely handwritten comment on the item plus a reply email. Steve writes every word; Claude must not draft, edit or polish any of it (that is what killed the first post)"
+      relist_offer: "ACCEPTED by Steve 2026-09-25 (/daily-priority AskUserQuestion: Relist). Owed by Steve, in his own words only: the handwritten comment on item 49744398 and the reply email on Gmail thread 1a0b08f5375c7d68. Claude sets relisted_on and recomputes due when HN confirms the fresh copy. History — was: OPEN, unanswered at 2026-09-18 ~19:00 MST. HN will make a fresh copy with full /newest time in exchange for an entirely handwritten comment on the item plus a reply email. Steve writes every word; Claude must not draft, edit or polish any of it (that is what killed the first post)"
     relisted_on:  # set on relist, then recompute `due`
     open_question: "Does a killed post count as launch post 1 for the kill clause (2 launch posts + 4 weeks with 0 external scans)? It had ~2 minutes of exposure. Owner: Steve. Until ruled, the clause is read as NOT started"
     status: "KILLED 2026-09-17 by HN's genai classifier (see `killed`); relist offer OPEN.
