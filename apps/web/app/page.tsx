@@ -173,7 +173,7 @@ export default function Home(): ReactElement {
           </article>
           <article className="card price">
             <h3>Team</h3>
-            <p>Org-wide custom rules, seats for your team, shared dashboards.</p>
+            <p>Coming, not built yet: seats for your team, org-wide custom rules, a shared dashboard. Built with the first team that asks — contact us from <a href="/pricing">Pricing</a>.</p>
           </article>
         </div>
         <p className="pricing-note">Free covers everything you need to grade and share a public skill.</p>

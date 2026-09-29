@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import SubscribeButton from "./subscribe-button";
+import { FREE, PRO, TEAM, TEAM_COMING } from "./tiers";
 import { SiteNav, SiteFooter } from "@/components/SiteNav";
 
 export const metadata: Metadata = {
@@ -7,11 +8,7 @@ export const metadata: Metadata = {
   alternates: { canonical: "/pricing" },
 };
 
-const FREE = ["CLI + public repo scans", "Full deterministic rubric", "CI GitHub Action + PR gating", "Triggering & exact tokens (your own key)", "Local HTML report + SVG badge"];
-const PRO = ["Everything in Free", "Private-repo scanning", "Managed LLM — no key needed", "Hosted scorecards + always-fresh badges", "Score history"];
-const TEAM = ["Everything in Pro", "Org-wide custom rules", "Seats for your team", "Shared team dashboard"];
-
-function Tier({ name, price, per, items, cta }: { name: string; price: string; per: string; items: string[]; cta: React.ReactNode }) {
+function Tier({ name, price, per, items, coming = [], note, cta }: { name: string; price: string; per: string; items: string[]; coming?: string[]; note?: string; cta: React.ReactNode }) {
   return (
     <div className="tier">
       <h3>{name}</h3>
@@ -23,7 +20,13 @@ function Tier({ name, price, per, items, cta }: { name: string; price: string; p
         {items.map((i) => (
           <li key={i}>{i}</li>
         ))}
+        {coming.map((i) => (
+          <li key={i} className="coming">
+            {i} <span className="tag">coming</span>
+          </li>
+        ))}
       </ul>
+      {note && <p className="note">{note}</p>}
       <div className="cta-slot">{cta}</div>
     </div>
   );
@@ -42,10 +45,14 @@ export default function Pricing() {
       <section className="grid">
         <Tier name="Free" price="$0" per="" items={FREE} cta={<a className="ghost" href="/">Get started</a>} />
         <Tier name="Pro" price="$19" per="/mo" items={PRO} cta={<SubscribeButton />} />
-        <Tier name="Team" price="$99" per="/mo · 5 seats" items={TEAM} cta={<a className="ghost" href="mailto:hello@skillcrossroads.com?subject=Skill%20Crossroads%20Team">Contact us</a>} />
+        <Tier name="Team" price="$99" per="/mo" items={TEAM} coming={TEAM_COMING} note="Not built yet — built with the first team that asks. Tell us what your team needs." cta={<a className="ghost" href="mailto:hello@skillcrossroads.com?subject=Skill%20Crossroads%20Team">Contact us</a>} />
       </section>
 
       <p className="foot">14-day free trial on Pro · cancel anytime · secured by Stripe</p>
+      <p className="foot terms">
+        Subscribing means agreeing to the <a href="/terms">Terms of Service</a> — including how the
+        trial, renewal and cancellation work.
+      </p>
 
       <SiteFooter />
 
@@ -63,10 +70,16 @@ export default function Pricing() {
         ul{list-style:none;display:flex;flex-direction:column;gap:9px;margin-bottom:20px}
         li{color:var(--foam);font-size:14px;padding-left:22px;position:relative}
         li::before{content:"✓";position:absolute;left:0;color:var(--aqua);font-weight:700}
+        li.coming{color:var(--fog)}
+        li.coming::before{content:"○";color:var(--fog);font-weight:400}
+        .tag{font-size:11px;text-transform:uppercase;letter-spacing:.06em;border:1px solid var(--ink3);border-radius:6px;padding:1px 6px;margin-left:4px;color:var(--fog)}
+        .note{color:var(--fog);font-size:13px;margin:-8px 0 16px}
         .cta-slot{min-height:44px}
         .ghost{display:block;text-align:center;border:1px solid var(--ink3);border-radius:10px;padding:12px;color:var(--foam);text-decoration:none;font-weight:600}
         .ghost:hover{border-color:var(--beam)}
         .foot{text-align:center;color:var(--fog);font-size:13px;margin-top:26px}
+        .foot.terms{margin-top:8px}
+        .foot a{color:var(--foam)}
         @media(max-width:720px){.grid{grid-template-columns:1fr}}
       `}</style>
     </main>
