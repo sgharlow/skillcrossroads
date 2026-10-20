@@ -53,4 +53,18 @@ describe("formatDemandReadout — separates arms-length signal from unattributed
     const out = formatDemandReadout(metric, { status: "pivot-warning", reasons: [] });
     expect(out).toContain("Arms-length signal");
   });
+
+  // 2026-10-19: referred scans and paid subs are context, not G0 pass arms (PROJECT.yaml pass_arms).
+  it("labels UNKNOWN and lists referred scans + paid subs under context, not the gate", () => {
+    const out = formatDemandReadout(
+      { ...metric, attributedExternalScansSinceLaunch: 734 },
+      { status: "unknown", reasons: [] },
+    );
+    expect(out).toContain("G0 GATE: ? UNKNOWN");
+    const gate = out.slice(out.indexOf("Arms-length signal"), out.indexOf("Context (NOT a G0 pass arm)"));
+    expect(out.indexOf("Context (NOT a G0 pass arm)")).toBeGreaterThan(0);
+    expect(gate).not.toContain("referred scans");
+    expect(gate).not.toContain("paid subscriptions");
+    expect(gate).toContain("action_install, report_readers_25x3, team_inquiry");
+  });
 });

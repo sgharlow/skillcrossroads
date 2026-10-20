@@ -22,5 +22,8 @@
     "picocolors": "^1.1.0",
     "yaml": "^2.6.0"
   },
-  "license": "MIT"
+  "license": "MIT",
+  "devDependencies": {
+    "@electric-sql/pglite": "0.5.8"
+  }
 }
