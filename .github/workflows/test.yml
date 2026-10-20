@@ -18,6 +18,11 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+        with:
+          # Full history: apps/web/test/terms-page.test.ts reads `git log -1 -- <file>`. In the
+          # default depth-1 clone that returns the PR merge commit's date (today), not the last
+          # real edit, so the test fails on every PR (first run of this workflow, PR #41).
+          fetch-depth: 0
 
       - uses: actions/setup-node@v4
         with:
