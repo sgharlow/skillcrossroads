@@ -40,8 +40,19 @@ if ($buildRc -ne 0) {
 try {
   Set-Location $webDir
   npm run report:demand 2>&1 | Add-Content $log
+  $readoutRc = $LASTEXITCODE
 } catch {
   # Fail-closed: a broken readout must be visible in the log, not silent.
   "READOUT FAILED: $_" | Add-Content $log
   exit 1
 }
+
+# demand-readout.mjs exit codes: 0 = verdict (not pivot), 1 = verdict PIVOT, 2 = config missing,
+# 3 = crashed. 0 and 1 are both a readout that RAN (the verdict is in the log), so the task
+# reports success; anything else is a failure the scheduler must see. Until 2026-10-19 a crash
+# (e.g. the database unreachable) left a stack trace in the log and the task still returned 0.
+if ($readoutRc -ne 0 -and $readoutRc -ne 1) {
+  "READOUT FAILED: report:demand exited $readoutRc (2 = config missing, 3 = readout crashed; see the lines above)" | Add-Content $log
+  exit 1
+}
+exit 0
