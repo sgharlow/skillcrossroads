@@ -132,16 +132,25 @@ export async function computeDemandMetric(db: Queryable, opts: DemandMetricOpts)
       [owners],
     )
   ).rows as SourceCount[];
+  // Conversion counts apply the SAME owner exclusion as their arms-length counterparts above
+  // (2026-10-19): unfiltered, the owner's own badge and the 31 gallery entries he listed himself
+  // showed up here as "conversion". The badge join also takes the same served_at window as
+  // `distinctBadgeReposFromGitHub`, so a conversion count can never exceed its arms-length count.
   const reposWithBadgeServe = await scalar(
     `SELECT count(DISTINCT s.slug)::int AS n
      FROM scans s JOIN badge_serves b ON b.slug = s.slug AND b.from_github = true
-     WHERE (s.login IS NULL OR lower(s.login) <> ALL($1::text[]))`,
-    [owners],
+     WHERE (s.login IS NULL OR lower(s.login) <> ALL($1::text[]))
+       AND b.served_at >= (CURRENT_DATE - ($2::int - 1))
+       AND lower(split_part(s.slug, '/', 1)) <> ALL($1::text[])`,
+    [owners, days],
   );
   const reposWithGalleryOptIn = await scalar(
     `SELECT count(DISTINCT s.slug)::int AS n
      FROM scans s JOIN gallery_entries g ON g.id = s.slug
-     WHERE (s.login IS NULL OR lower(s.login) <> ALL($1::text[]))`,
+     WHERE (s.login IS NULL OR lower(s.login) <> ALL($1::text[]))
+       AND g.opted_in_by IS NOT NULL
+       AND lower(g.opted_in_by) <> ALL($1::text[])
+       AND lower(g.owner) <> ALL($1::text[])`,
     [owners],
   );
 

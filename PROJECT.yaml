@@ -22,6 +22,13 @@ gates:
   - id: G0-launch
     metric: external demand signal after posting the State of Claude Code Skills report to 1-2 dev communities (human-send by design)
     target: ">= 1 stranger-initiated scan (gallery opt-in, external badge embed, or Action install) OR >= 25 unique /report readers with >= 3 site scans OR >= 1 Team-tier inquiry, within 14 days of the post"
+    # The ONE definition of the target's pass arms (added 2026-10-19). packages/core g0-gate.ts
+    # G0_PASS_ARMS mirrors it; demand-g0-contract.test.ts fails if they differ. Referred scans and
+    # paid subscriptions are NOT pass arms. Only gallery_opt_in + external_badge_embed are measured
+    # by report:demand; the other three make the readout UNKNOWN until read by hand.
+    pass_arms: [gallery_opt_in, external_badge_embed, action_install, report_readers_25x3, team_inquiry]
+    # No relist + no measured pass arm by this date -> record G0-launch NOT MET.
+    measured_by: 2026-10-31
     kill: "2 launch posts + 4 weeks with 0 external scans -> stop feature work entirely; distribution/positioning experiments only until a signal exists"
     owner: Steve
     planned_post: 2026-09-17  # re-dated 2026-09-16 (Steve): the 9-15 post did not happen. Was 2026-09-15 (decided 9-09). LAUNCH_DATE re-set to match in .env.local + Vercel prod

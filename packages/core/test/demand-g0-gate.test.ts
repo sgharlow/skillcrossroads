@@ -15,12 +15,13 @@ describe("evaluateG0", () => {
     const v = evaluateG0(base, { launchDate: null, launchPosts: 0, now: new Date("2026-07-15T00:00:00Z") });
     expect(v.status).toBe("pre-launch");
   });
-  // Corrected 2026-09-09: a bare scan count is NOT a stranger signal (see the arms-length block
-  // below). A referred scan is; that is what carries the gate now.
-  it("live-signal on the first REFERRED external scan since launch", () => {
-    const v = evaluateG0({ ...base, attributedExternalScansSinceLaunch: 1 },
+  // Corrected 2026-10-19: a referred scan is NOT a G0 pass arm (PROJECT.yaml G0-launch
+  // `pass_arms`), and prod cannot tell a logged-out owner with an external referer from a
+  // stranger. With the kill thresholds met it must not hold the pivot off.
+  it("pivots past the kill thresholds even with referred scans (context, not a pass arm)", () => {
+    const v = evaluateG0({ ...base, attributedExternalScansSinceLaunch: 734 },
       { launchDate: "2026-07-13", launchPosts: 3, now: new Date("2026-08-20T00:00:00Z") });
-    expect(v.status).toBe("live-signal");
+    expect(v.status).toBe("pivot");
   });
   it("pivot-warning when launched, zero scans, before the 4-week / 2-post threshold", () => {
     const v = evaluateG0(base,
@@ -53,7 +54,10 @@ describe("evaluateG0", () => {
  * gate to `live-signal` within hours whether or not one stranger arrived.
  *
  * PROJECT.yaml ratifies a different, narrower condition: ">= 1 stranger-initiated scan (gallery
- * opt-in, external badge embed, or Action install)". These pin the gate to that condition.
+ * opt-in, external badge embed, or Action install) OR >= 25 /report readers with >= 3 site scans
+ * OR >= 1 Team-tier inquiry" — listed once as G0-launch `pass_arms` and mirrored by G0_PASS_ARMS
+ * (demand-g0-contract.test.ts). Only gallery + badge are measured by this metric; the rest make
+ * the verdict "unknown", never "live-signal". These pin the gate to that condition.
  */
 describe("evaluateG0 — only arms-length signal passes the gate", () => {
   const launched = { launchDate: "2026-09-15", launchPosts: 1, now: new Date("2026-09-16T00:00:00Z") };
@@ -76,13 +80,45 @@ describe("evaluateG0 — only arms-length signal passes the gate", () => {
     expect(v.status).toBe("live-signal");
   });
 
-  it("passes on a scan carrying a real referral source", () => {
-    const v = evaluateG0({ ...base, attributedExternalScansSinceLaunch: 1 } as any, launched);
-    expect(v.status).toBe("live-signal");
+  // 2026-10-19: referred scans and paid subscriptions are not in the ratified pass list. The
+  // 10-19 08:03 readout said LIVE SIGNAL on 734 referred scans alone (badge 0, gallery 0).
+  it("does NOT pass on referred scans alone — the gate cannot say live-signal or zero", () => {
+    const v = evaluateG0({ ...base, attributedExternalScansSinceLaunch: 734 }, launched);
+    expect(v.status).not.toBe("live-signal");
+    expect(v.status).toBe("unknown");
   });
 
-  it("passes on a paid subscription", () => {
+  it("does NOT pass on a paid subscription alone", () => {
     const v = evaluateG0({ ...base, paidSubscriptions: 1 }, launched);
+    expect(v.status).not.toBe("live-signal");
+    expect(v.status).toBe("unknown");
+  });
+
+  it("is unknown when only unmeasured arms could carry it, and names those arms", () => {
+    const v = evaluateG0(
+      { ...base, attributedExternalScansSinceLaunch: 3, paidSubscriptions: 1 },
+      launched,
+    );
+    expect(v.status).toBe("unknown");
+    const text = v.reasons.join("\n");
+    for (const arm of ["action_install", "report_readers_25x3", "team_inquiry"]) {
+      expect(text).toContain(arm);
+    }
+  });
+
+  it("still pivots past the kill thresholds when only context signals exist", () => {
+    const v = evaluateG0(
+      { ...base, attributedExternalScansSinceLaunch: 3, paidSubscriptions: 1 },
+      { launchDate: "2026-09-15", launchPosts: 2, now: new Date("2026-10-19T00:00:00Z") },
+    );
+    expect(v.status).toBe("pivot");
+  });
+
+  it("a measured arm still passes even when context signals are present", () => {
+    const v = evaluateG0(
+      { ...base, galleryOptIns: 1, attributedExternalScansSinceLaunch: 3 },
+      { launchDate: "2026-09-15", launchPosts: 2, now: new Date("2026-10-19T00:00:00Z") },
+    );
     expect(v.status).toBe("live-signal");
   });
 });

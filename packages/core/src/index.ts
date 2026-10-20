@@ -77,7 +77,16 @@ export {
   type DailyCount,
   type DemandMetricOpts,
 } from "./demand/metric.js";
-export { evaluateG0, type G0Verdict, type G0Status, type G0Context } from "./demand/g0-gate.js";
+export {
+  evaluateG0,
+  G0_PASS_ARMS,
+  G0_MEASURED_ARMS,
+  G0_UNMEASURED_ARMS,
+  type G0PassArm,
+  type G0Verdict,
+  type G0Status,
+  type G0Context,
+} from "./demand/g0-gate.js";
 export { formatDemandReadout } from "./demand/format.js";
 export { normalizeSource } from "./demand/source.js";
 
