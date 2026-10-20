@@ -17,6 +17,26 @@ foreach ($line in Get-Content (Join-Path $webDir ".env.local")) {
 $env:OWNER_LOGINS = "sgharlow"
 
 "`n===== $(Get-Date -Format 'yyyy-MM-dd HH:mm') =====" | Add-Content $log
+
+# Rebuild @beacon/core first. report:demand imports it from packages/core/dist, which nothing else
+# rebuilds — on 2026-10-19 dist was dated 2026-09-26, so a merged gate change would not have run.
+# Fail-closed: a failed build writes a visible line and the readout does NOT run on a stale dist.
+# Output is captured so a successful build leaves the log format unchanged.
+$coreDir = Join-Path (Split-Path -Parent (Split-Path -Parent $webDir)) "packages\core"
+try {
+  Set-Location $coreDir
+  $buildOut = npm run build --silent 2>&1
+  $buildRc = $LASTEXITCODE
+} catch {
+  $buildOut = "$_"
+  $buildRc = -1
+}
+if ($buildRc -ne 0) {
+  "READOUT FAILED: build of packages/core exited $buildRc; readout skipped (dist may be stale)" | Add-Content $log
+  $buildOut | ForEach-Object { "  $_" } | Add-Content $log
+  exit 1
+}
+
 try {
   Set-Location $webDir
   npm run report:demand 2>&1 | Add-Content $log

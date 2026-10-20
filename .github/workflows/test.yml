@@ -1,0 +1,40 @@
+name: Test
+
+# Added 2026-10-19. Until this file, no workflow ran the vitest suite: publish-cli.yml only
+# installs and bundles, crossroads.yml grades skills, uptime.yml probes prod. A green check on a
+# PR said nothing about whether the code was correct. The job is named `test` on purpose — branch
+# protection will require it by that name.
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          # package.json engines: "22.x"
+          node-version: 22
+
+      - name: Install (clean, from the lockfile)
+        run: npm ci
+
+      - name: Build every workspace (CLI tests run packages/cli/dist)
+        run: npm run build
+
+      - name: Test suite
+        run: npx vitest run
+
+      - name: Typecheck packages/core
+        run: npx tsc --noEmit -p packages/core/tsconfig.json
+
+      - name: Typecheck apps/web
+        run: npx tsc --noEmit -p apps/web/tsconfig.json
