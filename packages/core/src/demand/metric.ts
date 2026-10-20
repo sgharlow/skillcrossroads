@@ -122,7 +122,13 @@ export async function computeDemandMetric(db: Queryable, opts: DemandMetricOpts)
        AND lower(owner) <> ALL($1::text[])`,
     [owners],
   );
-  const paidSubscriptions = await scalar(`SELECT count(*)::int AS n FROM subscriptions WHERE pro = true`, []);
+  // Context only, not a pass arm (g0-gate.ts). `subscriptions.login` is the GitHub login that
+  // entitlements.ts setPro keys every row on (PRIMARY KEY, never NULL), so the owner is excluded
+  // by the same lowercased OWNER_LOGINS match the scans counters use (2026-10-19).
+  const paidSubscriptions = await scalar(
+    `SELECT count(*)::int AS n FROM subscriptions WHERE pro = true AND lower(login) <> ALL($1::text[])`,
+    [owners],
+  );
 
   const externalScansBySource = (
     await db.query(

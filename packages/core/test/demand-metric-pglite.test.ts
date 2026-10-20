@@ -111,3 +111,28 @@ describe("computeDemandMetric (real SQL) — conversion counts exclude the owner
     expect(m.reposWithBadgeServe).toBe(0);
   });
 });
+
+/** A subscriptions row as entitlements.ts setPro writes it: keyed by the GitHub login. */
+async function subscription(login: string, pro: boolean) {
+  await db.query(`INSERT INTO subscriptions (login, pro, stripe_customer_id) VALUES ($1, $2, NULL)`, [
+    login,
+    pro,
+  ]);
+}
+
+describe("computeDemandMetric (real SQL) — paid subscriptions exclude the owner", () => {
+  it("the owner's own Pro row is not counted; a stranger's is", async () => {
+    // Mixed case on purpose: OWNER_LOGINS matching is case-insensitive everywhere else.
+    await subscription("SGHarlow", true);
+    await subscription("stranger", true);
+    const m = await computeDemandMetric(db, opts);
+    expect(m.paidSubscriptions).toBe(1);
+  });
+
+  it("an owner-only Pro row reads 0, and a non-pro stranger row is not counted", async () => {
+    await subscription(OWNER, true);
+    await subscription("lapsed-stranger", false);
+    const m = await computeDemandMetric(db, opts);
+    expect(m.paidSubscriptions).toBe(0);
+  });
+});

@@ -67,7 +67,8 @@ export function evaluateG0(metric: DemandMetric, ctx: G0Context): G0Verdict {
   if (metric.galleryOptIns > 0)
     passes.push(`gallery_opt_in: ${metric.galleryOptIns} arms-length gallery opt-in(s).`);
   // Context only (2026-10-19): neither is a pass arm. A referred scan cannot be told apart from a
-  // logged-out owner arriving via an external referer, and subscriptions are not owner-filtered.
+  // logged-out owner arriving via an external referer, and subscriptions were never in the ratified
+  // pass list (owner-filtered by login since 2026-10-19, but still context).
   const context: string[] = [];
   if (metric.attributedExternalScansSinceLaunch > 0)
     context.push(
